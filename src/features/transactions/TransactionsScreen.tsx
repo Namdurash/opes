@@ -1,32 +1,44 @@
 import React from 'react';
-import { StyleSheet, Text, View } from 'react-native';
-import { ScreenContainer } from '../../shared/ui';
+import { View } from 'react-native';
+import { makeStyles } from '../../shared/theme';
+import { AppText, Button, Screen } from '../../shared/ui';
 import { TransactionListPlaceholder } from './components/TransactionListPlaceholder';
 
 export function TransactionsScreen() {
+  const styles = useStyles();
+
   return (
-    <ScreenContainer>
+    <Screen>
       <View style={styles.header}>
-        <Text style={styles.title}>Transactions</Text>
-        <Text style={styles.subtitle}>Offline placeholder list.</Text>
+        <AppText variant="h1">Transactions</AppText>
+        <AppText tone="secondary">Offline placeholder list.</AppText>
       </View>
-      <TransactionListPlaceholder />
-    </ScreenContainer>
+
+      <View style={styles.listContainer}>
+        <TransactionListPlaceholder />
+      </View>
+
+      <View style={styles.actions}>
+        <Button title="New Transaction" onPress={() => {}} variant="primary" />
+      </View>
+    </Screen>
   );
 }
 
-const styles = StyleSheet.create({
+const useStyles = makeStyles(theme => ({
   header: {
-    gap: 4,
-    marginBottom: 12,
+    gap: theme.spacing.xs,
+    marginBottom: theme.spacing.md,
   },
-  title: {
-    fontSize: 24,
-    fontWeight: '700',
-    color: '#111827',
+  listContainer: {
+    flex: 1,
+    backgroundColor: theme.colors.surface,
+    borderColor: theme.colors.border,
+    borderWidth: 1,
+    borderRadius: theme.radii.md,
+    paddingHorizontal: theme.spacing.md,
   },
-  subtitle: {
-    fontSize: 14,
-    color: '#4B5563',
+  actions: {
+    marginTop: theme.spacing.md,
   },
-});
+}));

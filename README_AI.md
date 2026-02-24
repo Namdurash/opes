@@ -45,6 +45,15 @@ All UI must use design tokens and shared UI primitives. Do not hardcode colors, 
 - Prefer `shared/ui` primitives: `Screen`, `Text`, `Button`, `Card`, `Spacer`.
 - Styles must be created via a helper that accepts theme (e.g. `makeStyles(theme)`), or by using `useTheme()`.
 
+### Styling
+
+- All styles inside `src/features/**` must be placed in separate modules.
+- The styles file name must be the full related module name with `.styles.ts` postfix.
+  - Example: `TransactionsScreen.tsx` -> `TransactionsScreen.styles.ts`
+  - Example: `TransactionListPlaceholder.tsx` -> `TransactionListPlaceholder.styles.ts`
+- Feature components must not contain `StyleSheet.create(...)` inline in the component module.
+- `shared/ui` primitives may contain their own styles in the same file (allowed), but feature-level UI must follow the separation rule.
+
 ### Extensibility
 
 - Theme must be switchable (e.g. light/dark) without rewriting feature code.

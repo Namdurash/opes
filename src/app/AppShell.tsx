@@ -1,7 +1,9 @@
 import React, { useReducer } from 'react';
-import { Pressable, StyleSheet, Text, View } from 'react-native';
+import { Pressable, View } from 'react-native';
 import { HomeScreen } from '../features/home';
 import { TransactionsScreen } from '../features/transactions';
+import { AppText } from '../shared/ui';
+import { makeStyles } from '../shared/theme';
 import { appReducer, initialAppState } from '../state';
 import { AppRoute } from './navigation/types';
 
@@ -12,6 +14,7 @@ const NAV_ITEMS: Array<{ route: AppRoute; label: string }> = [
 
 export function AppShell() {
   const [state, dispatch] = useReducer(appReducer, initialAppState);
+  const styles = useStyles();
 
   return (
     <View style={styles.container}>
@@ -25,9 +28,9 @@ export function AppShell() {
               onPress={() => dispatch({ type: 'navigate', route: item.route })}
               style={[styles.navButton, isActive && styles.navButtonActive]}
             >
-              <Text style={[styles.navLabel, isActive && styles.navLabelActive]}>
+              <AppText tone={isActive ? 'primary' : 'tertiary'} variant="caption">
                 {item.label}
-              </Text>
+              </AppText>
             </Pressable>
           );
         })}
@@ -44,39 +47,31 @@ function renderScreen(route: AppRoute) {
   return <HomeScreen />;
 }
 
-const styles = StyleSheet.create({
+const useStyles = makeStyles(theme => ({
   container: {
     flex: 1,
-    backgroundColor: '#FFFFFF',
+    backgroundColor: theme.colors.background,
   },
   content: {
     flex: 1,
   },
   navBar: {
     flexDirection: 'row',
-    paddingHorizontal: 16,
-    paddingVertical: 12,
-    borderTopWidth: StyleSheet.hairlineWidth,
-    borderTopColor: '#D1D5DB',
-    backgroundColor: '#FFFFFF',
-    gap: 8,
+    paddingHorizontal: theme.spacing.lg,
+    paddingVertical: theme.spacing.md,
+    borderTopWidth: 1,
+    borderTopColor: theme.colors.border,
+    backgroundColor: theme.colors.surface,
+    gap: theme.spacing.sm,
   },
   navButton: {
     flex: 1,
     alignItems: 'center',
     justifyContent: 'center',
-    paddingVertical: 10,
-    borderRadius: 10,
+    paddingVertical: theme.spacing.sm,
+    borderRadius: theme.radii.md,
   },
   navButtonActive: {
-    backgroundColor: '#E5E7EB',
+    backgroundColor: theme.colors.border,
   },
-  navLabel: {
-    fontSize: 14,
-    fontWeight: '600',
-    color: '#6B7280',
-  },
-  navLabelActive: {
-    color: '#111827',
-  },
-});
+}));

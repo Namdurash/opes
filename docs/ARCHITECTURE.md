@@ -103,7 +103,7 @@ src/
 
 - The app uses a token-based design system to keep UI consistent and easily changeable.
 - Tokens live in `src/shared/theme/` and are the only source of truth for:
-  - colors, typography, spacing, radii, shadows
+- colors, typography, spacing, radii, shadows
 - Feature screens must never hardcode styling constants (no raw hex colors, no direct font sizes).
 - Shared UI primitives in `src/shared/ui/` wrap React Native components and apply tokens by default.
 - A ThemeProvider provides `theme` via context and a `useTheme()` hook.

@@ -1,5 +1,7 @@
 import React from 'react';
-import { FlatList, StyleSheet, Text, View } from 'react-native';
+import { FlatList, View } from 'react-native';
+import { makeStyles } from '../../../shared/theme';
+import { AppText } from '../../../shared/ui';
 
 const ITEMS = [
   { id: '1', title: 'Groceries', amountLabel: '-$42.10' },
@@ -8,14 +10,16 @@ const ITEMS = [
 ];
 
 export function TransactionListPlaceholder() {
+  const styles = useStyles();
+
   return (
     <FlatList
       data={ITEMS}
       keyExtractor={item => item.id}
       renderItem={({ item }) => (
         <View style={styles.row}>
-          <Text style={styles.title}>{item.title}</Text>
-          <Text style={styles.amount}>{item.amountLabel}</Text>
+          <AppText>{item.title}</AppText>
+          <AppText style={styles.amount}>{item.amountLabel}</AppText>
         </View>
       )}
       ItemSeparatorComponent={ItemSeparator}
@@ -24,28 +28,23 @@ export function TransactionListPlaceholder() {
 }
 
 function ItemSeparator() {
+  const styles = useStyles();
   return <View style={styles.separator} />;
 }
 
-const styles = StyleSheet.create({
+const useStyles = makeStyles(theme => ({
   row: {
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'space-between',
-    paddingVertical: 12,
-  },
-  title: {
-    fontSize: 16,
-    color: '#111827',
-    fontWeight: '500',
+    paddingVertical: theme.spacing.md,
   },
   amount: {
-    fontSize: 16,
-    color: '#111827',
+    ...theme.typography.body,
     fontWeight: '600',
   },
   separator: {
-    height: StyleSheet.hairlineWidth,
-    backgroundColor: '#E5E7EB',
+    height: 1,
+    backgroundColor: theme.colors.border,
   },
-});
+}));

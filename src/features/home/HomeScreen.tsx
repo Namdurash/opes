@@ -1,29 +1,42 @@
 import React from 'react';
-import { StyleSheet, Text, View } from 'react-native';
-import { ScreenContainer } from '../../shared/ui';
+import { View } from 'react-native';
+import { makeStyles } from '../../shared/theme';
+import { AppText, Button, Screen } from '../../shared/ui';
 
 export function HomeScreen() {
+  const styles = useStyles();
+
   return (
-    <ScreenContainer>
+    <Screen>
       <View style={styles.wrapper}>
-        <Text style={styles.title}>Home</Text>
-        <Text style={styles.subtitle}>Overview placeholder for balances and monthly stats.</Text>
+        <AppText variant="h1">Home</AppText>
+        <AppText tone="secondary">
+          Overview placeholder for balances and monthly stats.
+        </AppText>
+
+        <View style={styles.quickActions}>
+          <AppText variant="h2">Quick Actions</AppText>
+          <View style={styles.quickActionsButton}>
+            <Button title="Add Transaction" onPress={() => {}} />
+          </View>
+        </View>
       </View>
-    </ScreenContainer>
+    </Screen>
   );
 }
 
-const styles = StyleSheet.create({
+const useStyles = makeStyles(theme => ({
   wrapper: {
-    gap: 8,
+    gap: theme.spacing.sm,
   },
-  title: {
-    fontSize: 24,
-    fontWeight: '700',
-    color: '#111827',
+  quickActions: {
+    backgroundColor: theme.colors.surface,
+    borderColor: theme.colors.border,
+    borderWidth: 1,
+    borderRadius: theme.radii.md,
+    padding: theme.spacing.md,
   },
-  subtitle: {
-    fontSize: 16,
-    color: '#4B5563',
+  quickActionsButton: {
+    marginTop: theme.spacing.sm,
   },
-});
+}));
