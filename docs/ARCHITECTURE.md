@@ -80,11 +80,12 @@ src/
 
 ## Navigation
 
-- MVP: no external navigation library.
-- Navigation state is managed in `AppShell.tsx` with a strictly limited route union type (e.g. `home`, `transactions`).
-- Hard rule: This approach is allowed only while the app has ≤ 2 primary routes.
-- Once the app grows beyond 2–3 screens or requires nested flows, we migrate to a dedicated navigation library (e.g. React Navigation).
-- Navigation logic must remain isolated from feature logic to allow future migration without rewriting features.
+- MVP uses React Navigation as the source of truth for navigation.
+- Root navigation is defined in `src/app/navigation/`.
+- Use a typed ParamList (TypeScript) for all routes.
+- Feature modules must not own navigation structure; they only define screens.
+- Navigation should remain replaceable without changing feature business logic.
+- All route names should be listed in separated const variable in separated module.
 
 ## Testing Strategy
 

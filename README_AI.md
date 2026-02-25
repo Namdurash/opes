@@ -68,6 +68,13 @@ All UI must use design tokens and shared UI primitives. Do not hardcode colors, 
 - Repository methods must be async (return Promise), even for in-memory implementations.
 - Domain types must not depend on React, React Native, or storage implementations.
 
+### Navigation
+
+- The app uses React Navigation (`@react-navigation/native`) as the only navigation mechanism.
+- Route types must be defined in a central typed ParamList under `src/app/navigation/`.
+- Feature screens may use `useNavigation` / `useRoute` (typed), but must not create navigators inside `src/features/**` unless explicitly requested.
+- Do not implement custom navigation state in components.
+
 ## How To Add A Feature
 
 1. Define/extend domain types in `src/domain` if needed.

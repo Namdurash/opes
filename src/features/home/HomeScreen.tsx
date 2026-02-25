@@ -1,9 +1,12 @@
 import React from 'react';
 import { View } from 'react-native';
+import { useNavigation } from '@react-navigation/native';
+import { HomeScreenNavigationProp, ROOT_ROUTES } from '../../app/navigation';
 import { makeStyles } from '../../shared/theme';
 import { AppText, Button, Screen } from '../../shared/ui';
 
 export function HomeScreen() {
+  const navigation = useNavigation<HomeScreenNavigationProp>();
   const styles = useStyles();
 
   return (
@@ -17,7 +20,10 @@ export function HomeScreen() {
         <View style={styles.quickActions}>
           <AppText variant="h2">Quick Actions</AppText>
           <View style={styles.quickActionsButton}>
-            <Button title="Add Transaction" onPress={() => {}} />
+            <Button
+              title="Go to Transactions"
+              onPress={() => navigation.navigate(ROOT_ROUTES.TRANSACTIONS)}
+            />
           </View>
         </View>
       </View>
