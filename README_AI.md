@@ -68,6 +68,56 @@ All UI must use design tokens and shared UI primitives. Do not hardcode colors, 
 - Repository methods must be async (return Promise), even for in-memory implementations.
 - Domain types must not depend on React, React Native, or storage implementations.
 
+## State Management (Zustand) — Source of Truth Rules
+
+We use Zustand for state management.
+
+### Principles
+
+- Local DB is the source of truth for domain entities (transactions, accounts, categories).
+- Zustand must NOT become a second database.
+- Zustand is used for:
+  - UI state (filters, sorting, selection, modal visibility)
+  - cross-feature settings (theme, currency, preferences)
+  - process state (import/sync jobs, progress, error/retry)
+  - drafts / forms state (before persisting)
+  - optional derived/cache state when it has immediate UX/perf value
+
+### Store Location & Naming
+
+- Cross-feature/global stores live in `src/stores/`.
+- Feature stores live in `src/features/<feature>/state/`.
+- Store file naming:
+  - `use<Feature>Store.ts` (e.g. `useTransactionsStore.ts`)
+  - For global: `useSettingsStore.ts`, `useJobsStore.ts`
+
+### Store Shape
+
+Stores must expose minimal state + explicit actions:
+
+- State: serializable and minimal.
+- Actions: `setX`, `reset`, `load`, `refresh`, `invalidate`, and CRUD methods as needed.
+- Selectors: prefer using store selectors in components to avoid over-rendering.
+
+### Data Access Rules
+
+- UI components must NEVER call repositories/storage directly.
+- All DB interactions happen in:
+  - repository layer (`src/services/**`)
+  - store actions (which call repositories)
+- Repository methods are async, so store actions that call repositories must be async too.
+
+### Avoiding Anti-Patterns
+
+- Do not keep full domain tables mirrored in Zustand unless explicitly required.
+- Do not create one “mega store” for the entire app.
+- Do not store non-essential derived data unless it prevents expensive recomputation or improves UX.
+
+### Testing Expectations
+
+- Unit-test store actions that include non-trivial logic (loading, invalidation, job state transitions).
+- Prefer deterministic tests by mocking repositories.
+
 ### Navigation
 
 - The app uses React Navigation (`@react-navigation/native`) as the only navigation mechanism.

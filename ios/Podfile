@@ -14,6 +14,8 @@ if linkage != nil
   use_frameworks! :linkage => linkage.to_sym
 end
 
+pod 'simdjson', path: '../node_modules/@nozbe/simdjson', modular_headers: true
+
 target 'opes' do
   config = use_native_modules!
 

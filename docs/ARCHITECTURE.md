@@ -34,7 +34,7 @@ src/
     transactions/
       types.ts
       index.ts
-  state/
+  stores/
     store.ts
     index.ts
   services/
@@ -51,18 +51,43 @@ src/
       index.ts
 ```
 
-## State Management
+## State Management (Zustand)
 
-- MVP: local React state managed centrally in app-level state (`src/state/store.ts`).
-- Pattern: reducer + actions to keep state transitions explicit.
-- Feature components receive data/actions via props or hooks.
-- This avoids external state libraries while staying scalable.
+- We use Zustand for application state orchestration.
+- Local database remains the source of truth for domain data (transactions, accounts, categories).
+- Zustand is NOT a mirror of the database. It stores:
+  - UI state (filters, sort, selected period, modal state)
+  - Cross-feature concerns (theme, settings)
+  - Long-running processes (import/sync jobs, progress, error states)
+  - Draft/temporary states (forms, multi-step flows) before persisting to DB
+  - Optional derived/cache state for performance (aggregations, computed summaries), with explicit invalidation
 
 ### State Boundaries
 
-- Global app state (`src/state`) is reserved only for cross-feature concerns (e.g. settings, selected filters, theme).
-- Feature-specific data (e.g. transactions list) should be accessed via repositories and feature-level hooks.
-- Avoid putting all domain data into a single global reducer.
+- **Domain data** must be read/written via repositories (`src/services/**`) only.
+- **Zustand stores** must not contain direct storage calls in components; use store actions that call repositories.
+- **Feature-specific UI state** should live in a feature store under `src/features/<feature>/state/`.
+- **Cross-feature global state** lives under `src/stores/` (settings/theme/global filters/jobs).
+
+### Store Design Rules
+
+- Stores must expose:
+  - `state` (minimal, serializable when possible)
+  - `actions` (imperative methods that change state and call repositories)
+- Prefer multiple small stores over one large global store.
+- Keep actions predictable:
+  - `setX(...)` for pure UI state
+  - `loadX(...)`, `refreshX(...)` for repository-driven reads
+  - `create/update/delete` methods call repositories and then update UI state / trigger invalidation
+- Avoid storing large lists in global state unless required for UX/performance. Prefer querying DB per screen and using local selectors.
+
+### Invalidation / Refresh Strategy
+
+- If using non-reactive storage (e.g., SQLite without live queries), stores must expose `invalidate()` / `refresh()` methods.
+- After repository writes, actions should:
+  - update relevant UI state (e.g. close modal, clear draft)
+  - trigger `invalidate()` for dependent selectors/screens
+- If storage is reactive (Realm/WatermelonDB), store state can be reduced to UI and subscription lifecycle management.
 
 ## Local Storage Strategy
 
