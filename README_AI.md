@@ -26,8 +26,10 @@ This file defines how AI agents should contribute to this repository.
 - Feature code is grouped by feature under `src/features`.
 - Shared UI and cross-feature utilities live under `src/shared`.
 - Domain models/types live under `src/domain`.
+- Repository classes live under `src/models`.
 - State and app-level orchestration live under `src/state` and `src/app`.
 - Storage access is abstracted behind interfaces in `src/services/storage`.
+- All repositories should be placed in `/src/models` folder.
 
 ## Design System (Source of Truth)
 
@@ -103,7 +105,7 @@ Stores must expose minimal state + explicit actions:
 
 - UI components must NEVER call repositories/storage directly.
 - All DB interactions happen in:
-  - repository layer (`src/services/**`)
+  - repository layer (`src/models/**`)
   - store actions (which call repositories)
 - Repository methods are async, so store actions that call repositories must be async too.
 
@@ -131,10 +133,11 @@ Stores must expose minimal state + explicit actions:
 2. Add feature folder in `src/features/<feature-name>`.
 3. Create screen/component files inside that feature.
 4. Add or extend state logic in `src/state` only if required by the feature.
-5. Integrate with storage via `src/services/storage` interfaces (not direct storage calls from UI).
-6. Wire into app navigation in `src/app`.
-7. Add/update tests for logic and critical rendering paths.
-8. Update docs when structure or behavior changes.
+5. Add repositories in `src/models/<feature>` and keep all DB access there.
+6. Integrate repositories with storage/services (not direct storage calls from UI).
+7. Wire into app navigation in `src/app`.
+8. Add/update tests for logic and critical rendering paths.
+9. Update docs when structure or behavior changes.
 
 ## Definition of Done (DoD)
 

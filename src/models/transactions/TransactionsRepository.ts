@@ -1,5 +1,5 @@
 import { Transaction } from '../../domain/transactions';
-import { StorageGateway } from '../storage';
+import { StorageGateway } from '../../services/storage';
 
 const TRANSACTIONS_KEY = 'transactions';
 

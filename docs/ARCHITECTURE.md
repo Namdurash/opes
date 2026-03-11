@@ -34,6 +34,9 @@ src/
     transactions/
       types.ts
       index.ts
+  models/
+    transactions/
+      TransactionsRepository.ts
   stores/
     store.ts
     index.ts
@@ -41,9 +44,6 @@ src/
     storage/
       StorageGateway.ts
       InMemoryStorage.ts
-      index.ts
-    transactions/
-      TransactionsRepository.ts
       index.ts
   shared/
     ui/
@@ -64,10 +64,11 @@ src/
 
 ### State Boundaries
 
-- **Domain data** must be read/written via repositories (`src/services/**`) only.
+- **Domain data** must be read/written via repositories (`src/models/**`) only.
 - **Zustand stores** must not contain direct storage calls in components; use store actions that call repositories.
 - **Feature-specific UI state** should live in a feature store under `src/features/<feature>/state/`.
 - **Cross-feature global state** lives under `src/stores/` (settings/theme/global filters/jobs).
+- All repositories should be placed in `/src/models` folder.
 
 ### Store Design Rules
 
@@ -94,7 +95,7 @@ src/
 - Use a storage gateway interface (`StorageGateway`) with minimal CRUD methods.
 - Start with in-memory adapter for scaffolding and tests.
 - Later swap to persistent adapter (for example MMKV/SQLite/AsyncStorage) without changing feature logic.
-- Repositories (`src/services/transactions`) map domain entities to storage records.
+- Repositories (`src/models/**`) map domain entities to storage records.
 
 ### Storage Design Rules
 

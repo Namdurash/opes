@@ -1,21 +1,70 @@
 import React from 'react';
+import { View } from 'react-native';
 import { createNativeStackNavigator } from '@react-navigation/native-stack';
 import { HomeScreen } from '../../features/home';
 import { TransactionsScreen } from '../../features/transactions';
+import { RegistrationScreen } from '../../features/registration';
 import { ROOT_ROUTES } from './routes';
 import { RootStackParamList } from './types';
+import { useAuthStore } from '../../stores/useAuthStore';
+import { AppText, Screen } from '../../shared/ui';
+import { makeStyles } from '../../shared/theme';
 
 const Stack = createNativeStackNavigator<RootStackParamList>();
 
 export function RootNavigator() {
+  const status = useAuthStore(state => state.status);
+  const bootstrap = useAuthStore(state => state.bootstrap);
+  const styles = useStyles();
+
+  React.useEffect(() => {
+    bootstrap();
+  }, [bootstrap]);
+
+  if (status === 'checking') {
+    return (
+      <Screen>
+        <View style={styles.centered}>
+          <AppText>Loading...</AppText>
+        </View>
+      </Screen>
+    );
+  }
+
   return (
-    <Stack.Navigator initialRouteName={ROOT_ROUTES.HOME}>
-      <Stack.Screen component={HomeScreen} name={ROOT_ROUTES.HOME} options={{ title: 'Home' }} />
-      <Stack.Screen
-        component={TransactionsScreen}
-        name={ROOT_ROUTES.TRANSACTIONS}
-        options={{ title: 'Transactions' }}
-      />
+    <Stack.Navigator
+      initialRouteName={
+        status === 'registered' ? ROOT_ROUTES.HOME : ROOT_ROUTES.REGISTRATION
+      }
+    >
+      {status === 'registered' ? (
+        <>
+          <Stack.Screen
+            component={HomeScreen}
+            name={ROOT_ROUTES.HOME}
+            options={{ title: 'Home' }}
+          />
+          <Stack.Screen
+            component={TransactionsScreen}
+            name={ROOT_ROUTES.TRANSACTIONS}
+            options={{ title: 'Transactions' }}
+          />
+        </>
+      ) : (
+        <Stack.Screen
+          component={RegistrationScreen}
+          name={ROOT_ROUTES.REGISTRATION}
+          options={{ title: 'Registration' }}
+        />
+      )}
     </Stack.Navigator>
   );
 }
+
+const useStyles = makeStyles(() => ({
+  centered: {
+    flex: 1,
+    justifyContent: 'center',
+    alignItems: 'center',
+  },
+}));
