@@ -11,6 +11,7 @@ export interface CreateUserInput {
 export interface UsersRepositoryContract {
   create(input: CreateUserInput): Promise<User>;
   hasAnyUser(): Promise<boolean>;
+  findByName(name: string): Promise<User | null>;
 }
 
 function toDomain(model: UserModel): User {
@@ -43,5 +44,12 @@ export class UsersRepository implements UsersRepositoryContract {
     const users = await usersCollection.query(Q.take(1)).fetch();
 
     return users.length > 0;
+  }
+
+  async findByName(name: string): Promise<User | null> {
+    const usersCollection = database.get<UserModel>('users');
+    const users = await usersCollection.query(Q.where('name', name), Q.take(1)).fetch();
+
+    return users.length > 0 ? toDomain(users[0]) : null;
   }
 }

@@ -4,9 +4,11 @@ import { useNavigation } from '@react-navigation/native';
 import { HomeScreenNavigationProp, ROOT_ROUTES } from '../../app/navigation';
 import { makeStyles } from '../../shared/theme';
 import { AppText, Button, Screen } from '../../shared/ui';
+import { useAuthStore } from '../../stores/useAuthStore';
 
 export function HomeScreen() {
   const navigation = useNavigation<HomeScreenNavigationProp>();
+  const signOut = useAuthStore(state => state.signOut);
   const styles = useStyles();
 
   return (
@@ -26,6 +28,10 @@ export function HomeScreen() {
             />
           </View>
         </View>
+
+        <View style={styles.signOutContainer}>
+          <Button title="Sign out" onPress={() => void signOut()} variant="secondary" />
+        </View>
       </View>
     </Screen>
   );
@@ -33,6 +39,7 @@ export function HomeScreen() {
 
 const useStyles = makeStyles(theme => ({
   wrapper: {
+    flex: 1,
     gap: theme.spacing.sm,
   },
   quickActions: {
@@ -44,5 +51,10 @@ const useStyles = makeStyles(theme => ({
   },
   quickActionsButton: {
     marginTop: theme.spacing.sm,
+  },
+  signOutContainer: {
+    flex: 1,
+    justifyContent: 'center',
+    alignItems: 'center',
   },
 }));

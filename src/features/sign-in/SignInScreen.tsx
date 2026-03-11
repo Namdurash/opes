@@ -2,29 +2,24 @@ import React from 'react';
 import { TextInput, View } from 'react-native';
 import { useNavigation } from '@react-navigation/native';
 import { AppText, Button, Screen } from '../../shared/ui';
-import { useRegistrationStore } from './state/useRegistrationStore';
-import { useRegistrationStyles } from './RegistrationScreen.styles';
 import { useAuthStore } from '../../stores/useAuthStore';
-import { ROOT_ROUTES, RegistrationScreenNavigationProp } from '../../app/navigation';
+import { ROOT_ROUTES, SignInScreenNavigationProp } from '../../app/navigation';
+import { useSignInStore } from './state/useSignInStore';
+import { useSignInStyles } from './SignInScreen.styles';
 
-export function RegistrationScreen() {
-  const styles = useRegistrationStyles();
+export function SignInScreen() {
+  const styles = useSignInStyles();
   const markRegistered = useAuthStore(state => state.markRegistered);
-  const navigation = useNavigation<RegistrationScreenNavigationProp>();
-
+  const navigation = useNavigation<SignInScreenNavigationProp>();
   const {
     name,
     password,
-    cardName,
-    isCardVisible,
     isSubmitting,
     errorMessage,
     setName,
     setPassword,
-    setCardName,
-    showCardField,
     submit,
-  } = useRegistrationStore();
+  } = useSignInStore();
 
   const onSubmit = async () => {
     const success = await submit();
@@ -36,8 +31,8 @@ export function RegistrationScreen() {
   return (
     <Screen>
       <View style={styles.content}>
-        <AppText variant="h1">Registration</AppText>
-        <AppText tone="secondary">Create your local profile to continue.</AppText>
+        <AppText variant="h1">Sign in</AppText>
+        <AppText tone="secondary">Use your existing local profile to continue.</AppText>
 
         <View style={styles.card}>
           <View>
@@ -66,28 +61,12 @@ export function RegistrationScreen() {
             />
           </View>
 
-          {isCardVisible ? (
-            <View>
-              <AppText variant="caption" tone="secondary" style={styles.sectionHeader}>
-                Card name
-              </AppText>
-              <TextInput
-                onChangeText={setCardName}
-                placeholder="Enter card name"
-                style={styles.input}
-                value={cardName}
-              />
-            </View>
-          ) : (
-            <Button onPress={showCardField} style={styles.addCardButton} title="Add card" variant="secondary" />
-          )}
-
           {errorMessage ? <AppText style={styles.error}>{errorMessage}</AppText> : null}
 
-          <Button loading={isSubmitting} onPress={onSubmit} title="Continue" />
+          <Button loading={isSubmitting} onPress={onSubmit} title="Sign in" />
           <Button
-            onPress={() => navigation.navigate(ROOT_ROUTES.SIGN_IN)}
-            title="Sign in"
+            onPress={() => navigation.navigate(ROOT_ROUTES.REGISTRATION)}
+            title="Sign up"
             variant="secondary"
           />
         </View>

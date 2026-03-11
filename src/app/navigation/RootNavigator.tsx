@@ -4,6 +4,7 @@ import { createNativeStackNavigator } from '@react-navigation/native-stack';
 import { HomeScreen } from '../../features/home';
 import { TransactionsScreen } from '../../features/transactions';
 import { RegistrationScreen } from '../../features/registration';
+import { SignInScreen } from '../../features/sign-in';
 import { ROOT_ROUTES } from './routes';
 import { RootStackParamList } from './types';
 import { useAuthStore } from '../../stores/useAuthStore';
@@ -34,7 +35,7 @@ export function RootNavigator() {
   return (
     <Stack.Navigator
       initialRouteName={
-        status === 'registered' ? ROOT_ROUTES.HOME : ROOT_ROUTES.REGISTRATION
+        status === 'registered' ? ROOT_ROUTES.HOME : ROOT_ROUTES.SIGN_IN
       }
     >
       {status === 'registered' ? (
@@ -51,11 +52,18 @@ export function RootNavigator() {
           />
         </>
       ) : (
-        <Stack.Screen
-          component={RegistrationScreen}
-          name={ROOT_ROUTES.REGISTRATION}
-          options={{ title: 'Registration' }}
-        />
+        <>
+          <Stack.Screen
+            component={SignInScreen}
+            name={ROOT_ROUTES.SIGN_IN}
+            options={{ title: 'Sign in' }}
+          />
+          <Stack.Screen
+            component={RegistrationScreen}
+            name={ROOT_ROUTES.REGISTRATION}
+            options={{ title: 'Registration' }}
+          />
+        </>
       )}
     </Stack.Navigator>
   );

@@ -8,6 +8,7 @@ interface AuthStoreState {
   status: AuthStatus;
   bootstrap: () => Promise<void>;
   markRegistered: () => void;
+  signOut: () => Promise<void>;
 }
 
 interface AuthStoreDeps {
@@ -34,6 +35,10 @@ export function createAuthStore(deps: AuthStoreDeps) {
     },
     markRegistered: () => {
       set({ status: 'registered' });
+    },
+    signOut: async () => {
+      await deps.tokenStorageService.clear();
+      set({ status: 'unregistered' });
     },
   }));
 }

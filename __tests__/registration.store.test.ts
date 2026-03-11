@@ -5,6 +5,7 @@ describe('registration store', () => {
     const usersRepository = {
       create: jest.fn(),
       hasAnyUser: jest.fn(),
+      findByName: jest.fn(),
     };
     const cardsRepository = { create: jest.fn() };
     const tokenStorageService = {
@@ -34,6 +35,7 @@ describe('registration store', () => {
     const usersRepository = {
       create: jest.fn().mockResolvedValue({ id: 'user-1' }),
       hasAnyUser: jest.fn(),
+      findByName: jest.fn(),
     };
     const cardsRepository = {
       create: jest.fn().mockResolvedValue({ id: 'card-1' }),
