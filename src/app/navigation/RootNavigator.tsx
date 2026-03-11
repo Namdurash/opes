@@ -37,6 +37,7 @@ export function RootNavigator() {
       initialRouteName={
         status === 'registered' ? ROOT_ROUTES.HOME : ROOT_ROUTES.SIGN_IN
       }
+      screenOptions={{ headerShown: false }}
     >
       {status === 'registered' ? (
         <>

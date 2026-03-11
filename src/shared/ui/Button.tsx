@@ -70,7 +70,7 @@ const useStyles = makeStyles(theme => ({
     backgroundColor: theme.colors.ctaSoft,
   },
   secondary: {
-    backgroundColor: theme.colors.surface,
+    backgroundColor: theme.colors.secondary,
     borderWidth: 1,
     borderColor: theme.colors.border,
   },

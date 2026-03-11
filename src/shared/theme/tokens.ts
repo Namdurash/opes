@@ -7,6 +7,7 @@ export const tokens = {
     ctaSoft: '#14B8A6',
     background: '#FFFFFF',
     surface: '#F3F4F6',
+    secondary: '#DBEAFE',
     border: '#E5E7EB',
     error: '#DC2626',
     textPrimary: '#111827',
