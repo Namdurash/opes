@@ -1,6 +1,7 @@
 import React from 'react';
 import { View } from 'react-native';
 import { createNativeStackNavigator } from '@react-navigation/native-stack';
+import { CreateCardScreen } from '../../features/cards';
 import { HomeScreen } from '../../features/home';
 import { TransactionsScreen } from '../../features/transactions';
 import { RegistrationScreen } from '../../features/registration';
@@ -50,6 +51,11 @@ export function RootNavigator() {
             component={TransactionsScreen}
             name={ROOT_ROUTES.TRANSACTIONS}
             options={{ title: 'Transactions' }}
+          />
+          <Stack.Screen
+            component={CreateCardScreen}
+            name={ROOT_ROUTES.CREATE_CARD}
+            options={{ headerShown: true, title: 'Create card' }}
           />
         </>
       ) : (

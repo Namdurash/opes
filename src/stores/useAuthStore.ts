@@ -6,8 +6,9 @@ export type AuthStatus = 'checking' | 'registered' | 'unregistered';
 
 interface AuthStoreState {
   status: AuthStatus;
+  currentUserId: string | null;
   bootstrap: () => Promise<void>;
-  markRegistered: () => void;
+  markRegistered: (userId: string) => void;
   signOut: () => Promise<void>;
 }
 
@@ -19,26 +20,34 @@ interface AuthStoreDeps {
 export function createAuthStore(deps: AuthStoreDeps) {
   return create<AuthStoreState>(set => ({
     status: 'checking',
+    currentUserId: null,
     bootstrap: async () => {
       set({ status: 'checking' });
 
       try {
-        const [validToken, hasUser] = await Promise.all([
-          deps.tokenStorageService.getValidToken(),
-          deps.usersRepository.hasAnyUser(),
-        ]);
+        const validToken = await deps.tokenStorageService.getValidToken();
 
-        set({ status: validToken && hasUser ? 'registered' : 'unregistered' });
+        if (!validToken) {
+          set({ status: 'unregistered', currentUserId: null });
+          return;
+        }
+
+        const user = await deps.usersRepository.findById(validToken.token);
+
+        set({
+          status: user ? 'registered' : 'unregistered',
+          currentUserId: user?.id ?? null,
+        });
       } catch {
-        set({ status: 'unregistered' });
+        set({ status: 'unregistered', currentUserId: null });
       }
     },
-    markRegistered: () => {
-      set({ status: 'registered' });
+    markRegistered: (userId: string) => {
+      set({ status: 'registered', currentUserId: userId });
     },
     signOut: async () => {
       await deps.tokenStorageService.clear();
-      set({ status: 'unregistered' });
+      set({ status: 'unregistered', currentUserId: null });
     },
   }));
 }

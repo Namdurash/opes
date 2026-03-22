@@ -22,9 +22,9 @@ export function SignInScreen() {
   } = useSignInStore();
 
   const onSubmit = async () => {
-    const success = await submit();
-    if (success) {
-      markRegistered();
+    const userId = await submit();
+    if (userId) {
+      markRegistered(userId);
     }
   };
 

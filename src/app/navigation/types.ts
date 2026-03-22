@@ -6,6 +6,7 @@ export type RootStackParamList = {
   [ROOT_ROUTES.REGISTRATION]: undefined;
   [ROOT_ROUTES.HOME]: undefined;
   [ROOT_ROUTES.TRANSACTIONS]: undefined;
+  [ROOT_ROUTES.CREATE_CARD]: undefined;
 };
 
 export type SignInScreenNavigationProp = NativeStackNavigationProp<
@@ -24,4 +25,8 @@ export type HomeScreenNavigationProp = NativeStackNavigationProp<
 export type TransactionsScreenNavigationProp = NativeStackNavigationProp<
   RootStackParamList,
   typeof ROOT_ROUTES.TRANSACTIONS
+>;
+export type CreateCardScreenNavigationProp = NativeStackNavigationProp<
+  RootStackParamList,
+  typeof ROOT_ROUTES.CREATE_CARD
 >;

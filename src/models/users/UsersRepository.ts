@@ -11,6 +11,7 @@ export interface CreateUserInput {
 export interface UsersRepositoryContract {
   create(input: CreateUserInput): Promise<User>;
   hasAnyUser(): Promise<boolean>;
+  findById(id: string): Promise<User | null>;
   findByName(name: string): Promise<User | null>;
 }
 
@@ -44,6 +45,17 @@ export class UsersRepository implements UsersRepositoryContract {
     const users = await usersCollection.query(Q.take(1)).fetch();
 
     return users.length > 0;
+  }
+
+  async findById(id: string): Promise<User | null> {
+    const usersCollection = database.get<UserModel>('users');
+
+    try {
+      const user = await usersCollection.find(id);
+      return toDomain(user);
+    } catch {
+      return null;
+    }
   }
 
   async findByName(name: string): Promise<User | null> {

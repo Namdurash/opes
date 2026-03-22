@@ -12,7 +12,7 @@ export interface SignInStoreState {
   errorMessage: string | null;
   setName: (value: string) => void;
   setPassword: (value: string) => void;
-  submit: () => Promise<boolean>;
+  submit: () => Promise<string | null>;
   reset: () => void;
 }
 
@@ -55,7 +55,7 @@ export function createSignInStore(deps: SignInStoreDeps) {
 
       if (validationError) {
         set({ errorMessage: validationError });
-        return false;
+        return null;
       }
 
       set({ isSubmitting: true, errorMessage: null });
@@ -66,17 +66,17 @@ export function createSignInStore(deps: SignInStoreDeps) {
 
         if (!user || user.passwordHash !== passwordHash) {
           set({ errorMessage: 'Invalid name or password.' });
-          return false;
+          return null;
         }
 
-        await deps.tokenStorageService.saveToken(undefined, FIVE_DAYS_MS);
+        await deps.tokenStorageService.saveToken(user.id, FIVE_DAYS_MS);
         deps.onSuccess?.();
         set(initialState);
 
-        return true;
+        return user.id;
       } catch {
         set({ errorMessage: 'Sign in failed. Please try again.' });
-        return false;
+        return null;
       } finally {
         set({ isSubmitting: false });
       }

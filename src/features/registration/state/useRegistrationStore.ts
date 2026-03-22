@@ -17,7 +17,7 @@ export interface RegistrationStoreState {
   setPassword: (value: string) => void;
   setCardName: (value: string) => void;
   showCardField: () => void;
-  submit: () => Promise<boolean>;
+  submit: () => Promise<string | null>;
   reset: () => void;
 }
 
@@ -71,7 +71,7 @@ export function createRegistrationStore(deps: RegistrationStoreDeps) {
 
       if (validationError) {
         set({ errorMessage: validationError });
-        return false;
+        return null;
       }
 
       set({ isSubmitting: true, errorMessage: null });
@@ -83,21 +83,24 @@ export function createRegistrationStore(deps: RegistrationStoreDeps) {
         });
 
         if (current.isCardVisible) {
-          await deps.cardsRepository.create({
+          await deps.cardsRepository.createCard({
             userId: user.id,
-            cardName: current.cardName.trim(),
+            title: current.cardName.trim(),
+            moneyAmount: 0,
+            type: 'storage',
+            image: null,
           });
         }
 
-        await deps.tokenStorageService.saveToken(undefined, FIVE_DAYS_MS);
+        await deps.tokenStorageService.saveToken(user.id, FIVE_DAYS_MS);
         deps.onSuccess?.();
 
         set(initialState);
 
-        return true;
+        return user.id;
       } catch {
         set({ errorMessage: 'Registration failed. Please try again.' });
-        return false;
+        return null;
       } finally {
         set({ isSubmitting: false });
       }

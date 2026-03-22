@@ -1,6 +1,7 @@
 import { Database } from '@nozbe/watermelondb';
 import { DatabaseAdapter } from '@nozbe/watermelondb/adapters/type';
 import { CardModel, UserModel } from './models';
+import { databaseMigrations } from './migrations';
 import { databaseSchema } from './schema';
 
 const isJestEnvironment = typeof jest !== 'undefined';
@@ -14,6 +15,7 @@ function createAdapter(): DatabaseAdapter {
 
     return new LokiJSAdapter({
       schema: databaseSchema,
+      migrations: databaseMigrations,
       useWebWorker: false,
       useIncrementalIndexedDB: false,
     });
@@ -26,6 +28,7 @@ function createAdapter(): DatabaseAdapter {
 
   return new SQLiteAdapter({
     schema: databaseSchema,
+    migrations: databaseMigrations,
     jsi: true,
     dbName: 'opes',
     onSetUpError: (error: unknown) => {

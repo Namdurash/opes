@@ -6,6 +6,7 @@ describe('sign-in store', () => {
     const usersRepository = {
       create: jest.fn(),
       hasAnyUser: jest.fn(),
+      findById: jest.fn(),
       findByName: jest.fn(),
     };
     const tokenStorageService = {
@@ -21,7 +22,7 @@ describe('sign-in store', () => {
 
     const success = await store.getState().submit();
 
-    expect(success).toBe(false);
+    expect(success).toBeNull();
     expect(store.getState().errorMessage).toBe('Name is required.');
     expect(usersRepository.findByName).not.toHaveBeenCalled();
   });
@@ -30,6 +31,7 @@ describe('sign-in store', () => {
     const usersRepository = {
       create: jest.fn(),
       hasAnyUser: jest.fn(),
+      findById: jest.fn(),
       findByName: jest.fn().mockResolvedValue({
         id: 'user-1',
         name: 'Alex',
@@ -52,7 +54,7 @@ describe('sign-in store', () => {
 
     const success = await store.getState().submit();
 
-    expect(success).toBe(false);
+    expect(success).toBeNull();
     expect(store.getState().errorMessage).toBe('Invalid name or password.');
     expect(tokenStorageService.saveToken).not.toHaveBeenCalled();
   });
@@ -61,6 +63,7 @@ describe('sign-in store', () => {
     const usersRepository = {
       create: jest.fn(),
       hasAnyUser: jest.fn(),
+      findById: jest.fn(),
       findByName: jest.fn().mockResolvedValue({
         id: 'user-1',
         name: 'Alex',
@@ -85,9 +88,12 @@ describe('sign-in store', () => {
 
     const success = await store.getState().submit();
 
-    expect(success).toBe(true);
+    expect(success).toBe('user-1');
     expect(usersRepository.findByName).toHaveBeenCalledWith('Alex');
-    expect(tokenStorageService.saveToken).toHaveBeenCalledTimes(1);
+    expect(tokenStorageService.saveToken).toHaveBeenCalledWith(
+      'user-1',
+      5 * 24 * 60 * 60 * 1000,
+    );
     expect(tokenStorageService.saveToken.mock.calls[0][1]).toBe(5 * 24 * 60 * 60 * 1000);
     expect(onSuccess).toHaveBeenCalledTimes(1);
   });

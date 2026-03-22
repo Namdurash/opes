@@ -1,34 +1,55 @@
-import { Card } from '../../domain/auth';
+import { Q } from '@nozbe/watermelondb';
+import { Card, CardType } from '../../domain/auth';
 import { database } from '../../services/database';
 import { CardModel } from '../../services/database/models';
 
 export interface CreateCardInput {
   userId: string;
-  cardName: string;
+  title: string;
+  moneyAmount: number;
+  type: CardType;
+  image?: string | null;
 }
 
 export interface CardsRepositoryContract {
-  create(input: CreateCardInput): Promise<Card>;
+  getCardsByUser(userId: string): Promise<Card[]>;
+  createCard(input: CreateCardInput): Promise<Card>;
 }
 
 function toDomain(model: CardModel): Card {
   return {
     id: model.id,
     userId: model.userId,
-    cardName: model.cardName,
+    title: model.title || model.legacyCardName,
+    moneyAmount: model.moneyAmount,
+    type: model.type as CardType,
+    image: model.image ?? null,
     createdAt: model.createdAt,
   };
 }
 
 export class CardsRepository implements CardsRepositoryContract {
-  async create(input: CreateCardInput): Promise<Card> {
+  async getCardsByUser(userId: string): Promise<Card[]> {
+    const collection = database.get<CardModel>('cards');
+    const cards = await collection
+      .query(Q.where('user_id', userId), Q.sortBy('created_at', Q.asc))
+      .fetch();
+
+    return cards.map(toDomain);
+  }
+
+  async createCard(input: CreateCardInput): Promise<Card> {
     const collection = database.get<CardModel>('cards');
     const createdAt = Date.now();
 
     const card = await database.write(async () => {
       return collection.create(record => {
         record.userId = input.userId;
-        record.cardName = input.cardName;
+        record.legacyCardName = input.title;
+        record.title = input.title;
+        record.moneyAmount = input.moneyAmount;
+        record.type = input.type;
+        record.image = input.image ?? null;
         record.createdAt = createdAt;
       });
     });

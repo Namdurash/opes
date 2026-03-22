@@ -1,23 +1,41 @@
 import React from 'react';
-import { View } from 'react-native';
+import { ScrollView, View } from 'react-native';
 import { useNavigation } from '@react-navigation/native';
-import { HomeScreenNavigationProp, ROOT_ROUTES } from '../../app/navigation';
-import { makeStyles } from '../../shared/theme';
+import { ROOT_ROUTES, HomeScreenNavigationProp } from '../../app/navigation';
+import { CardStack } from '../cards';
 import { AppText, Button, Screen } from '../../shared/ui';
 import { useAuthStore } from '../../stores/useAuthStore';
+import { useCardsStore } from '../cards/state/useCardsStore';
+import { useHomeScreenStyles } from './HomeScreen.styles';
 
 export function HomeScreen() {
   const navigation = useNavigation<HomeScreenNavigationProp>();
+  const styles = useHomeScreenStyles();
   const signOut = useAuthStore(state => state.signOut);
-  const styles = useStyles();
+  const currentUserId = useAuthStore(state => state.currentUserId);
+  const cards = useCardsStore(state => state.cards);
+  const isLoading = useCardsStore(state => state.isLoading);
+  const errorMessage = useCardsStore(state => state.errorMessage);
+  const loadCardsByUser = useCardsStore(state => state.loadCardsByUser);
+
+  React.useEffect(() => {
+    if (currentUserId) {
+      void loadCardsByUser(currentUserId);
+    }
+  }, [currentUserId, loadCardsByUser]);
 
   return (
     <Screen>
-      <View style={styles.wrapper}>
-        <AppText variant="h1">Home</AppText>
-        <AppText tone="secondary">
-          Overview placeholder for balances and monthly stats.
-        </AppText>
+      <ScrollView contentContainerStyle={styles.content} showsVerticalScrollIndicator={false}>
+        <View style={styles.header}>
+          <AppText variant="h1">Home</AppText>
+          <AppText tone="secondary">Track your cards and move quickly between flows.</AppText>
+        </View>
+
+        {isLoading ? <AppText tone="secondary">Loading cards...</AppText> : null}
+        {errorMessage ? <AppText style={styles.error}>{errorMessage}</AppText> : null}
+        {cards.length > 0 ? <CardStack cards={cards} /> : null}
+        <Button onPress={() => navigation.navigate(ROOT_ROUTES.CREATE_CARD)} title="Create card" />
 
         <View style={styles.quickActions}>
           <AppText variant="h2">Quick Actions</AppText>
@@ -25,36 +43,13 @@ export function HomeScreen() {
             <Button
               title="Go to Transactions"
               onPress={() => navigation.navigate(ROOT_ROUTES.TRANSACTIONS)}
+              variant="secondary"
             />
           </View>
         </View>
 
-        <View style={styles.signOutContainer}>
-          <Button title="Sign out" onPress={() => void signOut()} variant="secondary" />
-        </View>
-      </View>
+        <Button title="Sign out" onPress={() => void signOut()} variant="secondary" />
+      </ScrollView>
     </Screen>
   );
 }
-
-const useStyles = makeStyles(theme => ({
-  wrapper: {
-    flex: 1,
-    gap: theme.spacing.sm,
-  },
-  quickActions: {
-    backgroundColor: theme.colors.surface,
-    borderColor: theme.colors.border,
-    borderWidth: 1,
-    borderRadius: theme.radii.md,
-    padding: theme.spacing.md,
-  },
-  quickActionsButton: {
-    marginTop: theme.spacing.sm,
-  },
-  signOutContainer: {
-    flex: 1,
-    justifyContent: 'center',
-    alignItems: 'center',
-  },
-}));
