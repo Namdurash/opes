@@ -18,6 +18,7 @@ interface CardsStoreState {
   setErrorMessage: (value: string | null) => void;
   loadCardsByUser: (userId: string) => Promise<void>;
   createCard: (userId: string) => Promise<Card | null>;
+  reorderCards: (newOrder: Card[]) => Promise<void>;
   resetForm: () => void;
 }
 
@@ -107,6 +108,14 @@ export function createCardsStore(deps: CardsStoreDeps) {
         return null;
       } finally {
         set({ isSubmitting: false });
+      }
+    },
+    reorderCards: async newOrder => {
+      set({ cards: newOrder });
+      try {
+        await deps.cardsRepository.reorderCards(newOrder.map(c => c.id));
+      } catch {
+        set({ errorMessage: 'Failed to save card order.' });
       }
     },
     resetForm: () =>

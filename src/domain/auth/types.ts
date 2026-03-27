@@ -15,4 +15,5 @@ export interface Card {
   type: CardType;
   image: string | null;
   createdAt: number;
+  sortOrder: number;
 }

@@ -11,4 +11,5 @@ export class CardModel extends Model {
   @field('type') type!: string;
   @field('image') image!: string | null;
   @field('created_at') createdAt!: number;
+  @field('sort_order') sortOrder!: number;
 }

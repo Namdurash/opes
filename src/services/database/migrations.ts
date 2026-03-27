@@ -3,6 +3,15 @@ import { addColumns, schemaMigrations } from '@nozbe/watermelondb/Schema/migrati
 export const databaseMigrations = schemaMigrations({
   migrations: [
     {
+      toVersion: 3,
+      steps: [
+        addColumns({
+          table: 'cards',
+          columns: [{ name: 'sort_order', type: 'number' }],
+        }),
+      ],
+    },
+    {
       toVersion: 2,
       steps: [
         addColumns({

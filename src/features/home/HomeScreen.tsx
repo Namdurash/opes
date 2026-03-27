@@ -17,16 +17,17 @@ export function HomeScreen() {
   const isLoading = useCardsStore(state => state.isLoading);
   const errorMessage = useCardsStore(state => state.errorMessage);
   const loadCardsByUser = useCardsStore(state => state.loadCardsByUser);
+  const [scrollEnabled, setScrollEnabled] = React.useState(true);
 
   React.useEffect(() => {
     if (currentUserId) {
-      void loadCardsByUser(currentUserId);
+      loadCardsByUser(currentUserId);
     }
   }, [currentUserId, loadCardsByUser]);
 
   return (
     <Screen>
-      <ScrollView contentContainerStyle={styles.content} showsVerticalScrollIndicator={false}>
+      <ScrollView contentContainerStyle={styles.content} showsVerticalScrollIndicator={false} scrollEnabled={scrollEnabled}>
         <View style={styles.header}>
           <AppText variant="h1">Home</AppText>
           <AppText tone="secondary">Track your cards and move quickly between flows.</AppText>
@@ -34,7 +35,7 @@ export function HomeScreen() {
 
         {isLoading ? <AppText tone="secondary">Loading cards...</AppText> : null}
         {errorMessage ? <AppText style={styles.error}>{errorMessage}</AppText> : null}
-        {cards.length > 0 ? <CardStack cards={cards} /> : null}
+        {cards.length > 0 ? <CardStack cards={cards} onDragStateChange={isDragging => setScrollEnabled(!isDragging)} /> : null}
         <Button onPress={() => navigation.navigate(ROOT_ROUTES.CREATE_CARD)} title="Create card" />
 
         <View style={styles.quickActions}>
