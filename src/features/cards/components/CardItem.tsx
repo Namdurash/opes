@@ -1,6 +1,6 @@
 import React from 'react';
 import { ImageBackground, View } from 'react-native';
-import { Card } from '../../../domain/auth';
+import { Card } from '../../../domain/cards';
 import { AppText } from '../../../shared/ui';
 import { useCardItemStyles } from './CardItem.styles';
 

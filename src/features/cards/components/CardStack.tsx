@@ -7,7 +7,7 @@ import Animated, {
   useSharedValue,
   withSpring,
 } from 'react-native-reanimated';
-import { Card } from '../../../domain/auth';
+import { Card } from '../../../domain/cards';
 import { useCardsStore } from '../state/useCardsStore';
 import { CardItem } from './CardItem';
 import { CARD_STEP, useCardStackStyles } from './CardStack.styles';

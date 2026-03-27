@@ -1,5 +1,5 @@
 import { Q } from '@nozbe/watermelondb';
-import { Card, CardType } from '../../domain/auth';
+import { Card, CardType } from '../../domain/cards';
 import { database } from '../../services/database';
 import { CardModel } from '../../services/database/models';
 
@@ -49,7 +49,6 @@ export class CardsRepository implements CardsRepositoryContract {
     const card = await database.write(async () => {
       return collection.create(record => {
         record.userId = input.userId;
-        record.legacyCardName = input.title;
         record.title = input.title;
         record.moneyAmount = input.moneyAmount;
         record.type = input.type;
@@ -72,7 +71,7 @@ export class CardsRepository implements CardsRepositoryContract {
         }))
       );
       const preparedUpdates = await Promise.all(updates);
-      database.batch(...preparedUpdates);
+      await database.batch(...preparedUpdates);
     });
   }
 }

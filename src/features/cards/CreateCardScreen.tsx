@@ -2,11 +2,12 @@ import React from 'react';
 import { Image, TextInput, View } from 'react-native';
 import { useNavigation } from '@react-navigation/native';
 import { launchImageLibrary } from 'react-native-image-picker';
-import { CardType } from '../../domain/auth';
+import { CardType } from '../../domain/cards';
 import { CreateCardScreenNavigationProp } from '../../app/navigation';
 import { AppText, Button, Screen } from '../../shared/ui';
 import { useAuthStore } from '../../stores/useAuthStore';
 import { useCardsStore } from './state/useCardsStore';
+import { useCreateCardStore } from './state/useCreateCardStore';
 import { useCreateCardScreenStyles } from './CreateCardScreen.styles';
 
 const CARD_TYPES: CardType[] = ['salary', 'credit', 'storage'];
@@ -15,19 +16,22 @@ export function CreateCardScreen() {
   const styles = useCreateCardScreenStyles();
   const navigation = useNavigation<CreateCardScreenNavigationProp>();
   const currentUserId = useAuthStore(state => state.currentUserId);
-  const title = useCardsStore(state => state.title);
-  const moneyAmount = useCardsStore(state => state.moneyAmount);
-  const type = useCardsStore(state => state.type);
-  const image = useCardsStore(state => state.image);
-  const isSubmitting = useCardsStore(state => state.isSubmitting);
-  const errorMessage = useCardsStore(state => state.errorMessage);
-  const setTitle = useCardsStore(state => state.setTitle);
-  const setMoneyAmount = useCardsStore(state => state.setMoneyAmount);
-  const setType = useCardsStore(state => state.setType);
-  const setImage = useCardsStore(state => state.setImage);
-  const setErrorMessage = useCardsStore(state => state.setErrorMessage);
-  const createCard = useCardsStore(state => state.createCard);
-  const resetForm = useCardsStore(state => state.resetForm);
+
+  const title = useCreateCardStore(state => state.title);
+  const moneyAmount = useCreateCardStore(state => state.moneyAmount);
+  const type = useCreateCardStore(state => state.type);
+  const image = useCreateCardStore(state => state.image);
+  const isSubmitting = useCreateCardStore(state => state.isSubmitting);
+  const errorMessage = useCreateCardStore(state => state.errorMessage);
+  const setTitle = useCreateCardStore(state => state.setTitle);
+  const setMoneyAmount = useCreateCardStore(state => state.setMoneyAmount);
+  const setType = useCreateCardStore(state => state.setType);
+  const setImage = useCreateCardStore(state => state.setImage);
+  const setErrorMessage = useCreateCardStore(state => state.setErrorMessage);
+  const createCard = useCreateCardStore(state => state.createCard);
+  const resetForm = useCreateCardStore(state => state.resetForm);
+
+  const appendCard = useCardsStore(state => state.appendCard);
 
   React.useEffect(() => {
     resetForm();
@@ -42,6 +46,7 @@ export function CreateCardScreen() {
 
     const created = await createCard(currentUserId);
     if (created) {
+      appendCard(created);
       navigation.goBack();
     }
   };

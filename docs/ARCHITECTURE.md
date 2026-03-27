@@ -9,46 +9,21 @@
 ## High-Level Approach
 
 - UI-driven React Native app with feature-based modules.
-- App state managed in React (Context + reducer or feature hooks).
-- Data persistence accessed only through a storage abstraction layer.
+- App state managed with Zustand — feature stores for screen-local state, global stores for cross-feature concerns.
+- Data persistence accessed only through a repository layer backed by WatermelonDB.
 - No network dependency in core flows.
 
-## Proposed Folder Structure
+## Folder Structure
 
 ```text
 src/
-  app/
-    AppShell.tsx
-    navigation/
-      types.ts
-  features/
-    home/
-      HomeScreen.tsx
-      index.ts
-    transactions/
-      TransactionsScreen.tsx
-      components/
-        TransactionListPlaceholder.tsx
-      index.ts
-  domain/
-    transactions/
-      types.ts
-      index.ts
-  models/
-    transactions/
-      TransactionsRepository.ts
-  stores/
-    store.ts
-    index.ts
-  services/
-    storage/
-      StorageGateway.ts
-      InMemoryStorage.ts
-      index.ts
-  shared/
-    ui/
-      ScreenContainer.tsx
-      index.ts
+  app/        # App shell, entry point, and navigation wiring (routes, typed ParamList)
+  domain/     # Pure TypeScript types only — no React Native or storage dependencies
+  features/   # One folder per product feature; screens, components, and feature stores
+  models/     # Repository classes — the only layer allowed to read/write the database
+  services/   # Infrastructure: WatermelonDB setup, auth token storage
+  shared/     # Design tokens, theme primitives, and reusable UI components
+  stores/     # Global cross-feature Zustand stores (auth, settings)
 ```
 
 ## State Management (Zustand)
@@ -92,16 +67,15 @@ src/
 
 ## Local Storage Strategy
 
-- Use a storage gateway interface (`StorageGateway`) with minimal CRUD methods.
-- Start with in-memory adapter for scaffolding and tests.
-- Later swap to persistent adapter (for example MMKV/SQLite/AsyncStorage) without changing feature logic.
-- Repositories (`src/models/**`) map domain entities to storage records.
+- Persistent storage uses **WatermelonDB** (SQLite-backed) via the database singleton at `src/services/database/`.
+- Schema is defined in `src/services/database/schema.ts` and versioned migrations live in `src/services/database/migrations.ts`.
+- Repositories (`src/models/**`) map domain entities to WatermelonDB models and are the only layer allowed to access the database.
 
 ### Storage Design Rules
 
-- Repository APIs must be asynchronous (`Promise`-based), even if the underlying storage is synchronous (e.g. in-memory).
-- Domain entities generate their own IDs (UUID) and timestamps at creation time.
-- Storage adapters must not contain business logic.
+- Repository APIs must be asynchronous (`Promise`-based).
+- Domain entities generate their own IDs and timestamps at creation time.
+- Database models must not contain business logic — they are data-access objects only.
 - UI components must never access storage directly — only through repositories.
 
 ## Navigation
