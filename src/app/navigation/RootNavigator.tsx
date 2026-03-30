@@ -3,6 +3,7 @@ import { View } from 'react-native';
 import { createNativeStackNavigator } from '@react-navigation/native-stack';
 import { CreateCardScreen } from '../../features/cards';
 import { HomeScreen } from '../../features/home';
+import { ConnectMonobankScreen } from '../../features/monobank';
 import { TransactionsScreen } from '../../features/transactions';
 import { RegistrationScreen } from '../../features/registration';
 import { SignInScreen } from '../../features/sign-in';
@@ -56,6 +57,11 @@ export function RootNavigator() {
             component={CreateCardScreen}
             name={ROOT_ROUTES.CREATE_CARD}
             options={{ headerShown: true, title: 'Create card' }}
+          />
+          <Stack.Screen
+            component={ConnectMonobankScreen}
+            name={ROOT_ROUTES.CONNECT_MONOBANK}
+            options={{ headerShown: true, title: 'Connect Monobank' }}
           />
         </>
       ) : (

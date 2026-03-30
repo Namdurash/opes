@@ -7,6 +7,7 @@ export type RootStackParamList = {
   [ROOT_ROUTES.HOME]: undefined;
   [ROOT_ROUTES.TRANSACTIONS]: undefined;
   [ROOT_ROUTES.CREATE_CARD]: undefined;
+  [ROOT_ROUTES.CONNECT_MONOBANK]: undefined;
 };
 
 export type SignInScreenNavigationProp = NativeStackNavigationProp<
@@ -29,4 +30,8 @@ export type TransactionsScreenNavigationProp = NativeStackNavigationProp<
 export type CreateCardScreenNavigationProp = NativeStackNavigationProp<
   RootStackParamList,
   typeof ROOT_ROUTES.CREATE_CARD
+>;
+export type ConnectMonobankScreenNavigationProp = NativeStackNavigationProp<
+  RootStackParamList,
+  typeof ROOT_ROUTES.CONNECT_MONOBANK
 >;

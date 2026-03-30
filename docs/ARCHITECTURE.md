@@ -26,6 +26,32 @@ src/
   stores/     # Global cross-feature Zustand stores (auth, settings)
 ```
 
+Each feature folder may contain:
+
+```text
+src/features/<feature>/
+  <FeatureName>Screen.tsx          # Screen component(s)
+  <FeatureName>Screen.styles.ts    # Styles for the screen
+  components/                      # Sub-components used only within this feature
+  state/
+    use<Feature>Store.ts           # Zustand store(s) for this feature
+  types.ts                         # Feature-specific TypeScript interfaces and types
+  utils.ts                         # Feature-specific pure utility functions
+  index.ts                         # Barrel — public API of the feature
+```
+
+### Types and Interfaces
+
+- If a feature has its own types or interfaces, define them in `src/features/<feature>/types.ts`.
+- Export them through the feature's `index.ts` barrel.
+- Cross-feature or domain-level types belong in `src/domain/`.
+
+### Utility Functions
+
+- Feature-specific pure functions belong in `src/features/<feature>/utils.ts`.
+- Functions used across multiple features or in shared modules belong in `src/shared/utils/`.
+- Never import a feature's `utils.ts` from outside that feature — promote to `src/shared/utils/` instead.
+
 ## State Management (Zustand)
 
 - We use Zustand for application state orchestration.
@@ -56,6 +82,13 @@ src/
   - `loadX(...)`, `refreshX(...)` for repository-driven reads
   - `create/update/delete` methods call repositories and then update UI state / trigger invalidation
 - Avoid storing large lists in global state unless required for UX/performance. Prefer querying DB per screen and using local selectors.
+- When selecting multiple values from a store in a single component, use `useShallow` from `zustand/shallow` to group them into one hook call. This avoids both excessive hook declarations and unnecessary re-renders:
+  ```typescript
+  import { useShallow } from 'zustand/shallow';
+  const { status, clientName, loadSavedToken } = useMonobankStore(
+    useShallow(state => ({ status: state.status, clientName: state.clientName, loadSavedToken: state.loadSavedToken })),
+  );
+  ```
 
 ### Invalidation / Refresh Strategy
 

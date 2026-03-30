@@ -4,4 +4,5 @@ export const ROOT_ROUTES = {
   HOME: 'Home',
   TRANSACTIONS: 'Transactions',
   CREATE_CARD: 'CreateCard',
+  CONNECT_MONOBANK: 'ConnectMonobank',
 } as const;
