@@ -15,7 +15,7 @@ import { makeStyles } from '../../shared/theme';
 
 const Stack = createNativeStackNavigator<RootStackParamList>();
 
-export function RootNavigator() {
+export const RootNavigator = () => {
   const status = useAuthStore(state => state.status);
   const bootstrap = useAuthStore(state => state.bootstrap);
   const styles = useStyles();

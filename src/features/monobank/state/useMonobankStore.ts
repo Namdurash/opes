@@ -46,6 +46,6 @@ export const useMonobankStore = create<MonobankStoreState & MonobankStoreActions
   loadSavedToken() {
     const saved = monobankTokenService.get();
     if (!saved) return;
-    set({ token: saved.token, status: 'connected', clientName: saved.clientName || null });
+    set({ token: saved.token, status: 'connected', clientName: saved.clientName ?? null });
   },
 }));

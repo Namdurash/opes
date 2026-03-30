@@ -9,7 +9,7 @@ const ITEMS = [
   { id: '3', title: 'Transport', amountLabel: '-$15.00' },
 ];
 
-export function TransactionListPlaceholder() {
+export const TransactionListPlaceholder = () => {
   const styles = useStyles();
 
   return (
@@ -25,12 +25,12 @@ export function TransactionListPlaceholder() {
       ItemSeparatorComponent={ItemSeparator}
     />
   );
-}
+};
 
-function ItemSeparator() {
+const ItemSeparator = () => {
   const styles = useStyles();
   return <View style={styles.separator} />;
-}
+};
 
 const useStyles = makeStyles(theme => ({
   row: {

@@ -6,7 +6,7 @@ import { makeStyles } from '../../shared/theme';
 import { AppText, Button, Screen } from '../../shared/ui';
 import { TransactionListPlaceholder } from './components/TransactionListPlaceholder';
 
-export function TransactionsScreen() {
+export const TransactionsScreen = () => {
   const navigation = useNavigation<TransactionsScreenNavigationProp>();
   const styles = useStyles();
 

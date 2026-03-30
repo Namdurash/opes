@@ -14,14 +14,14 @@ interface ButtonProps {
   style?: StyleProp<ViewStyle>;
 }
 
-export function Button({
+export const Button = ({
   title,
   onPress,
   variant = 'primary',
   disabled = false,
   loading = false,
   style,
-}: ButtonProps) {
+}: ButtonProps) => {
   const styles = useStyles();
   const isDisabled = disabled || loading;
 
@@ -52,7 +52,7 @@ export function Button({
       )}
     </Pressable>
   );
-}
+};
 
 const useStyles = makeStyles(theme => ({
   base: {

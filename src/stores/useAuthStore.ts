@@ -17,7 +17,7 @@ interface AuthStoreDeps {
   tokenStorageService: TokenStorageServiceContract;
 }
 
-export function createAuthStore(deps: AuthStoreDeps) {
+export const createAuthStore = (deps: AuthStoreDeps) => {
   return create<AuthStoreState>(set => ({
     status: 'checking',
     currentUserId: null,

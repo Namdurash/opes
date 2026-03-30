@@ -17,18 +17,16 @@ export interface CardsRepositoryContract {
   reorderCards(orderedIds: string[]): Promise<void>;
 }
 
-function toDomain(model: CardModel): Card {
-  return {
-    id: model.id,
-    userId: model.userId,
-    title: model.title || model.legacyCardName,
-    moneyAmount: model.moneyAmount,
-    type: model.type as CardType,
-    image: model.image ?? null,
-    createdAt: model.createdAt,
-    sortOrder: model.sortOrder,
-  };
-}
+const toDomain = (model: CardModel): Card => ({
+  id: model.id,
+  userId: model.userId,
+  title: model.title || model.legacyCardName,
+  moneyAmount: model.moneyAmount,
+  type: model.type as CardType,
+  image: model.image ?? null,
+  createdAt: model.createdAt,
+  sortOrder: model.sortOrder,
+});
 
 export class CardsRepository implements CardsRepositoryContract {
   async getCardsByUser(userId: string): Promise<Card[]> {

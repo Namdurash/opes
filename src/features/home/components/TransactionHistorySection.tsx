@@ -8,7 +8,7 @@ import { useTransactionHistorySectionStyles } from './TransactionHistorySection.
 
 const MAX_DISPLAYED = 10;
 
-export function TransactionHistorySection() {
+export const TransactionHistorySection = () => {
   const styles = useTransactionHistorySectionStyles();
   const { transactions, isLoading, errorMessage } = useTransactionsStore(
     useShallow(state => ({

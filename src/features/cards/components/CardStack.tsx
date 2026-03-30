@@ -24,7 +24,7 @@ interface DraggableCardItemProps {
   onLongPress: (index: number) => void;
 }
 
-function DraggableCardItem({
+const DraggableCardItem = ({
   card,
   index,
   collapsed,
@@ -32,7 +32,7 @@ function DraggableCardItem({
   draggingTargetIndex,
   dragOffsetY,
   onLongPress,
-}: DraggableCardItemProps) {
+}: DraggableCardItemProps) => {
   const shiftY = useSharedValue(0);
 
   useAnimatedReaction(
@@ -91,7 +91,7 @@ interface CardStackProps {
   onDragStateChange?: (isDragging: boolean) => void;
 }
 
-export function CardStack({ cards, onDragStateChange }: CardStackProps) {
+export const CardStack = ({ cards, onDragStateChange }: CardStackProps) => {
   const styles = useCardStackStyles();
   const reorderCards = useCardsStore(state => state.reorderCards);
 
@@ -170,7 +170,7 @@ export function CardStack({ cards, onDragStateChange }: CardStackProps) {
           const next = [...cardsRef.current];
           const [moved] = next.splice(fromIndex, 1);
           next.splice(targetIndex, 0, moved);
-          void reorderCards(next);
+          reorderCards(next);
         }
       },
       onPanResponderTerminate: () => {

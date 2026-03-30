@@ -7,7 +7,7 @@ import { useRegistrationStyles } from './RegistrationScreen.styles';
 import { useAuthStore } from '../../stores/useAuthStore';
 import { ROOT_ROUTES, RegistrationScreenNavigationProp } from '../../app/navigation';
 
-export function RegistrationScreen() {
+export const RegistrationScreen = () => {
   const styles = useRegistrationStyles();
   const markRegistered = useAuthStore(state => state.markRegistered);
   const navigation = useNavigation<RegistrationScreenNavigationProp>();

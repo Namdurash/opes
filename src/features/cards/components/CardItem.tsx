@@ -9,19 +9,17 @@ interface CardItemProps {
   collapsed?: boolean;
 }
 
-function formatMoneyAmount(value: number): string {
-  return new Intl.NumberFormat('en-US', {
+const formatMoneyAmount = (value: number): string =>
+  new Intl.NumberFormat('en-US', {
     style: 'currency',
     currency: 'USD',
     maximumFractionDigits: 2,
   }).format(value);
-}
 
-function canRenderImage(image: string | null): image is string {
-  return Boolean(image && /^(https?:|file:|data:|content:)/.test(image));
-}
+const canRenderImage = (image: string | null): image is string =>
+  Boolean(image && /^(https?:|file:|data:|content:)/.test(image));
 
-export function CardItem({ card, collapsed = false }: CardItemProps) {
+export const CardItem = ({ card, collapsed = false }: CardItemProps) => {
   const styles = useCardItemStyles();
   const hasImage = canRenderImage(card.image);
   const imageUri: string | undefined = hasImage ? card.image ?? undefined : undefined;
@@ -71,4 +69,4 @@ export function CardItem({ card, collapsed = false }: CardItemProps) {
   }
 
   return <View style={styles.container}>{content}</View>;
-}
+};

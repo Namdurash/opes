@@ -15,14 +15,12 @@ export interface UsersRepositoryContract {
   findByName(name: string): Promise<User | null>;
 }
 
-function toDomain(model: UserModel): User {
-  return {
-    id: model.id,
-    name: model.name,
-    passwordHash: model.passwordHash,
-    createdAt: model.createdAt,
-  };
-}
+const toDomain = (model: UserModel): User => ({
+  id: model.id,
+  name: model.name,
+  passwordHash: model.passwordHash,
+  createdAt: model.createdAt,
+});
 
 export class UsersRepository implements UsersRepositoryContract {
   async create(input: CreateUserInput): Promise<User> {

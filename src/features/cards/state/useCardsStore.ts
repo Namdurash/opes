@@ -15,7 +15,7 @@ interface CardsStoreDeps {
   cardsRepository: CardsRepositoryContract;
 }
 
-export function createCardsStore(deps: CardsStoreDeps) {
+export const createCardsStore = (deps: CardsStoreDeps) => {
   return create<CardsStoreState>((set, get) => ({
     cards: [],
     isLoading: false,

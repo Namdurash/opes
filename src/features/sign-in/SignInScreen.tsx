@@ -7,7 +7,7 @@ import { ROOT_ROUTES, SignInScreenNavigationProp } from '../../app/navigation';
 import { useSignInStore } from './state/useSignInStore';
 import { useSignInStyles } from './SignInScreen.styles';
 
-export function SignInScreen() {
+export const SignInScreen = () => {
   const styles = useSignInStyles();
   const markRegistered = useAuthStore(state => state.markRegistered);
   const navigation = useNavigation<SignInScreenNavigationProp>();

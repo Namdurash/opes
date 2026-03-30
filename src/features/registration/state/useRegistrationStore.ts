@@ -28,12 +28,12 @@ interface RegistrationStoreDeps {
   onSuccess?: () => void;
 }
 
-function validate({
+const validate = ({
   name,
   password,
   isCardVisible,
   cardName,
-}: Pick<RegistrationStoreState, 'name' | 'password' | 'isCardVisible' | 'cardName'>): string | null {
+}: Pick<RegistrationStoreState, 'name' | 'password' | 'isCardVisible' | 'cardName'>): string | null => {
   if (!name.trim()) {
     return 'Name is required.';
   }
@@ -47,9 +47,9 @@ function validate({
   }
 
   return null;
-}
+};
 
-export function createRegistrationStore(deps: RegistrationStoreDeps) {
+export const createRegistrationStore = (deps: RegistrationStoreDeps) => {
   const initialState = {
     name: '',
     password: '',
@@ -107,7 +107,7 @@ export function createRegistrationStore(deps: RegistrationStoreDeps) {
     },
     reset: () => set(initialState),
   }));
-}
+};
 
 export const useRegistrationStore = createRegistrationStore({
   usersRepository: new UsersRepository(),

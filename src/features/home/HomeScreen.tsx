@@ -12,7 +12,7 @@ import { useCardsStore } from '../cards/state/useCardsStore';
 import { TransactionHistorySection } from './components/TransactionHistorySection';
 import { useHomeScreenStyles } from './HomeScreen.styles';
 
-export function HomeScreen() {
+export const HomeScreen = () => {
   const navigation = useNavigation<HomeScreenNavigationProp>();
   const styles = useHomeScreenStyles();
   const [scrollEnabled, setScrollEnabled] = React.useState(true);
@@ -95,7 +95,7 @@ export function HomeScreen() {
           </View>
         </View>
 
-        <Button title="Sign out" onPress={() => void signOut()} variant="secondary" />
+        <Button title="Sign out" onPress={() => { signOut(); }} variant="secondary" />
       </ScrollView>
     </Screen>
   );

@@ -52,6 +52,97 @@ src/features/<feature>/
 - Functions used across multiple features or in shared modules belong in `src/shared/utils/`.
 - Never import a feature's `utils.ts` from outside that feature — promote to `src/shared/utils/` instead.
 
+## Language & Code Style
+
+### JavaScript / ES6+
+
+- **Arrow functions everywhere.** Never use the `function` keyword — not for components, helpers, store factories, or callbacks. Every callable is a `const` arrow:
+  ```typescript
+  export const MyComponent = () => { ... };
+  export const createStore = (deps: Deps) => create(...);
+  const helper = (x: number): string => String(x);
+  ```
+
+- **`const` and `let` only.** Never use `var`.
+
+- **`async`/`await` over `.then()` chains.** All asynchronous logic must use `async`/`await`. `.catch()` is allowed only as a terminal error sink on fire-and-forget calls.
+
+- **Destructuring by default.** Prefer destructuring for function parameters and local variables:
+  ```typescript
+  const { token, clientName } = monobankTokenService.get() ?? {};
+  const [first, ...rest] = items;
+  ```
+
+- **Template literals over concatenation.** Always use template literals when embedding expressions in strings.
+
+- **Spread syntax for objects and arrays.** Use `{ ...obj }` and `[...arr]` instead of `Object.assign` or `Array.prototype.concat`.
+
+- **Optional chaining and nullish coalescing.** Use `?.` and `??` to handle nullable values — never manual `&&` / `||` null guards for this purpose:
+  ```typescript
+  // ✓
+  const name = user?.profile?.name ?? 'Anonymous';
+  // ✗
+  const name = user && user.profile && user.profile.name || 'Anonymous';
+  ```
+  Use `??` (not `||`) when the fallback must only trigger on `null`/`undefined`, not on other falsy values like `0` or `""`.
+
+- **No `void` operator.** Do not use `void expr` to discard a promise return value. Use a statement-body arrow instead:
+  ```typescript
+  // ✓
+  onPress={() => { connect(); }}
+  // ✗
+  onPress={() => void connect()}
+  ```
+
+- **`as const` for literal objects.** Mark fixed constant maps and tuples with `as const` to narrow their types:
+  ```typescript
+  export const ROOT_ROUTES = { HOME: 'Home', ... } as const;
+  ```
+
+---
+
+### TypeScript
+
+- **Strict mode is on.** All code must pass `tsc --noEmit` with `strict: true`. Never suppress errors with `@ts-ignore` or `@ts-expect-error` without a comment explaining why.
+
+- **No `any`.** Use `unknown` for genuinely dynamic data and narrow it before use. Use precise union types instead of widening to `any`.
+
+- **`interface` for object shapes; `type` for unions and aliases.**
+  ```typescript
+  interface MonobankStoreState { token: string; status: ConnectionStatus; }
+  type ConnectionStatus = 'idle' | 'connecting' | 'connected' | 'error';
+  ```
+
+- **Explicit return types on exported functions and public class methods.** Infer return types for internal/private helpers where the type is obvious:
+  ```typescript
+  // exported — annotate
+  export const hashPassword = (password: string): string => { ... };
+  // internal helper — inference is fine
+  const toMajorUnits = (amount: number, code: number) => amount / 10 ** (MINOR_UNITS[code] ?? 2);
+  ```
+
+- **`import type` for type-only imports.** Prevents runtime bloat and makes dependency intent explicit:
+  ```typescript
+  import type { MonobankStatement } from './types';
+  ```
+
+- **Generics for reusable utilities.** Use bounded generics rather than loose types:
+  ```typescript
+  export const makeStyles = <T extends StyleSheet.NamedStyles<T>>(factory: (theme: Theme) => T) => ...
+  ```
+
+- **`Pick`, `Partial`, `Readonly`, and other utility types** over manually duplicating shapes.
+
+- **Discriminated unions over boolean flags** when state has mutually exclusive modes:
+  ```typescript
+  // ✓
+  type Status = 'idle' | 'loading' | 'success' | 'error';
+  // ✗
+  isLoading: boolean; isError: boolean; isSuccess: boolean;
+  ```
+
+---
+
 ## State Management (Zustand)
 
 - We use Zustand for application state orchestration.

@@ -11,13 +11,13 @@ interface AppTextProps extends PropsWithChildren, TextProps {
   style?: StyleProp<TextStyle>;
 }
 
-export function AppText({
+export const AppText = ({
   children,
   variant = 'body',
   tone = 'primary',
   style,
   ...textProps
-}: AppTextProps) {
+}: AppTextProps) => {
   const styles = useStyles();
 
   return (
@@ -28,7 +28,7 @@ export function AppText({
       {children}
     </Text>
   );
-}
+};
 
 const useStyles = makeStyles(theme => ({
   base: {

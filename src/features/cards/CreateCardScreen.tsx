@@ -12,7 +12,7 @@ import { useCreateCardScreenStyles } from './CreateCardScreen.styles';
 
 const CARD_TYPES: CardType[] = ['salary', 'credit', 'storage'];
 
-export function CreateCardScreen() {
+export const CreateCardScreen = () => {
   const styles = useCreateCardScreenStyles();
   const navigation = useNavigation<CreateCardScreenNavigationProp>();
   const currentUserId = useAuthStore(state => state.currentUserId);
@@ -130,7 +130,7 @@ export function CreateCardScreen() {
               Image
             </AppText>
             <Button
-              onPress={() => void onSelectImage()}
+              onPress={() => { onSelectImage(); }}
               title={image ? 'Replace Image' : 'Select Image'}
               variant="secondary"
             />

@@ -22,10 +22,10 @@ interface SignInStoreDeps {
   onSuccess?: () => void;
 }
 
-function validate({
+const validate = ({
   name,
   password,
-}: Pick<SignInStoreState, 'name' | 'password'>): string | null {
+}: Pick<SignInStoreState, 'name' | 'password'>): string | null => {
   if (!name.trim()) {
     return 'Name is required.';
   }
@@ -35,9 +35,9 @@ function validate({
   }
 
   return null;
-}
+};
 
-export function createSignInStore(deps: SignInStoreDeps) {
+export const createSignInStore = (deps: SignInStoreDeps) => {
   const initialState = {
     name: '',
     password: '',
@@ -83,7 +83,7 @@ export function createSignInStore(deps: SignInStoreDeps) {
     },
     reset: () => set(initialState),
   }));
-}
+};
 
 export const useSignInStore = createSignInStore({
   usersRepository: new UsersRepository(),

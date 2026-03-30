@@ -7,7 +7,7 @@ import { useConnectMonobankScreenStyles } from './ConnectMonobankScreen.styles';
 
 const MONOBANK_TOKEN_URL = 'https://api.monobank.ua/';
 
-export function ConnectMonobankScreen() {
+export const ConnectMonobankScreen = () => {
   const styles = useConnectMonobankScreenStyles();
   const { token, status, clientName, errorMessage, setToken, connect, disconnect, loadSavedToken } =
     useMonobankStore(
@@ -69,7 +69,7 @@ export function ConnectMonobankScreen() {
             <Button
               title="Get my token"
               variant="secondary"
-              onPress={() => void Linking.openURL(MONOBANK_TOKEN_URL)}
+              onPress={() => { Linking.openURL(MONOBANK_TOKEN_URL); }}
             />
           </View>
         )}
@@ -87,7 +87,7 @@ export function ConnectMonobankScreen() {
         ) : (
           <Button
             title="Connect"
-            onPress={() => void connect()}
+            onPress={() => { connect(); }}
             loading={isConnecting}
             disabled={isConnecting}
           />

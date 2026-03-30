@@ -29,10 +29,7 @@ const initialFormState = {
   image: '',
 };
 
-function validateDraft(
-  title: string,
-  moneyAmount: string,
-): string | null {
+const validateDraft = (title: string, moneyAmount: string): string | null => {
   if (!title.trim()) {
     return 'Title is required.';
   }
@@ -47,10 +44,10 @@ function validateDraft(
   }
 
   return null;
-}
+};
 
-export function createCreateCardStore(deps: CreateCardStoreDeps) {
-  return create<CreateCardStoreState>((set, get) => ({
+export const createCreateCardStore = (deps: CreateCardStoreDeps) =>
+  create<CreateCardStoreState>((set, get) => ({
     ...initialFormState,
     isSubmitting: false,
     errorMessage: null,
@@ -90,7 +87,6 @@ export function createCreateCardStore(deps: CreateCardStoreDeps) {
     },
     resetForm: () => set({ ...initialFormState, errorMessage: null, isSubmitting: false }),
   }));
-}
 
 export const useCreateCardStore = createCreateCardStore({
   cardsRepository: new CardsRepository(),

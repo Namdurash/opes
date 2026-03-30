@@ -6,7 +6,7 @@ import { databaseSchema } from './schema';
 
 const isJestEnvironment = typeof jest !== 'undefined';
 
-function createAdapter(): DatabaseAdapter {
+const createAdapter = (): DatabaseAdapter => {
   if (isJestEnvironment) {
     // eslint-disable-next-line @typescript-eslint/no-var-requires,global-require
     const LokiJSAdapter = require('@nozbe/watermelondb/adapters/lokijs').default as new (

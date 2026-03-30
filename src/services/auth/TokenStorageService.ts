@@ -35,7 +35,7 @@ class InMemoryKeyValueStorage implements KeyValueStorage {
   }
 }
 
-function createDefaultStorage(): KeyValueStorage {
+const createDefaultStorage = (): KeyValueStorage => {
   if (isJestEnvironment) {
     return new InMemoryKeyValueStorage();
   }
@@ -66,11 +66,9 @@ function createDefaultStorage(): KeyValueStorage {
     console.warn('[TokenStorageService] MMKV unavailable, falling back to in-memory storage.', error);
     return new InMemoryKeyValueStorage();
   }
-}
+};
 
-function makeToken(): string {
-  return `${Date.now()}_${Math.random().toString(36).slice(2)}`;
-}
+const makeToken = (): string => `${Date.now()}_${Math.random().toString(36).slice(2)}`;
 
 export class TokenStorageService implements TokenStorageServiceContract {
   constructor(private readonly storage: KeyValueStorage = createDefaultStorage()) {}

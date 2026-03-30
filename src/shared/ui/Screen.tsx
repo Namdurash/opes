@@ -7,7 +7,7 @@ interface ScreenProps extends PropsWithChildren {
   contentStyle?: StyleProp<ViewStyle>;
 }
 
-export function Screen({ children, contentStyle }: ScreenProps) {
+export const Screen = ({ children, contentStyle }: ScreenProps) => {
   const styles = useStyles();
 
   return (
@@ -15,7 +15,7 @@ export function Screen({ children, contentStyle }: ScreenProps) {
       <View style={[styles.content, contentStyle]}>{children}</View>
     </SafeAreaView>
   );
-}
+};
 
 const useStyles = makeStyles(theme => ({
   safeArea: {

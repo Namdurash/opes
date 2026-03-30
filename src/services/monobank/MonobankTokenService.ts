@@ -14,7 +14,7 @@ class InMemoryKeyValueStorage implements KeyValueStorage {
   delete(key: string): void { this.data.delete(key); }
 }
 
-function createDefaultStorage(): KeyValueStorage {
+const createDefaultStorage = (): KeyValueStorage => {
   if (typeof jest !== 'undefined') {
     return new InMemoryKeyValueStorage();
   }

@@ -38,39 +38,33 @@ const MINOR_UNITS: Record<number, number> = {
   953: 0, // XPF
 };
 
-function currencySymbol(code: number): string {
-  return CURRENCY_SYMBOLS[code] ?? String(code);
-}
+const currencySymbol = (code: number): string => CURRENCY_SYMBOLS[code] ?? String(code);
 
-function toMajorUnits(amount: number, currencyCode: number): number {
+const toMajorUnits = (amount: number, currencyCode: number): number => {
   const decimals = MINOR_UNITS[currencyCode] ?? 2;
   return amount / Math.pow(10, decimals);
-}
+};
 
-function transformAccount(raw: MonobankRawAccount): MonobankAccount {
-  return {
-    id: raw.id,
-    sendId: raw.sendId,
-    balance: toMajorUnits(raw.balance, raw.currencyCode),
-    creditLimit: toMajorUnits(raw.creditLimit, raw.currencyCode),
-    type: raw.type,
-    currencyCode: raw.currencyCode,
-    currencySymbol: currencySymbol(raw.currencyCode),
-    maskedPan: raw.maskedPan,
-    iban: raw.iban,
-  };
-}
+const transformAccount = (raw: MonobankRawAccount): MonobankAccount => ({
+  id: raw.id,
+  sendId: raw.sendId,
+  balance: toMajorUnits(raw.balance, raw.currencyCode),
+  creditLimit: toMajorUnits(raw.creditLimit, raw.currencyCode),
+  type: raw.type,
+  currencyCode: raw.currencyCode,
+  currencySymbol: currencySymbol(raw.currencyCode),
+  maskedPan: raw.maskedPan,
+  iban: raw.iban,
+});
 
-export function transformClientInfo(raw: MonobankRawClientInfo): MonobankClientInfo {
-  return {
-    clientId: raw.clientId,
-    name: raw.name,
-    accounts: raw.accounts.map(transformAccount),
-  };
-}
+export const transformClientInfo = (raw: MonobankRawClientInfo): MonobankClientInfo => ({
+  clientId: raw.clientId,
+  name: raw.name,
+  accounts: raw.accounts.map(transformAccount),
+});
 
-export function transformStatements(raw: MonobankRawStatementItem[]): MonobankStatement[] {
-  return raw.map(item => ({
+export const transformStatements = (raw: MonobankRawStatementItem[]): MonobankStatement[] =>
+  raw.map(item => ({
     id: item.id,
     time: new Date(item.time * 1000),
     description: item.description,
@@ -82,4 +76,3 @@ export function transformStatements(raw: MonobankRawStatementItem[]): MonobankSt
     hold: item.hold,
     comment: item.comment,
   }));
-}
