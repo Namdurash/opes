@@ -1,5 +1,6 @@
 import { create } from 'zustand';
-import { MonobankService, MonobankError } from '../../../services/monobank';
+import { MonobankError } from '../../../services/monobank';
+import { getMonobankService } from '../../../services/monobank/serviceInstance';
 import { monobankTokenService } from '../../../services/monobank/MonobankTokenService';
 import type { MonobankStatement } from '../../../services/monobank/types';
 
@@ -28,7 +29,7 @@ export const useTransactionsStore = create<TransactionsState & TransactionsActio
     set({ isLoading: true, errorMessage: null });
 
     try {
-      const service = new MonobankService(saved.token);
+      const service = getMonobankService(saved.token);
       const to = new Date();
       const from = new Date(to.getTime() - HISTORY_DAYS * 24 * 60 * 60 * 1000);
       const transactions = await service.getStatements('0', from, to);

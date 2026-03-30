@@ -1,5 +1,6 @@
 import { create } from 'zustand';
-import { MonobankService, MonobankError } from '../../../services/monobank';
+import { MonobankError } from '../../../services/monobank';
+import { getMonobankService, clearMonobankService } from '../../../services/monobank/serviceInstance';
 import { monobankTokenService } from '../../../services/monobank/MonobankTokenService';
 import type { MonobankStoreState, MonobankStoreActions } from '../types';
 
@@ -25,7 +26,7 @@ export const useMonobankStore = create<MonobankStoreState & MonobankStoreActions
     set({ status: 'connecting', errorMessage: null });
 
     try {
-      const service = new MonobankService(trimmed);
+      const service = getMonobankService(trimmed);
       const clientInfo = await service.getClientInfo();
       monobankTokenService.save(trimmed, clientInfo.name);
       set({ status: 'connected', clientName: clientInfo.name, errorMessage: null });
@@ -40,6 +41,7 @@ export const useMonobankStore = create<MonobankStoreState & MonobankStoreActions
 
   disconnect() {
     monobankTokenService.clear();
+    clearMonobankService();
     set({ status: 'idle', token: '', clientName: null, errorMessage: null });
   },
 

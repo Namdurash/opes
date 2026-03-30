@@ -14,9 +14,25 @@ The card drag-and-reorder implementation (`CardStack.tsx`) is more sophisticated
 
 ---
 
+> Updated: 2026-03-30. Reflecting changes since the last entry: Monobank API integration, connect UI, transaction history on HomeScreen, `useShallow` adoption, `types.ts`/`utils.ts` feature modules, full ES6+ arrow function refactor, and ARCHITECTURE.md language section.
+
+The codebase has grown meaningfully in a short time while staying coherent. The Monobank service layer (`api.ts`, `rateLimiter.ts`, `transformers.ts`) is well-designed — the separation between raw API types and internal domain types is clean, and the rate limiter and error taxonomy show forward thinking. The `MonobankTokenService` pattern mirrors `TokenStorageService` well, keeping storage concerns isolated.
+
+The `useShallow` adoption is a good call. Zustand v5 makes it easy to over-subscribe — grouping related selectors per store into one `useShallow` call is the right trade-off between readability and re-render safety.
+
+The `types.ts` / `utils.ts` per-feature pattern and the new ARCHITECTURE section make the project significantly more AI-agent-friendly. Future contributors (human or AI) won't have to infer conventions from reading code.
+
+One architectural concern worth flagging: **the `MonobankService` rate limiter is instance-level, but services are instantiated fresh on every action call** (`connect()`, `loadTransactions()`). Each new instance starts with a clean rate limiter, so the 60-second cooldown never actually enforces across calls. The limiter needs to be either a module-level singleton or the service instance needs to be cached in the store. This is the most meaningful open defect right now.
+
+The `HomeScreen` is starting to feel like a composition screen rather than a feature screen, which is the right direction — but it will need `CardsSection` and `TransactionHistorySection` properly extracted before it grows further.
+
+---
+
 ## Findings (Bugs / Issues)
 
-// --- SHOULD FILL IF FIND BUGS OR ISSUES --- //
+### ~~F1. Rate limiter is ineffective — `MonobankService` is re-instantiated on every call~~ ✅ Fixed
+
+**Fixed in:** `src/services/monobank/serviceInstance.ts` — module-level cache keyed by token. Both stores now call `getMonobankService(token)` instead of `new MonobankService(token)`. The instance is reused across calls so the `RateLimiter` state persists. `clearMonobankService()` is called on disconnect to drop the cached instance.
 
 ## Improvement Ideas
 
@@ -37,6 +53,26 @@ The loading/error/empty/loaded states for cards are handled inline in `HomeScree
 ### D. Add typed errors to repositories
 
 All `catch` blocks currently swallow the error and set a generic string message. A lightweight `RepositoryError` type (or even a typed `Result<T, E>`) would let the UI differentiate "not found" from "DB write failed" from "permission denied."
+
+---
+
+### E. Cache `MonobankService` instance in the store
+
+Related to F1. The store should hold a `service: MonobankService | null` field, initialize it on `connect()` or `loadSavedToken()`, and reuse it for subsequent calls. This makes the rate limiter actually effective and avoids redundant object construction.
+
+---
+
+### F. `useTransactionsStore` uses `MonobankStatement` directly — not the domain `Transaction` type
+
+**File:** `src/features/transactions/state/useTransactionsStore.ts`
+
+The store holds `MonobankStatement[]` from `src/services/monobank/types.ts`. Domain data should flow through `src/domain/transactions/Transaction`, with a transformer mapping Monobank statements to domain transactions. This decouples the transactions feature from the Monobank service and prepares it for other data sources (manual entry, CSV import).
+
+---
+
+### G. `HomeScreen` needs composition — extract `CardsSection`
+
+(Extends idea C from above.) Now that `TransactionHistorySection` is also rendered inline, `HomeScreen` is managing loading/error/empty states for two separate data concerns. Extract a `CardsSection` component to match the pattern established by `TransactionHistorySection`. The screen should then just orchestrate layout and navigation.
 
 ---
 
@@ -69,3 +105,15 @@ Currently cards can only be created and reordered. A detail screen (tap a card t
 ### 7. PIN / biometric lock
 
 Since user data is fully local and there's already a password-based auth, an optional app-level PIN or biometric lock (Face ID / fingerprint) would meaningfully improve the privacy story without requiring a backend.
+
+### 8. Persist Monobank transactions to WatermelonDB
+
+The current integration fetches from the API on every mount and keeps results only in Zustand. The natural next step: add a `transactions` table to the WatermelonDB schema, write a `TransactionsRepository`, and store fetched statements locally. HomeScreen then reads from the DB (fast, offline-capable) and background-syncs from the API.
+
+### 9. Monobank account selector
+
+`getStatements` is currently called with account `'0'` (default). The client-info response already includes all accounts. A small account picker in the Monobank connect screen (or a dedicated screen) would let the user choose which account's transactions to track.
+
+### 10. Background sync / pull-to-refresh for transactions
+
+Once transactions are persisted locally, a background sync job (triggered on app foreground or explicit pull-to-refresh) would keep data fresh without blocking the UI. The architecture already plans for this with `useJobsStore` (process/sync state).
