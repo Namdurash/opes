@@ -1,6 +1,6 @@
 export interface User {
   id: string;
   name: string;
-  passwordHash: string;
+  checkedIn: boolean;
   createdAt: number;
 }

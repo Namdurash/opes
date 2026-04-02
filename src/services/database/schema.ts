@@ -1,13 +1,13 @@
 import { appSchema, tableSchema } from '@nozbe/watermelondb';
 
 export const databaseSchema = appSchema({
-  version: 3,
+  version: 5,
   tables: [
     tableSchema({
       name: 'users',
       columns: [
         { name: 'name', type: 'string' },
-        { name: 'password_hash', type: 'string' },
+        { name: 'checked_in', type: 'boolean' },
         { name: 'created_at', type: 'number' },
       ],
     }),

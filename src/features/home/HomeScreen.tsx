@@ -7,7 +7,7 @@ import { CardStack } from '../cards';
 import { useMonobankStore } from '../monobank';
 import { useTransactionsStore } from '../transactions/state/useTransactionsStore';
 import { AppText, Button, Screen } from '../../shared/ui';
-import { useAuthStore } from '../../stores/useAuthStore';
+import { useUserStore } from '../../stores/useUserStore';
 import { useCardsStore } from '../cards/state/useCardsStore';
 import { TransactionHistorySection } from './components/TransactionHistorySection';
 import { useHomeScreenStyles } from './HomeScreen.styles';
@@ -17,9 +17,7 @@ export const HomeScreen = () => {
   const styles = useHomeScreenStyles();
   const [scrollEnabled, setScrollEnabled] = React.useState(true);
 
-  const { signOut, currentUserId } = useAuthStore(
-    useShallow(state => ({ signOut: state.signOut, currentUserId: state.currentUserId })),
-  );
+  const currentUserId = useUserStore(state => state.currentUserId);
 
   const { cards, isLoading, errorMessage, loadCardsByUser } = useCardsStore(
     useShallow(state => ({
@@ -95,7 +93,6 @@ export const HomeScreen = () => {
           </View>
         </View>
 
-        <Button title="Sign out" onPress={() => { signOut(); }} variant="secondary" />
       </ScrollView>
     </Screen>
   );

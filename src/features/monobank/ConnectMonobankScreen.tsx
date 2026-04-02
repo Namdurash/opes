@@ -1,6 +1,9 @@
 import React from 'react';
 import { Linking, TextInput, View } from 'react-native';
+import { useNavigation } from '@react-navigation/native';
 import { useShallow } from 'zustand/shallow';
+import { ConnectMonobankScreenNavigationProp, ROOT_ROUTES } from '../../app/navigation';
+import { useUserStore } from '../../stores/useUserStore';
 import { AppText, Button, Screen } from '../../shared/ui';
 import { useMonobankStore } from './state/useMonobankStore';
 import { useConnectMonobankScreenStyles } from './ConnectMonobankScreen.styles';
@@ -8,7 +11,13 @@ import { useConnectMonobankScreenStyles } from './ConnectMonobankScreen.styles';
 const MONOBANK_TOKEN_URL = 'https://api.monobank.ua/';
 
 export const ConnectMonobankScreen = () => {
+  const navigation = useNavigation<ConnectMonobankScreenNavigationProp>();
   const styles = useConnectMonobankScreenStyles();
+
+  const { isCheckedIn, markCheckedIn } = useUserStore(
+    useShallow(state => ({ isCheckedIn: state.isCheckedIn, markCheckedIn: state.markCheckedIn })),
+  );
+
   const { token, status, clientName, errorMessage, setToken, connect, disconnect, loadSavedToken } =
     useMonobankStore(
       useShallow(state => ({
@@ -26,6 +35,12 @@ export const ConnectMonobankScreen = () => {
   React.useEffect(() => {
     loadSavedToken();
   }, [loadSavedToken]);
+
+  React.useEffect(() => {
+    if (status === 'connected' && !isCheckedIn) {
+      markCheckedIn().then(() => navigation.replace(ROOT_ROUTES.HOME));
+    }
+  }, [status, isCheckedIn, markCheckedIn, navigation]);
 
   const isConnecting = status === 'connecting';
   const isConnected = status === 'connected';

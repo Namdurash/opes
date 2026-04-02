@@ -3,6 +3,19 @@ import { addColumns, schemaMigrations } from '@nozbe/watermelondb/Schema/migrati
 export const databaseMigrations = schemaMigrations({
   migrations: [
     {
+      toVersion: 5,
+      steps: [
+        addColumns({
+          table: 'users',
+          columns: [{ name: 'checked_in', type: 'boolean' }],
+        }),
+      ],
+    },
+    {
+      toVersion: 4,
+      steps: [],
+    },
+    {
       toVersion: 3,
       steps: [
         addColumns({

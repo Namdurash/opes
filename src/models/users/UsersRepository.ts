@@ -5,20 +5,20 @@ import { UserModel } from '../../services/database/models';
 
 export interface CreateUserInput {
   name: string;
-  passwordHash: string;
 }
 
 export interface UsersRepositoryContract {
   create(input: CreateUserInput): Promise<User>;
   hasAnyUser(): Promise<boolean>;
   findById(id: string): Promise<User | null>;
-  findByName(name: string): Promise<User | null>;
+  findFirst(): Promise<User | null>;
+  markCheckedIn(id: string): Promise<void>;
 }
 
 const toDomain = (model: UserModel): User => ({
   id: model.id,
   name: model.name,
-  passwordHash: model.passwordHash,
+  checkedIn: model.checkedIn,
   createdAt: model.createdAt,
 });
 
@@ -30,7 +30,7 @@ export class UsersRepository implements UsersRepositoryContract {
     const user = await database.write(async () => {
       return collection.create(record => {
         record.name = input.name;
-        record.passwordHash = input.passwordHash;
+        record.checkedIn = false;
         record.createdAt = createdAt;
       });
     });
@@ -56,10 +56,21 @@ export class UsersRepository implements UsersRepositoryContract {
     }
   }
 
-  async findByName(name: string): Promise<User | null> {
+  async findFirst(): Promise<User | null> {
     const usersCollection = database.get<UserModel>('users');
-    const users = await usersCollection.query(Q.where('name', name), Q.take(1)).fetch();
+    const users = await usersCollection.query(Q.take(1)).fetch();
 
     return users.length > 0 ? toDomain(users[0]) : null;
+  }
+
+  async markCheckedIn(id: string): Promise<void> {
+    const usersCollection = database.get<UserModel>('users');
+    const user = await usersCollection.find(id);
+
+    await database.write(async () => {
+      await user.update(record => {
+        record.checkedIn = true;
+      });
+    });
   }
 }

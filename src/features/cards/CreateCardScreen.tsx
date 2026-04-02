@@ -5,7 +5,7 @@ import { launchImageLibrary } from 'react-native-image-picker';
 import { CardType } from '../../domain/cards';
 import { CreateCardScreenNavigationProp } from '../../app/navigation';
 import { AppText, Button, Screen } from '../../shared/ui';
-import { useAuthStore } from '../../stores/useAuthStore';
+import { useUserStore } from '../../stores/useUserStore';
 import { useCardsStore } from './state/useCardsStore';
 import { useCreateCardStore } from './state/useCreateCardStore';
 import { useCreateCardScreenStyles } from './CreateCardScreen.styles';
@@ -15,7 +15,7 @@ const CARD_TYPES: CardType[] = ['salary', 'credit', 'storage'];
 export const CreateCardScreen = () => {
   const styles = useCreateCardScreenStyles();
   const navigation = useNavigation<CreateCardScreenNavigationProp>();
-  const currentUserId = useAuthStore(state => state.currentUserId);
+  const currentUserId = useUserStore(state => state.currentUserId);
 
   const title = useCreateCardStore(state => state.title);
   const moneyAmount = useCreateCardStore(state => state.moneyAmount);

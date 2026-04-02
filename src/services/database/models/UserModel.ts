@@ -5,6 +5,6 @@ export class UserModel extends Model {
   static table = 'users';
 
   @field('name') name!: string;
-  @field('password_hash') passwordHash!: string;
+  @field('checked_in') checkedIn!: boolean;
   @field('created_at') createdAt!: number;
 }

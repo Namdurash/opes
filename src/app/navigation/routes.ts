@@ -1,6 +1,5 @@
 export const ROOT_ROUTES = {
-  SIGN_IN: 'SignIn',
-  REGISTRATION: 'Registration',
+  WELCOME: 'Welcome',
   HOME: 'Home',
   TRANSACTIONS: 'Transactions',
   CREATE_CARD: 'CreateCard',
