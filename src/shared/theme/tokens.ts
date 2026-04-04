@@ -8,6 +8,8 @@ export const tokens = {
     cta: '#0F766E',
     ctaSoft: '#14B8A6',
     background: '#FFFFFF',
+    gradientLightPurple: '#EAE5FF',
+    gradientBoldPurple: '#D3C8FF',
     subtle: '#D3C8FF',
     surface: '#FAFAFA',
     border: '#E4E4E7',

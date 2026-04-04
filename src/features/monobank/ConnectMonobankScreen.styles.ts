@@ -24,7 +24,7 @@ export const useConnectMonobankScreenStyles = makeStyles(theme => ({
     lineHeight: theme.typography.body.lineHeight,
     color: theme.colors.textPrimary,
     backgroundColor: theme.colors.surface,
-    minHeight: 80,
+    minHeight: 40,
     textAlignVertical: 'top',
   },
   hint: {

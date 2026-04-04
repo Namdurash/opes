@@ -50,7 +50,7 @@ export const WelcomeScreen = () => {
   }
 
   return (
-    <Screen>
+    <Screen background="gradient">
       <View style={styles.content}>
         <View style={styles.header}>
           <AppText variant="h1">Welcome to Opes</AppText>
