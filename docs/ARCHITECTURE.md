@@ -232,3 +232,32 @@ src/features/<feature>/
 - Feature screens must never hardcode styling constants (no raw hex colors, no direct font sizes).
 - Shared UI primitives in `src/shared/ui/` wrap React Native components and apply tokens by default.
 - A ThemeProvider provides `theme` via context and a `useTheme()` hook.
+
+## Screen Component
+
+`Screen` is the root layout wrapper for every screen. It accepts:
+
+- `background?: ScreenBackground` — `'blank'` (default, solid white) or `'gradient'` (LinearGradient)
+- `headerLeft?`, `headerCenter?`, `headerRight?` — `ReactNode` slots; header is only rendered when at least one is provided
+
+Header config lives on `Screen`, not composed manually inside the screen body. React Navigation's built-in `header` option is not used — it renders outside `Screen` and breaks background inheritance.
+
+## Header System
+
+`src/shared/ui/header/` — slot-based: `left`, `center`, `right`.
+
+- `center` is absolutely positioned across the full width, guaranteeing true centering regardless of side content.
+- `left` and `right` are rows with gap, supporting 1–3 icon buttons each.
+
+Sub-components: `HeaderTitle`, `HeaderBackButton`, `HeaderIconButton`.
+
+## Icon System
+
+`src/shared/ui/icons/` — SVG files transformed by `react-native-svg-transformer` into React components.
+
+- SVG assets live in `src/shared/ui/icons/assets/`
+- Each icon has a wrapper component accepting `{ size, color }`
+- All icons are registered in `registry.ts`; `IconName` is derived from its keys automatically
+- Public API: `<Icon name="..." size="sm|md|lg" color="..." />`
+
+To add an icon: drop the `.svg` in `assets/`, create a wrapper component, add it to `registry.ts`.

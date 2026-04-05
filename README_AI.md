@@ -44,8 +44,26 @@ All UI must use design tokens and shared UI primitives. Do not hardcode colors, 
 
 - No raw hex colors in feature code.
 - No numeric font sizes in feature code.
-- Prefer `shared/ui` primitives: `Screen`, `Text`, `Button`, `Card`, `Spacer`.
+- Prefer `shared/ui` primitives: `Screen`, `AppText`, `Button`, `Header`, `Icon`.
 - Styles must be created via a helper that accepts theme (e.g. `makeStyles(theme)`), or by using `useTheme()`.
+
+### Screen
+
+- Every screen must be wrapped in `<Screen>`.
+- Use `background="gradient"` or `background="blank"` (default) for visual variants.
+- Pass header content via `headerLeft`, `headerCenter`, `headerRight` props on `Screen` — never compose `<Header>` manually inside a screen body.
+- Do not add a back button on a screen that is the navigation stack root (navigated to via `replace`). Use `navigate` instead of `replace` when the destination needs a back button.
+
+### Header
+
+- Building blocks: `HeaderBackButton`, `HeaderTitle`, `HeaderIconButton` from `shared/ui`.
+- `headerLeft` and `headerRight` support 1–3 items via a Fragment.
+- Never use React Navigation's built-in `header` option.
+
+### Icons
+
+- Always use `<Icon name="..." size="sm|md|lg" />` — never import individual icon components into feature code.
+- To add a new icon: place `.svg` in `src/shared/ui/icons/assets/`, create a wrapper component, register it in `registry.ts`.
 
 ### Styling
 

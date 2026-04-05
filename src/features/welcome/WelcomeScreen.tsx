@@ -31,7 +31,7 @@ export const WelcomeScreen = () => {
   }, [status, isCheckedIn, navigation]);
 
   const onConnectMonobank = () => {
-    navigation.replace(ROOT_ROUTES.CONNECT_MONOBANK);
+    navigation.navigate(ROOT_ROUTES.CONNECT_MONOBANK);
   };
 
   const onProceedWithout = async () => {

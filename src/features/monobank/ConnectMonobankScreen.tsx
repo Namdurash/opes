@@ -4,7 +4,7 @@ import { useNavigation } from '@react-navigation/native';
 import { useShallow } from 'zustand/shallow';
 import { ConnectMonobankScreenNavigationProp, ROOT_ROUTES } from '../../app/navigation';
 import { useUserStore } from '../../stores/useUserStore';
-import { AppText, Button, Screen } from '../../shared/ui';
+import { AppText, Button, HeaderBackButton, HeaderTitle, Screen } from '../../shared/ui';
 import { useMonobankStore } from './state/useMonobankStore';
 import { useConnectMonobankScreenStyles } from './ConnectMonobankScreen.styles';
 
@@ -46,7 +46,10 @@ export const ConnectMonobankScreen = () => {
   const isConnected = status === 'connected';
 
   return (
-    <Screen>
+    <Screen
+      headerLeft={<HeaderBackButton onPress={() => { navigation.goBack(); }} />}
+      headerCenter={<HeaderTitle>Connect Monobank</HeaderTitle>}
+    >
       <View style={styles.content}>
         <View style={styles.header}>
           <AppText variant="h1">Connect Monobank</AppText>

@@ -1,22 +1,40 @@
-import React, { PropsWithChildren } from 'react';
+import React, { PropsWithChildren, ReactNode } from 'react';
 import { StyleProp, View, ViewStyle } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import LinearGradient from 'react-native-linear-gradient';
 import { makeStyles, useTheme } from '../theme';
+import { Header } from './header';
 
 export type ScreenBackground = 'blank' | 'gradient';
 
 interface ScreenProps extends PropsWithChildren {
   contentStyle?: StyleProp<ViewStyle>;
   background?: ScreenBackground;
+  headerLeft?: ReactNode;
+  headerCenter?: ReactNode;
+  headerRight?: ReactNode;
 }
 
-export const Screen = ({ children, contentStyle, background = 'blank' }: ScreenProps) => {
+export const Screen = ({
+  children,
+  contentStyle,
+  background = 'blank',
+  headerLeft,
+  headerCenter,
+  headerRight,
+}: ScreenProps) => {
   const styles = useStyles();
   const { theme: { colors } } = useTheme();
 
-  const content = (
-    <View style={[styles.content, contentStyle]}>{children}</View>
+  const hasHeader = headerLeft != null || headerCenter != null || headerRight != null;
+
+  const body = (
+    <>
+      {hasHeader ? (
+        <Header left={headerLeft} center={headerCenter} right={headerRight} />
+      ) : null}
+      <View style={[styles.content, contentStyle]}>{children}</View>
+    </>
   );
 
   if (background === 'gradient') {
@@ -26,7 +44,7 @@ export const Screen = ({ children, contentStyle, background = 'blank' }: ScreenP
         style={styles.safeArea}
       >
         <SafeAreaView style={styles.fill}>
-          {content}
+          {body}
         </SafeAreaView>
       </LinearGradient>
     );
@@ -34,7 +52,7 @@ export const Screen = ({ children, contentStyle, background = 'blank' }: ScreenP
 
   return (
     <SafeAreaView style={styles.safeArea}>
-      {content}
+      {body}
     </SafeAreaView>
   );
 };
