@@ -1,5 +1,7 @@
 import type { ComponentType } from 'react';
 import { ChevronLeft } from './ChevronLeft';
+import { Check } from './Check';
+import { ErrorRound } from './ErrorRound';
 import type { IconComponentProps } from './types';
 
 /**
@@ -13,4 +15,6 @@ import type { IconComponentProps } from './types';
  */
 export const iconRegistry = {
   chevronLeft: ChevronLeft,
+  check: Check,
+  errorRound: ErrorRound,
 } as const satisfies Record<string, ComponentType<IconComponentProps>>;
