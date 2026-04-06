@@ -3,7 +3,7 @@ import { ActivityIndicator, Pressable, StyleProp, ViewStyle } from 'react-native
 import { makeStyles } from '../theme';
 import { AppText } from './AppText';
 
-type ButtonVariant = 'primary' | 'secondary';
+export type ButtonVariant = 'primary' | 'secondary' | 'success' | 'danger';
 
 interface ButtonProps {
   title: string;
@@ -24,6 +24,7 @@ export const Button = ({
 }: ButtonProps) => {
   const styles = useStyles();
   const isDisabled = disabled || loading;
+  const hasLightText = variant !== 'secondary';
 
   return (
     <Pressable
@@ -40,12 +41,12 @@ export const Button = ({
     >
       {loading ? (
         <ActivityIndicator
-          color={variant === 'primary' ? styles.primaryText.color : styles.secondaryText.color}
+          color={hasLightText ? styles.lightText.color : styles.darkText.color}
         />
       ) : (
         <AppText
           variant="body"
-          style={variant === 'primary' ? styles.primaryText : styles.secondaryText}
+          style={hasLightText ? styles.lightText : styles.darkText}
         >
           {title}
         </AppText>
@@ -77,14 +78,26 @@ const useStyles = makeStyles(theme => ({
   secondaryPressed: {
     backgroundColor: theme.colors.border,
   },
+  success: {
+    backgroundColor: theme.colors.success,
+  },
+  successPressed: {
+    opacity: 0.8,
+  },
+  danger: {
+    backgroundColor: theme.colors.error,
+  },
+  dangerPressed: {
+    opacity: 0.8,
+  },
   disabled: {
     opacity: 0.6,
   },
-  primaryText: {
+  lightText: {
     color: theme.colors.background,
     ...theme.typography.button,
   },
-  secondaryText: {
+  darkText: {
     color: theme.colors.textPrimary,
     ...theme.typography.button,
   },

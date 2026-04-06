@@ -9,6 +9,7 @@ import type { BottomSheetBackdropProps } from '@gorhom/bottom-sheet';
 import { useShallow } from 'zustand/shallow';
 import { useBottomSheetStore } from '../../../stores/useBottomSheetStore';
 import type { BottomSheetVariant } from '../../../stores/useBottomSheetStore';
+import type { ButtonVariant } from '../Button';
 import { useTheme } from '../../theme';
 import { AppText } from '../AppText';
 import { Button } from '../Button';
@@ -16,18 +17,25 @@ import { Icon } from '../icons';
 import type { IconName } from '../icons';
 import { useGlobalBottomSheetStyles } from './GlobalBottomSheet.styles';
 
-const getVariantIcon = (variant: BottomSheetVariant): IconName | null => {
-  switch (variant) {
-    case 'error': return 'errorRound';
-    case 'success': return 'check';
-    case 'info': return null;
-  }
+const VARIANT_ICON: Record<BottomSheetVariant, IconName | null> = {
+  success: 'check',
+  error: 'errorRound',
+  info: null,
 };
 
-const getVariantIconColor = (variant: BottomSheetVariant, colors: ReturnType<typeof useTheme>['theme']['colors']): string => {
+const VARIANT_BUTTON: Record<BottomSheetVariant, ButtonVariant> = {
+  success: 'success',
+  error: 'danger',
+  info: 'primary',
+};
+
+const getVariantIconColor = (
+  variant: BottomSheetVariant,
+  colors: ReturnType<typeof useTheme>['theme']['colors'],
+): string => {
   switch (variant) {
-    case 'error': return colors.error;
     case 'success': return colors.success;
+    case 'error': return colors.error;
     case 'info': return colors.primary;
   }
 };
@@ -65,9 +73,9 @@ export const GlobalBottomSheet = () => {
     [],
   );
 
-  const iconName = config ? getVariantIcon(config.variant) : null;
+  const iconName = config ? VARIANT_ICON[config.variant] : null;
   const iconColor = config ? getVariantIconColor(config.variant, theme.colors) : undefined;
-  const hasActions = config?.actions && config.actions.length > 0;
+  const defaultButtonVariant = config ? VARIANT_BUTTON[config.variant] : 'primary';
 
   return (
     <BottomSheetModal
@@ -80,9 +88,9 @@ export const GlobalBottomSheet = () => {
       handleIndicatorStyle={styles.handle}
     >
       <BottomSheetView style={styles.content}>
-        {iconName && (
+        {iconName && iconColor && (
           <View style={styles.iconContainer}>
-            <Icon name={iconName} size="lg" color={iconColor} />
+            <Icon name={iconName} size="xl" color={iconColor} />
           </View>
         )}
         {config && (
@@ -92,12 +100,12 @@ export const GlobalBottomSheet = () => {
               <AppText variant="body" style={styles.message}>{config.message}</AppText>
             )}
             <View style={styles.actions}>
-              {hasActions
-                ? config.actions!.map((action, index) => (
+              {config.actions && config.actions.length > 0
+                ? config.actions.map((action, index) => (
                     <Button
                       key={index}
                       title={action.label}
-                      variant={action.variant ?? 'primary'}
+                      variant={action.variant ?? defaultButtonVariant}
                       onPress={() => { action.onPress(); hide(); }}
                     />
                   ))

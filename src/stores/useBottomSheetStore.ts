@@ -5,7 +5,7 @@ export type BottomSheetVariant = 'error' | 'success' | 'info';
 export interface BottomSheetAction {
   label: string;
   onPress: () => void;
-  variant?: 'primary' | 'secondary';
+  variant?: 'primary' | 'secondary' | 'success' | 'danger';
 }
 
 export interface BottomSheetConfig {

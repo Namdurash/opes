@@ -7,6 +7,7 @@ const SIZE_MAP: Record<IconSize, number> = {
   sm: 16,
   md: 20,
   lg: 24,
+  xl: 56,
 };
 
 export const Icon = ({ name, size = 'md', color }: IconProps) => {

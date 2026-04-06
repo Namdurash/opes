@@ -1,6 +1,6 @@
 import type { iconRegistry } from './registry';
 
-export type IconSize = 'sm' | 'md' | 'lg';
+export type IconSize = 'sm' | 'md' | 'lg' | 'xl';
 
 export type IconName = keyof typeof iconRegistry;
 

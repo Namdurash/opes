@@ -3,7 +3,8 @@ import { makeStyles } from '../../theme';
 export const useGlobalBottomSheetStyles = makeStyles(theme => ({
   iconContainer: {
     alignItems: 'center',
-    paddingTop: theme.spacing.sm,
+    paddingTop: theme.spacing.md,
+    paddingBottom: theme.spacing.xs,
   },
   content: {
     paddingHorizontal: theme.spacing.xl,
