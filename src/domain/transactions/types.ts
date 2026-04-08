@@ -6,4 +6,11 @@ export interface Transaction {
   amount: number;
   type: TransactionType;
   occurredAtIso: string;
+  cardId: string;
+  mcc: number;
+  currencyCode: number;
+  currencySymbol: string;
+  balance: number;
+  hold: boolean;
+  comment: string | null;
 }

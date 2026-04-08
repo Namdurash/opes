@@ -10,24 +10,23 @@ const MAX_DISPLAYED = 10;
 
 export const TransactionHistorySection = () => {
   const styles = useTransactionHistorySectionStyles();
-  const { transactions, isLoading, errorMessage } = useTransactionsStore(
+  const { transactions, isLoadingFromDb, syncStatus } = useTransactionsStore(
     useShallow(state => ({
       transactions: state.transactions,
-      isLoading: state.isLoading,
-      errorMessage: state.errorMessage,
+      isLoadingFromDb: state.isLoadingFromDb,
+      syncStatus: state.syncStatus,
     })),
   );
 
   const displayed = transactions.slice(0, MAX_DISPLAYED);
+  const isLoading = isLoadingFromDb || syncStatus === 'syncing';
 
   return (
     <View style={styles.container}>
       <AppText variant="h2">Recent Transactions</AppText>
 
-      {isLoading ? (
+      {isLoading && displayed.length === 0 ? (
         <AppText variant="caption" style={styles.emptyText}>Loading...</AppText>
-      ) : errorMessage ? (
-        <AppText variant="caption" style={styles.emptyText}>{errorMessage}</AppText>
       ) : displayed.length === 0 ? (
         <AppText variant="caption" style={styles.emptyText}>No transactions yet.</AppText>
       ) : (
@@ -40,7 +39,7 @@ export const TransactionHistorySection = () => {
                 style={styles.description}
                 numberOfLines={1}
               >
-                {tx.description}
+                {tx.title}
               </AppText>
               <AppText
                 variant="caption"
@@ -54,4 +53,4 @@ export const TransactionHistorySection = () => {
       )}
     </View>
   );
-}
+};

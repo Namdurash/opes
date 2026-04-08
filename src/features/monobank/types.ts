@@ -9,7 +9,7 @@ export interface MonobankStoreState {
 
 export interface MonobankStoreActions {
   setToken(token: string): void;
-  connect(): Promise<void>;
+  connect(userId: string): Promise<void>;
   disconnect(): void;
   loadSavedToken(): void;
 }

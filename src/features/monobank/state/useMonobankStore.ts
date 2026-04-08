@@ -2,7 +2,11 @@ import { create } from 'zustand';
 import { MonobankError } from '../../../services/monobank';
 import { getMonobankService, clearMonobankService } from '../../../services/monobank/serviceInstance';
 import { monobankTokenService } from '../../../services/monobank/MonobankTokenService';
+import { CardsRepository } from '../../../models/cards';
+import { useTransactionsStore } from '../../transactions/state/useTransactionsStore';
 import type { MonobankStoreState, MonobankStoreActions } from '../types';
+
+const cardsRepository = new CardsRepository();
 
 export const useMonobankStore = create<MonobankStoreState & MonobankStoreActions>((set, get) => ({
   token: '',
@@ -14,7 +18,7 @@ export const useMonobankStore = create<MonobankStoreState & MonobankStoreActions
     set({ token, errorMessage: null });
   },
 
-  async connect() {
+  async connect(userId: string) {
     const { token } = get();
     const trimmed = token.trim();
 
@@ -29,7 +33,12 @@ export const useMonobankStore = create<MonobankStoreState & MonobankStoreActions
       const service = getMonobankService(trimmed);
       const clientInfo = await service.getClientInfo();
       monobankTokenService.save(trimmed, clientInfo.name);
+
+      await cardsRepository.upsertMonobankCards(userId, clientInfo.accounts);
+
       set({ status: 'connected', clientName: clientInfo.name, errorMessage: null });
+
+      useTransactionsStore.getState().syncFromMonobank(userId).catch(() => {});
     } catch (error) {
       const message =
         error instanceof MonobankError
@@ -42,6 +51,7 @@ export const useMonobankStore = create<MonobankStoreState & MonobankStoreActions
   disconnect() {
     monobankTokenService.clear();
     clearMonobankService();
+    useTransactionsStore.getState().reset();
     set({ status: 'idle', token: '', clientName: null, errorMessage: null });
   },
 

@@ -1,11 +1,12 @@
-import React from 'react';
-import { ScrollView, View } from 'react-native';
+import React, { useCallback, useState } from 'react';
+import { RefreshControl, ScrollView, View } from 'react-native';
 import { useNavigation } from '@react-navigation/native';
 import { useShallow } from 'zustand/shallow';
 import { ROOT_ROUTES, HomeScreenNavigationProp } from '../../app/navigation';
 import { CardStack } from '../cards';
 import { useMonobankStore } from '../monobank';
 import { useTransactionsStore } from '../transactions/state/useTransactionsStore';
+import { useAppForegroundSync } from '../transactions/hooks/useAppForegroundSync';
 import { AppText, Button, Screen } from '../../shared/ui';
 import { useUserStore } from '../../stores/useUserStore';
 import { useCardsStore } from '../cards/state/useCardsStore';
@@ -36,8 +37,11 @@ export const HomeScreen = () => {
     })),
   );
 
-  const { loadTransactions } = useTransactionsStore(
-    useShallow(state => ({ loadTransactions: state.loadTransactions })),
+  const { loadTransactions, syncFromMonobank } = useTransactionsStore(
+    useShallow(state => ({
+      loadTransactions: state.loadTransactions,
+      syncFromMonobank: state.syncFromMonobank,
+    })),
   );
 
   React.useEffect(() => {
@@ -51,14 +55,43 @@ export const HomeScreen = () => {
   }, [loadSavedToken]);
 
   React.useEffect(() => {
-    if (monobankStatus === 'connected') {
+    if (monobankStatus === 'connected' && currentUserId) {
       loadTransactions();
+      syncFromMonobank(currentUserId).catch(() => {});
     }
-  }, [monobankStatus, loadTransactions]);
+  }, [monobankStatus, currentUserId, loadTransactions, syncFromMonobank]);
+
+  const [isRefreshing, setIsRefreshing] = useState(false);
+
+  const handlePullToRefresh = useCallback(async () => {
+    if (monobankStatus !== 'connected' || !currentUserId) return;
+
+    setIsRefreshing(true);
+    try {
+      await syncFromMonobank(currentUserId);
+    } finally {
+      setIsRefreshing(false);
+    }
+  }, [monobankStatus, currentUserId, syncFromMonobank]);
+
+  const handleForeground = useCallback(() => {
+    if (monobankStatus === 'connected' && currentUserId) {
+      syncFromMonobank(currentUserId, { silent: true }).catch(() => {});
+    }
+  }, [monobankStatus, currentUserId, syncFromMonobank]);
+
+  useAppForegroundSync(handleForeground);
 
   return (
     <Screen>
-      <ScrollView contentContainerStyle={styles.content} showsVerticalScrollIndicator={false} scrollEnabled={scrollEnabled}>
+      <ScrollView
+        contentContainerStyle={styles.content}
+        showsVerticalScrollIndicator={false}
+        scrollEnabled={scrollEnabled}
+        refreshControl={
+          <RefreshControl refreshing={isRefreshing} onRefresh={handlePullToRefresh} />
+        }
+      >
         <View style={styles.header}>
           <AppText variant="h1">Home</AppText>
           <AppText tone="secondary">Track your cards and move quickly between flows.</AppText>
@@ -96,4 +129,4 @@ export const HomeScreen = () => {
       </ScrollView>
     </Screen>
   );
-}
+};

@@ -14,8 +14,8 @@ export const ConnectMonobankScreen = () => {
   const navigation = useNavigation<ConnectMonobankScreenNavigationProp>();
   const styles = useConnectMonobankScreenStyles();
 
-  const { isCheckedIn, markCheckedIn } = useUserStore(
-    useShallow(state => ({ isCheckedIn: state.isCheckedIn, markCheckedIn: state.markCheckedIn })),
+  const { currentUserId, isCheckedIn, markCheckedIn } = useUserStore(
+    useShallow(state => ({ currentUserId: state.currentUserId, isCheckedIn: state.isCheckedIn, markCheckedIn: state.markCheckedIn })),
   );
 
   const { token, status, clientName, errorMessage, setToken, connect, disconnect, loadSavedToken } =
@@ -105,7 +105,7 @@ export const ConnectMonobankScreen = () => {
         ) : (
           <Button
             title="Connect"
-            onPress={() => { connect(); }}
+            onPress={() => { connect(currentUserId!); }}
             loading={isConnecting}
             disabled={isConnecting}
           />

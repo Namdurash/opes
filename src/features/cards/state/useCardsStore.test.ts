@@ -11,6 +11,13 @@ const makeCard = (overrides: Partial<Card> = {}): Card => ({
   image: null,
   createdAt: 1,
   sortOrder: 0,
+  monobankAccountId: null,
+  currencyCode: null,
+  currencySymbol: null,
+  iban: null,
+  maskedPan: null,
+  creditLimit: null,
+  monobankBalance: null,
   ...overrides,
 });
 
@@ -21,6 +28,9 @@ describe('createCardsStore', () => {
       getCardsByUser: jest.fn().mockResolvedValue(cards),
       createCard: jest.fn(),
       reorderCards: jest.fn(),
+      findByMonobankAccountId: jest.fn(),
+      upsertMonobankCards: jest.fn(),
+      getMonobankCards: jest.fn(),
     };
     const store = createCardsStore({ cardsRepository: repository });
 
@@ -36,6 +46,9 @@ describe('createCardsStore', () => {
       getCardsByUser: jest.fn().mockResolvedValue([existing]),
       createCard: jest.fn(),
       reorderCards: jest.fn(),
+      findByMonobankAccountId: jest.fn(),
+      upsertMonobankCards: jest.fn(),
+      getMonobankCards: jest.fn(),
     };
     const store = createCardsStore({ cardsRepository: repository });
     store.setState({ cards: [existing] });
@@ -55,6 +68,9 @@ describe('createCardsStore', () => {
       getCardsByUser: jest.fn(),
       createCard: jest.fn(),
       reorderCards: jest.fn().mockRejectedValue(new Error('DB error')),
+      findByMonobankAccountId: jest.fn(),
+      upsertMonobankCards: jest.fn(),
+      getMonobankCards: jest.fn(),
     };
     const store = createCardsStore({ cardsRepository: repository });
     store.setState({ cards });
@@ -72,6 +88,9 @@ describe('createCreateCardStore', () => {
       getCardsByUser: jest.fn(),
       createCard: jest.fn(),
       reorderCards: jest.fn(),
+      findByMonobankAccountId: jest.fn(),
+      upsertMonobankCards: jest.fn(),
+      getMonobankCards: jest.fn(),
     };
     const store = createCreateCardStore({ cardsRepository: repository });
 
@@ -88,6 +107,9 @@ describe('createCreateCardStore', () => {
       getCardsByUser: jest.fn(),
       createCard: jest.fn().mockResolvedValue(createdCard),
       reorderCards: jest.fn(),
+      findByMonobankAccountId: jest.fn(),
+      upsertMonobankCards: jest.fn(),
+      getMonobankCards: jest.fn(),
     };
     const store = createCreateCardStore({ cardsRepository: repository });
 
@@ -116,6 +138,9 @@ describe('createCreateCardStore', () => {
       getCardsByUser: jest.fn(),
       createCard: jest.fn().mockResolvedValue(createdCard),
       reorderCards: jest.fn(),
+      findByMonobankAccountId: jest.fn(),
+      upsertMonobankCards: jest.fn(),
+      getMonobankCards: jest.fn(),
     };
     const store = createCreateCardStore({ cardsRepository: repository });
 
