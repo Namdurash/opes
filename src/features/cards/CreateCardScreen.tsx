@@ -1,10 +1,15 @@
 import React from 'react';
-import { Image, TextInput, View } from 'react-native';
+import { Image, ScrollView, View } from 'react-native';
 import { useNavigation } from '@react-navigation/native';
+import { useShallow } from 'zustand/shallow';
+import { useForm } from 'react-hook-form';
+import { yupResolver } from '@hookform/resolvers/yup';
 import { launchImageLibrary } from 'react-native-image-picker';
-import { CardType } from '../../domain/cards';
-import { CreateCardScreenNavigationProp } from '../../app/navigation';
-import { AppText, Button, Screen } from '../../shared/ui';
+import type { CardType } from '../../domain/cards';
+import type { CreateCardScreenNavigationProp } from '../../app/navigation';
+import { AppText, Button, FormInput, Screen } from '../../shared/ui';
+import { createCardSchema } from '../../shared/validation';
+import type { CreateCardFormValues } from '../../shared/validation';
 import { useUserStore } from '../../stores/useUserStore';
 import { useCardsStore } from './state/useCardsStore';
 import { useCreateCardStore } from './state/useCreateCardStore';
@@ -17,39 +22,49 @@ export const CreateCardScreen = () => {
   const navigation = useNavigation<CreateCardScreenNavigationProp>();
   const currentUserId = useUserStore(state => state.currentUserId);
 
-  const title = useCreateCardStore(state => state.title);
-  const moneyAmount = useCreateCardStore(state => state.moneyAmount);
-  const type = useCreateCardStore(state => state.type);
-  const image = useCreateCardStore(state => state.image);
-  const isSubmitting = useCreateCardStore(state => state.isSubmitting);
-  const errorMessage = useCreateCardStore(state => state.errorMessage);
-  const setTitle = useCreateCardStore(state => state.setTitle);
-  const setMoneyAmount = useCreateCardStore(state => state.setMoneyAmount);
-  const setType = useCreateCardStore(state => state.setType);
-  const setImage = useCreateCardStore(state => state.setImage);
-  const setErrorMessage = useCreateCardStore(state => state.setErrorMessage);
-  const createCard = useCreateCardStore(state => state.createCard);
-  const resetForm = useCreateCardStore(state => state.resetForm);
+  const { control, handleSubmit, reset } = useForm<CreateCardFormValues>({
+    resolver: yupResolver(createCardSchema),
+    defaultValues: { title: '', moneyAmount: '' },
+  });
+
+  const { type, image, isSubmitting, errorMessage, setType, setImage, setErrorMessage, createCard, resetForm } =
+    useCreateCardStore(
+      useShallow(state => ({
+        type: state.type,
+        image: state.image,
+        isSubmitting: state.isSubmitting,
+        errorMessage: state.errorMessage,
+        setType: state.setType,
+        setImage: state.setImage,
+        setErrorMessage: state.setErrorMessage,
+        createCard: state.createCard,
+        resetForm: state.resetForm,
+      })),
+    );
 
   const appendCard = useCardsStore(state => state.appendCard);
 
   React.useEffect(() => {
+    reset();
     resetForm();
 
-    return resetForm;
-  }, [resetForm]);
+    return () => {
+      reset();
+      resetForm();
+    };
+  }, [reset, resetForm]);
 
-  const onSubmit = async () => {
+  const onSubmit = handleSubmit(async data => {
     if (!currentUserId) {
       return;
     }
 
-    const created = await createCard(currentUserId);
+    const created = await createCard(currentUserId, data);
     if (created) {
       appendCard(created);
       navigation.goBack();
     }
-  };
+  });
 
   const onSelectImage = async () => {
     const result = await launchImageLibrary({
@@ -78,35 +93,25 @@ export const CreateCardScreen = () => {
 
   return (
     <Screen>
-      <View style={styles.content}>
+      <ScrollView contentContainerStyle={styles.content} keyboardDismissMode="on-drag">
         <AppText variant="h1">Create card</AppText>
         <AppText tone="secondary">Add a money source or account for the current user.</AppText>
 
         <View style={styles.form}>
-          <View>
-            <AppText variant="caption" tone="secondary" style={styles.sectionHeader}>
-              Title
-            </AppText>
-            <TextInput
-              onChangeText={setTitle}
-              placeholder="Enter card title"
-              style={styles.input}
-              value={title}
-            />
-          </View>
+          <FormInput
+            control={control}
+            name="title"
+            label="Title"
+            placeholder="Enter card title"
+          />
 
-          <View>
-            <AppText variant="caption" tone="secondary" style={styles.sectionHeader}>
-              Money amount
-            </AppText>
-            <TextInput
-              keyboardType="numeric"
-              onChangeText={setMoneyAmount}
-              placeholder="Enter amount"
-              style={styles.input}
-              value={moneyAmount}
-            />
-          </View>
+          <FormInput
+            control={control}
+            name="moneyAmount"
+            label="Money amount"
+            placeholder="Enter amount"
+            keyboardType="numeric"
+          />
 
           <View style={styles.typeSection}>
             <AppText variant="caption" tone="secondary">
@@ -143,7 +148,7 @@ export const CreateCardScreen = () => {
 
           <Button loading={isSubmitting} onPress={onSubmit} title="Save card" />
         </View>
-      </View>
+      </ScrollView>
     </Screen>
   );
-}
+};

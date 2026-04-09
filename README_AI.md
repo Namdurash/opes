@@ -44,7 +44,7 @@ All UI must use design tokens and shared UI primitives. Do not hardcode colors, 
 
 - No raw hex colors in feature code.
 - No numeric font sizes in feature code.
-- Prefer `shared/ui` primitives: `Screen`, `AppText`, `Button`, `Header`, `Icon`.
+- Prefer `shared/ui` primitives: `Screen`, `AppText`, `Button`, `Input`, `FormInput`, `Header`, `Icon`.
 - Styles must be created via a helper that accepts theme (e.g. `makeStyles(theme)`), or by using `useTheme()`.
 
 ### Screen
@@ -100,8 +100,9 @@ We use Zustand for state management.
   - UI state (filters, sorting, selection, modal visibility)
   - cross-feature settings (theme, currency, preferences)
   - process state (import/sync jobs, progress, error/retry)
-  - drafts / forms state (before persisting)
+  - non-input form state (image pickers, button-group selections, submission flags)
   - optional derived/cache state when it has immediate UX/perf value
+- **Form field values and validation are owned by React Hook Form, NOT Zustand.** Store actions receive validated form data as parameters.
 
 ### Store Location & Naming
 
@@ -144,6 +145,15 @@ Stores must expose minimal state + explicit actions:
 - Route types must be defined in a central typed ParamList under `src/app/navigation/`.
 - Feature screens may use `useNavigation` / `useRoute` (typed), but must not create navigators inside `src/features/**` unless explicitly requested.
 - Do not implement custom navigation state in components.
+
+## Forms & Inputs
+
+- Use `react-hook-form` (`useForm` + `yupResolver`) for all forms. Yup schemas live in `src/shared/validation/`.
+- Use `<FormInput>` (RHF-connected) for form fields, `<Input>` for standalone inputs without RHF.
+- Never use raw `TextInput` from `react-native` in feature screens.
+- Zustand stores must NOT hold form field values — RHF owns field state, validation, and errors.
+- Store `create`/`submit` actions accept validated form data as parameters (e.g. `createCard(userId, { title, moneyAmount })`).
+- Non-input form state (image pickers, button groups, submission flags) stays in Zustand.
 
 ## How To Add A Feature
 

@@ -1,10 +1,15 @@
 import React from 'react';
-import { Linking, TextInput, View } from 'react-native';
+import { Linking, ScrollView, View } from 'react-native';
 import { useNavigation } from '@react-navigation/native';
 import { useShallow } from 'zustand/shallow';
-import { ConnectMonobankScreenNavigationProp, ROOT_ROUTES } from '../../app/navigation';
+import { useForm } from 'react-hook-form';
+import { yupResolver } from '@hookform/resolvers/yup';
+import type { ConnectMonobankScreenNavigationProp } from '../../app/navigation';
+import { ROOT_ROUTES } from '../../app/navigation';
 import { useUserStore } from '../../stores/useUserStore';
-import { AppText, Button, HeaderBackButton, HeaderTitle, Screen } from '../../shared/ui';
+import { AppText, Button, FormInput, HeaderBackButton, HeaderTitle, Screen } from '../../shared/ui';
+import { connectMonobankSchema } from '../../shared/validation';
+import type { ConnectMonobankFormValues } from '../../shared/validation';
 import { useMonobankStore } from './state/useMonobankStore';
 import { useConnectMonobankScreenStyles } from './ConnectMonobankScreen.styles';
 
@@ -18,23 +23,29 @@ export const ConnectMonobankScreen = () => {
     useShallow(state => ({ currentUserId: state.currentUserId, isCheckedIn: state.isCheckedIn, markCheckedIn: state.markCheckedIn })),
   );
 
-  const { token, status, clientName, errorMessage, setToken, connect, disconnect, loadSavedToken } =
+  const { status, clientName, errorMessage, connect, disconnect, loadSavedToken } =
     useMonobankStore(
       useShallow(state => ({
-        token: state.token,
         status: state.status,
         clientName: state.clientName,
         errorMessage: state.errorMessage,
-        setToken: state.setToken,
         connect: state.connect,
         disconnect: state.disconnect,
         loadSavedToken: state.loadSavedToken,
       })),
     );
 
+  const { control, handleSubmit, setValue } = useForm<ConnectMonobankFormValues>({
+    resolver: yupResolver(connectMonobankSchema),
+    defaultValues: { token: '' },
+  });
+
   React.useEffect(() => {
-    loadSavedToken();
-  }, [loadSavedToken]);
+    const savedToken = loadSavedToken();
+    if (savedToken) {
+      setValue('token', savedToken);
+    }
+  }, [loadSavedToken, setValue]);
 
   React.useEffect(() => {
     if (status === 'connected' && !isCheckedIn) {
@@ -45,12 +56,16 @@ export const ConnectMonobankScreen = () => {
   const isConnecting = status === 'connecting';
   const isConnected = status === 'connected';
 
+  const onConnect = handleSubmit(data => {
+    connect(currentUserId!, data.token);
+  });
+
   return (
     <Screen
       headerLeft={<HeaderBackButton onPress={() => { navigation.goBack(); }} />}
       headerCenter={<HeaderTitle>Connect Monobank</HeaderTitle>}
     >
-      <View style={styles.content}>
+      <ScrollView contentContainerStyle={styles.content} keyboardDismissMode="on-drag">
         <View style={styles.header}>
           <AppText variant="h1">Connect Monobank</AppText>
           <AppText tone="secondary">
@@ -70,15 +85,14 @@ export const ConnectMonobankScreen = () => {
           </View>
         ) : (
           <View style={styles.form}>
-            <AppText variant="caption" style={styles.label}>Personal Token</AppText>
-            <TextInput
-              style={styles.input}
-              value={token}
-              onChangeText={setToken}
+            <FormInput
+              control={control}
+              name="token"
+              label="Personal Token"
               placeholder="Paste your token here"
               autoCapitalize="none"
               autoCorrect={false}
-              editable={!isConnecting}
+              disabled={isConnecting}
               multiline
             />
             <AppText variant="caption" style={styles.hint}>
@@ -105,12 +119,12 @@ export const ConnectMonobankScreen = () => {
         ) : (
           <Button
             title="Connect"
-            onPress={() => { connect(currentUserId!); }}
+            onPress={onConnect}
             loading={isConnecting}
             disabled={isConnecting}
           />
         )}
-      </View>
+      </ScrollView>
     </Screen>
   );
-}
+};

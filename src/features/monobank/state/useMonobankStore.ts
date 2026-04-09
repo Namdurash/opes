@@ -8,18 +8,12 @@ import type { MonobankStoreState, MonobankStoreActions } from '../types';
 
 const cardsRepository = new CardsRepository();
 
-export const useMonobankStore = create<MonobankStoreState & MonobankStoreActions>((set, get) => ({
-  token: '',
+export const useMonobankStore = create<MonobankStoreState & MonobankStoreActions>((set) => ({
   status: 'idle',
   clientName: null,
   errorMessage: null,
 
-  setToken(token) {
-    set({ token, errorMessage: null });
-  },
-
-  async connect(userId: string) {
-    const { token } = get();
+  async connect(userId: string, token: string) {
     const trimmed = token.trim();
 
     if (!trimmed) {
@@ -52,12 +46,15 @@ export const useMonobankStore = create<MonobankStoreState & MonobankStoreActions
     monobankTokenService.clear();
     clearMonobankService();
     useTransactionsStore.getState().reset();
-    set({ status: 'idle', token: '', clientName: null, errorMessage: null });
+    set({ status: 'idle', clientName: null, errorMessage: null });
   },
 
   loadSavedToken() {
     const saved = monobankTokenService.get();
-    if (!saved) return;
-    set({ token: saved.token, status: 'connected', clientName: saved.clientName ?? null });
+    if (!saved) {
+      return null;
+    }
+    set({ status: 'connected', clientName: saved.clientName ?? null });
+    return saved.token;
   },
 }));

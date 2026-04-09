@@ -83,25 +83,7 @@ describe('createCardsStore', () => {
 });
 
 describe('createCreateCardStore', () => {
-  it('validates required fields before creating a card', async () => {
-    const repository = {
-      getCardsByUser: jest.fn(),
-      createCard: jest.fn(),
-      reorderCards: jest.fn(),
-      findByMonobankAccountId: jest.fn(),
-      upsertMonobankCards: jest.fn(),
-      getMonobankCards: jest.fn(),
-    };
-    const store = createCreateCardStore({ cardsRepository: repository });
-
-    const created = await store.getState().createCard('user-1');
-
-    expect(created).toBeNull();
-    expect(store.getState().errorMessage).toBe('Title is required.');
-    expect(repository.createCard).not.toHaveBeenCalled();
-  });
-
-  it('creates a card and resets the form', async () => {
+  it('creates a card with form values and resets the store', async () => {
     const createdCard = makeCard({ id: 'new-card', title: 'Salary', type: 'salary', moneyAmount: 1200, sortOrder: 0 });
     const repository = {
       getCardsByUser: jest.fn(),
@@ -113,11 +95,9 @@ describe('createCreateCardStore', () => {
     };
     const store = createCreateCardStore({ cardsRepository: repository });
 
-    store.getState().setTitle('Salary');
-    store.getState().setMoneyAmount('1200');
     store.getState().setType('salary');
 
-    const created = await store.getState().createCard('user-1');
+    const created = await store.getState().createCard('user-1', { title: 'Salary', moneyAmount: '1200' });
 
     expect(created).toEqual(createdCard);
     expect(repository.createCard).toHaveBeenCalledWith({
@@ -127,8 +107,6 @@ describe('createCreateCardStore', () => {
       type: 'salary',
       image: null,
     });
-    expect(store.getState().title).toBe('');
-    expect(store.getState().moneyAmount).toBe('');
     expect(store.getState().type).toBe('storage');
   });
 
@@ -144,11 +122,9 @@ describe('createCreateCardStore', () => {
     };
     const store = createCreateCardStore({ cardsRepository: repository });
 
-    store.getState().setTitle('Main');
-    store.getState().setMoneyAmount('500');
     store.getState().setImage('content://media/external/images/media/1');
 
-    await store.getState().createCard('user-1');
+    await store.getState().createCard('user-1', { title: 'Main', moneyAmount: '500' });
 
     expect(repository.createCard).toHaveBeenCalledWith({
       userId: 'user-1',
@@ -157,5 +133,22 @@ describe('createCreateCardStore', () => {
       type: 'storage',
       image: 'content://media/external/images/media/1',
     });
+  });
+
+  it('returns null and sets error on repository failure', async () => {
+    const repository = {
+      getCardsByUser: jest.fn(),
+      createCard: jest.fn().mockRejectedValue(new Error('DB error')),
+      reorderCards: jest.fn(),
+      findByMonobankAccountId: jest.fn(),
+      upsertMonobankCards: jest.fn(),
+      getMonobankCards: jest.fn(),
+    };
+    const store = createCreateCardStore({ cardsRepository: repository });
+
+    const created = await store.getState().createCard('user-1', { title: 'Test', moneyAmount: '100' });
+
+    expect(created).toBeNull();
+    expect(store.getState().errorMessage).toBe('Failed to create card.');
   });
 });

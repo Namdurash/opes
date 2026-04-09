@@ -211,6 +211,26 @@ src/features/<feature>/
 - Navigation should remain replaceable without changing feature business logic.
 - All route names should be listed in separated const variable in separated module.
 
+## Forms & Inputs
+
+- Forms use **React Hook Form** (`useForm`) for field state, validation, and submission. **Yup** schemas (via `@hookform/resolvers`) define validation rules.
+- **RHF owns form field values and errors.** Zustand stores do NOT hold form field state — they handle only async submission, side effects, and non-input UI state (e.g. image picker, button-group selection).
+- Store `create`/`submit` actions receive already-validated form values as parameters.
+- Validation schemas live in `src/shared/validation/`.
+
+### Input System
+
+`src/shared/ui/Input.tsx` — themed input primitive wrapping RN `TextInput`.
+
+- Props: `label`, `error`, `disabled`, `leftIcon`, `rightIcon`, plus all `TextInputProps`.
+- Visual states: default, focused (`primary` border), error (`error` border), disabled (opacity).
+- Supports `forwardRef` for programmatic focus.
+
+`src/shared/ui/FormInput.tsx` — generic `Controller` wrapper connecting `Input` to RHF.
+
+- Props: `control`, `name` (type-safe via `FieldPath<T>`), plus all `InputProps` except `value`/`onChangeText`/`error`.
+- Never use raw `TextInput` in feature screens — always use `Input` or `FormInput`.
+
 ## Testing Strategy
 
 - Keep existing render test for `App`.

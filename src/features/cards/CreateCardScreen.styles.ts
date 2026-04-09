@@ -12,18 +12,6 @@ export const useCreateCardScreenStyles = makeStyles(theme => ({
     padding: theme.spacing.md,
     gap: theme.spacing.sm,
   },
-  input: {
-    borderWidth: 1,
-    borderColor: theme.colors.border,
-    borderRadius: theme.radii.md,
-    paddingVertical: theme.spacing.sm,
-    paddingHorizontal: theme.spacing.md,
-    color: theme.colors.textPrimary,
-    backgroundColor: theme.colors.background,
-  },
-  sectionHeader: {
-    marginBottom: theme.spacing.xs,
-  },
   typeSection: {
     gap: theme.spacing.xs,
   },

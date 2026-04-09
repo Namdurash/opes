@@ -1,5 +1,5 @@
 import React, { PropsWithChildren, ReactNode } from 'react';
-import { Keyboard, Pressable, StyleProp, View, ViewStyle } from 'react-native';
+import { StyleProp, View, ViewStyle } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import LinearGradient from 'react-native-linear-gradient';
 import { makeStyles, useTheme } from '../theme';
@@ -29,13 +29,12 @@ export const Screen = ({
   const hasHeader = headerLeft != null || headerCenter != null || headerRight != null;
 
   const body = (
-    // TODO: Find better way to dismiss keyboard on tap outside of inputs
-    <Pressable onPress={Keyboard.dismiss} accessible={false} style={styles.fill}>
+    <>
       {hasHeader ? (
         <Header left={headerLeft} center={headerCenter} right={headerRight} />
       ) : null}
       <View style={[styles.content, contentStyle]}>{children}</View>
-    </Pressable>
+    </>
   );
 
   if (background === 'gradient') {

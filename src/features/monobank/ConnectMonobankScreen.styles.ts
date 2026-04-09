@@ -2,7 +2,7 @@ import { makeStyles } from '../../shared/theme';
 
 export const useConnectMonobankScreenStyles = makeStyles(theme => ({
   content: {
-    flex: 1,
+    flexGrow: 1,
     gap: theme.spacing.xl,
     paddingTop: theme.spacing.xl,
   },
@@ -11,21 +11,6 @@ export const useConnectMonobankScreenStyles = makeStyles(theme => ({
   },
   form: {
     gap: theme.spacing.sm,
-  },
-  label: {
-    color: theme.colors.textSecondary,
-  },
-  input: {
-    borderWidth: 1,
-    borderColor: theme.colors.border,
-    borderRadius: theme.radii.md,
-    padding: theme.spacing.md,
-    fontSize: theme.typography.body.fontSize,
-    lineHeight: theme.typography.body.lineHeight,
-    color: theme.colors.textPrimary,
-    backgroundColor: theme.colors.surface,
-    minHeight: 40,
-    textAlignVertical: 'top',
   },
   hint: {
     color: theme.colors.textMuted,

@@ -1,15 +1,13 @@
 export type MonobankConnectionStatus = 'idle' | 'connecting' | 'connected' | 'error';
 
 export interface MonobankStoreState {
-  token: string;
   status: MonobankConnectionStatus;
   clientName: string | null;
   errorMessage: string | null;
 }
 
 export interface MonobankStoreActions {
-  setToken(token: string): void;
-  connect(userId: string): Promise<void>;
+  connect(userId: string, token: string): Promise<void>;
   disconnect(): void;
-  loadSavedToken(): void;
+  loadSavedToken(): string | null;
 }
