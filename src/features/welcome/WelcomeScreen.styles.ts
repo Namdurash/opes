@@ -1,6 +1,6 @@
 import { makeStyles } from '../../shared/theme';
 
-export const useWelcomeScreenStyles = makeStyles(() => ({
+export const useWelcomeScreenStyles = makeStyles(theme => ({
   centered: {
     flex: 1,
     justifyContent: 'center',
@@ -9,12 +9,12 @@ export const useWelcomeScreenStyles = makeStyles(() => ({
   content: {
     flex: 1,
     justifyContent: 'space-between',
-    paddingVertical: 48,
+    paddingVertical: theme.spacing.xxxl,
   },
   header: {
-    gap: 8,
+    gap: theme.spacing.sm,
   },
   actions: {
-    gap: 12,
+    gap: theme.spacing.md,
   },
 }));

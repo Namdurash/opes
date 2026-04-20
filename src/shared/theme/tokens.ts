@@ -24,6 +24,7 @@ export const tokens = {
     lg: 16,
     xl: 24,
     xxl: 32,
+    xxxl: 48,
   },
   radii: {
     sm: 8,
