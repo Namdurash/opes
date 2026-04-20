@@ -18,7 +18,4 @@ export const useHomeScreenStyles = makeStyles(theme => ({
   quickActionsButton: {
     marginTop: theme.spacing.sm,
   },
-  error: {
-    color: theme.colors.error,
-  },
 }));

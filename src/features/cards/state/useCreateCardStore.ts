@@ -2,6 +2,7 @@ import { create } from 'zustand';
 import type { Card, CardType } from '../../../domain/cards';
 import { CardsRepository } from '../../../models/cards';
 import type { CardsRepositoryContract } from '../../../models/cards';
+import { showErrorBottomSheet } from '../../../shared/ui/bottom-sheet';
 
 interface CreateCardStoreState {
   type: CardType;
@@ -50,6 +51,12 @@ export const createCreateCardStore = (deps: CreateCardStoreDeps) =>
         return card;
       } catch {
         set({ errorMessage: 'Failed to create card.' });
+        showErrorBottomSheet({
+          title: 'Creation Failed',
+          message: 'Failed to create card.',
+          buttonTitle: 'OK',
+          onPress: () => {},
+        });
         return null;
       } finally {
         set({ isSubmitting: false });

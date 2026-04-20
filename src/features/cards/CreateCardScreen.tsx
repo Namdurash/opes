@@ -8,6 +8,7 @@ import { launchImageLibrary } from 'react-native-image-picker';
 import type { CardType } from '../../domain/cards';
 import type { CreateCardScreenNavigationProp } from '../../app/navigation';
 import { AppText, Button, FormInput, Screen } from '../../shared/ui';
+import { showErrorBottomSheet } from '../../shared/ui/bottom-sheet';
 import { createCardSchema } from '../../shared/validation';
 import type { CreateCardFormValues } from '../../shared/validation';
 import { useUserStore } from '../../stores/useUserStore';
@@ -27,16 +28,14 @@ export const CreateCardScreen = () => {
     defaultValues: { title: '', moneyAmount: '' },
   });
 
-  const { type, image, isSubmitting, errorMessage, setType, setImage, setErrorMessage, createCard, resetForm } =
+  const { type, image, isSubmitting, setType, setImage, createCard, resetForm } =
     useCreateCardStore(
       useShallow(state => ({
         type: state.type,
         image: state.image,
         isSubmitting: state.isSubmitting,
-        errorMessage: state.errorMessage,
         setType: state.setType,
         setImage: state.setImage,
-        setErrorMessage: state.setErrorMessage,
         createCard: state.createCard,
         resetForm: state.resetForm,
       })),
@@ -78,13 +77,23 @@ export const CreateCardScreen = () => {
     }
 
     if (result.errorCode) {
-      setErrorMessage('Failed to select image.');
+      showErrorBottomSheet({
+        title: 'Image Error',
+        message: 'Failed to select image.',
+        buttonTitle: 'OK',
+        onPress: () => {},
+      });
       return;
     }
 
     const selectedImage = result.assets?.[0]?.uri;
     if (!selectedImage) {
-      setErrorMessage('No image was selected.');
+      showErrorBottomSheet({
+        title: 'Image Error',
+        message: 'No image was selected.',
+        buttonTitle: 'OK',
+        onPress: () => {},
+      });
       return;
     }
 
@@ -143,8 +152,6 @@ export const CreateCardScreen = () => {
               <Image source={{ uri: image }} style={styles.previewImage} />
             ) : null}
           </View>
-
-          {errorMessage ? <AppText style={styles.error}>{errorMessage}</AppText> : null}
 
           <Button loading={isSubmitting} onPress={onSubmit} title="Save card" />
         </View>

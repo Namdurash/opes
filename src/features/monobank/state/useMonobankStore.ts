@@ -4,6 +4,7 @@ import { getMonobankService, clearMonobankService } from '../../../services/mono
 import { monobankTokenService } from '../../../services/monobank/MonobankTokenService';
 import { CardsRepository } from '../../../models/cards';
 import { useTransactionsStore } from '../../transactions/state/useTransactionsStore';
+import { showErrorBottomSheet } from '../../../shared/ui/bottom-sheet';
 import type { MonobankStoreState, MonobankStoreActions } from '../types';
 
 const cardsRepository = new CardsRepository();
@@ -39,6 +40,12 @@ export const useMonobankStore = create<MonobankStoreState & MonobankStoreActions
           ? error.message
           : 'Failed to connect. Please check your token and try again.';
       set({ status: 'error', errorMessage: message });
+      showErrorBottomSheet({
+        title: 'Connection Failed',
+        message,
+        buttonTitle: 'OK',
+        onPress: () => {},
+      });
     }
   },
 

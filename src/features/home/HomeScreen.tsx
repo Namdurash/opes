@@ -7,7 +7,7 @@ import { CardStack } from '../cards';
 import { useMonobankStore } from '../monobank';
 import { useTransactionsStore } from '../transactions/state/useTransactionsStore';
 import { useAppForegroundSync } from '../transactions/hooks/useAppForegroundSync';
-import { AppText, Button, Screen } from '../../shared/ui';
+import { AppText, Button, LoadingOverlay, Screen } from '../../shared/ui';
 import { useUserStore } from '../../stores/useUserStore';
 import { useCardsStore } from '../cards/state/useCardsStore';
 import { TransactionHistorySection } from './components/TransactionHistorySection';
@@ -20,11 +20,10 @@ export const HomeScreen = () => {
 
   const currentUserId = useUserStore(state => state.currentUserId);
 
-  const { cards, isLoading, errorMessage, loadCardsByUser } = useCardsStore(
+  const { cards, isLoading, loadCardsByUser } = useCardsStore(
     useShallow(state => ({
       cards: state.cards,
       isLoading: state.isLoading,
-      errorMessage: state.errorMessage,
       loadCardsByUser: state.loadCardsByUser,
     })),
   );
@@ -97,8 +96,6 @@ export const HomeScreen = () => {
           <AppText tone="secondary">Track your cards and move quickly between flows.</AppText>
         </View>
 
-        {isLoading ? <AppText tone="secondary">Loading cards...</AppText> : null}
-        {errorMessage ? <AppText style={styles.error}>{errorMessage}</AppText> : null}
         {cards.length > 0 ? <CardStack cards={cards} onDragStateChange={isDragging => setScrollEnabled(!isDragging)} /> : null}
         <Button onPress={() => navigation.navigate(ROOT_ROUTES.CREATE_CARD)} title="Create card" />
 
@@ -127,6 +124,7 @@ export const HomeScreen = () => {
         </View>
 
       </ScrollView>
+      {isLoading ? <LoadingOverlay /> : null}
     </Screen>
   );
 };

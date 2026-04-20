@@ -23,12 +23,11 @@ export const ConnectMonobankScreen = () => {
     useShallow(state => ({ currentUserId: state.currentUserId, isCheckedIn: state.isCheckedIn, markCheckedIn: state.markCheckedIn })),
   );
 
-  const { status, clientName, errorMessage, connect, disconnect, loadSavedToken } =
+  const { status, clientName, connect, disconnect, loadSavedToken } =
     useMonobankStore(
       useShallow(state => ({
         status: state.status,
         clientName: state.clientName,
-        errorMessage: state.errorMessage,
         connect: state.connect,
         disconnect: state.disconnect,
         loadSavedToken: state.loadSavedToken,
@@ -105,12 +104,6 @@ export const ConnectMonobankScreen = () => {
             />
           </View>
         )}
-
-        {errorMessage ? (
-          <AppText variant="caption" style={styles.error}>
-            {errorMessage}
-          </AppText>
-        ) : null}
 
         <View style={styles.spacer} />
 

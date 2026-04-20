@@ -1,6 +1,7 @@
 import { create } from 'zustand';
 import { Card } from '../../../domain/cards';
 import { CardsRepository, CardsRepositoryContract } from '../../../models/cards';
+import { showErrorBottomSheet } from '../../../shared/ui/bottom-sheet';
 
 interface CardsStoreState {
   cards: Card[];
@@ -28,6 +29,12 @@ export const createCardsStore = (deps: CardsStoreDeps) => {
         set({ cards });
       } catch {
         set({ errorMessage: 'Failed to load cards.' });
+        showErrorBottomSheet({
+          title: 'Load Failed',
+          message: 'Failed to load cards.',
+          buttonTitle: 'OK',
+          onPress: () => {},
+        });
       } finally {
         set({ isLoading: false });
       }
@@ -41,6 +48,12 @@ export const createCardsStore = (deps: CardsStoreDeps) => {
         await deps.cardsRepository.reorderCards(newOrder.map(c => c.id));
       } catch {
         set({ cards: previousCards, errorMessage: 'Failed to save card order.' });
+        showErrorBottomSheet({
+          title: 'Reorder Failed',
+          message: 'Failed to save card order.',
+          buttonTitle: 'OK',
+          onPress: () => {},
+        });
       }
     },
   }));

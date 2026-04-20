@@ -1,11 +1,11 @@
 import React, { useCallback, useEffect, useMemo, useState } from 'react';
-import { ActivityIndicator, RefreshControl, SectionList, View } from 'react-native';
+import { RefreshControl, SectionList, View } from 'react-native';
 import { useNavigation } from '@react-navigation/native';
 import { useShallow } from 'zustand/shallow';
 import { ROOT_ROUTES, TransactionsScreenNavigationProp } from '../../app/navigation';
 import { useUserStore } from '../../stores/useUserStore';
 import { useMonobankStore } from '../monobank';
-import { AppText, Button, HeaderBackButton, HeaderTitle, Screen } from '../../shared/ui';
+import { Button, EmptyState, HeaderBackButton, HeaderTitle, LoadingOverlay, Screen } from '../../shared/ui';
 import { useTheme } from '../../shared/theme';
 import { useTransactionsStore } from './state/useTransactionsStore';
 import { groupTransactionsByDate } from './utils';
@@ -24,7 +24,7 @@ export const TransactionsScreen = () => {
   const currentUserId = useUserStore(state => state.currentUserId);
   const monobankStatus = useMonobankStore(state => state.status);
 
-  const { transactions, syncStatus, isLoadingFromDb, loadTransactions, syncFromMonobank } =
+  const { transactions, isLoadingFromDb, loadTransactions, syncFromMonobank } =
     useTransactionsStore(
       useShallow(state => ({
         transactions: state.transactions,
@@ -69,18 +69,11 @@ export const TransactionsScreen = () => {
   const renderEmpty = useCallback(
     () => (
       <View style={styles.emptyContainer}>
-        {isLoadingFromDb ? (
-          // TODO: Replace ActivityIndicator with custom branded loader
-          <ActivityIndicator size="large" color={theme.colors.primary} />
-        ) : (
-          <AppText tone="secondary">No transactions yet.</AppText>
-        )}
+        <EmptyState message="No transactions yet." />
       </View>
     ),
-    [isLoadingFromDb, styles.emptyContainer, theme.colors.primary],
+    [styles.emptyContainer],
   );
-
-  const isSyncing = syncStatus === 'syncing';
 
   return (
     <Screen
@@ -92,12 +85,6 @@ export const TransactionsScreen = () => {
         />
       }
       headerCenter={<HeaderTitle>Transactions</HeaderTitle>}
-      headerRight={
-        isSyncing ? (
-          // TODO: Replace ActivityIndicator with custom branded loader
-          <ActivityIndicator size="small" color={theme.colors.primary} />
-        ) : undefined
-      }
     >
       <SectionList
         sections={sections}
@@ -117,10 +104,11 @@ export const TransactionsScreen = () => {
         }
         ListFooterComponent={
           <View style={styles.footer}>
-            <Button title="New Transaction" onPress={() => {}} variant="primary" />
+            <Button title="New Transaction" onPress={() => { }} variant="primary" />
           </View>
         }
       />
+      {isLoadingFromDb ? <LoadingOverlay /> : null}
     </Screen>
   );
 };

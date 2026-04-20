@@ -34,7 +34,4 @@ export const useCreateCardScreenStyles = makeStyles(theme => ({
     borderColor: theme.colors.border,
     backgroundColor: theme.colors.background,
   },
-  error: {
-    color: theme.colors.error,
-  },
 }));

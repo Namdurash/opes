@@ -15,9 +15,6 @@ export const useConnectMonobankScreenStyles = makeStyles(theme => ({
   hint: {
     color: theme.colors.textMuted,
   },
-  error: {
-    color: theme.colors.error,
-  },
   connectedCard: {
     backgroundColor: theme.colors.surface,
     borderWidth: 1,
