@@ -74,11 +74,11 @@ The `Transaction` interface is clean but has no way to tell where a transaction 
 
 All three repositories repeat identical patterns:
 
-| Pattern | UsersRepository | CardsRepository | TransactionsRepository |
-|---------|----------------|-----------------|----------------------|
-| `database.get<Model>('table')` | lines 27, 42, 49, 60 | lines 50, 59, 80, 94, 103 | lines 30, 39, 50, 96 |
-| `toDomain(model)` mapper | line 18 | line 24 | line 13 |
-| `database.write(async () => { ... })` | lines 30, 70 | lines 64, 82, 115, 125, 131 | line 55 |
+| Pattern                               | UsersRepository      | CardsRepository             | TransactionsRepository |
+| ------------------------------------- | -------------------- | --------------------------- | ---------------------- |
+| `database.get<Model>('table')`        | lines 27, 42, 49, 60 | lines 50, 59, 80, 94, 103   | lines 30, 39, 50, 96   |
+| `toDomain(model)` mapper              | line 18              | line 24                     | line 13                |
+| `database.write(async () => { ... })` | lines 30, 70         | lines 64, 82, 115, 125, 131 | line 55                |
 
 Adding 5 new entities means repeating each pattern 5 more times with no shared foundation.
 
@@ -110,7 +110,7 @@ Each repository can batch its own entity writes (e.g. `CardsRepository.reorderCa
 **S9. Two competing key-value storage abstractions**
 
 - [src/services/storage/StorageGateway.ts](src/services/storage/StorageGateway.ts) — defines an async `StorageGateway` interface (`getItem`, `setItem`, `removeItem`).
-- [src/services/monobank/MonobankTokenService.ts:4-8](src/services/monobank/MonobankTokenService.ts) — defines a *different* sync `KeyValueStorage` interface (`set`, `getString`, `delete`).
+- [src/services/monobank/MonobankTokenService.ts:4-8](src/services/monobank/MonobankTokenService.ts) — defines a _different_ sync `KeyValueStorage` interface (`set`, `getString`, `delete`).
 
 Two abstractions solving the same problem. `MonobankTokenService` should use `StorageGateway`, or both should be unified.
 
@@ -129,6 +129,7 @@ Keys are hardcoded: `'monobank_personal_token'`, `'monobank_client_name'`. Addin
 **S12. Error types are Monobank-specific**
 
 `MonobankError` (with codes like `'RATE_LIMITED'`, `'UNAUTHORIZED'`) is checked via `instanceof` in multiple stores:
+
 - [useMonobankStore.ts:38](src/features/monobank/state/useMonobankStore.ts#L38)
 - [useTransactionsStore.ts:68](src/features/transactions/state/useTransactionsStore.ts#L68)
 
@@ -155,11 +156,11 @@ The store action calls `showErrorBottomSheet()` to display UI. Stores should set
 
 **S15. Inconsistent async action patterns across stores**
 
-| Store | Loading field | Error field | Uses `finally`? |
-|-------|--------------|-------------|-----------------|
-| `useCardsStore` | `isLoading` | `errorMessage` | Yes |
-| `useTransactionsStore` | `isLoadingFromDb` | (none for loads) | No |
-| `useCreateCardStore` | `isSubmitting` | `errorMessage` | Yes |
+| Store                  | Loading field     | Error field      | Uses `finally`? |
+| ---------------------- | ----------------- | ---------------- | --------------- |
+| `useCardsStore`        | `isLoading`       | `errorMessage`   | Yes             |
+| `useTransactionsStore` | `isLoadingFromDb` | (none for loads) | No              |
+| `useCreateCardStore`   | `isSubmitting`    | `errorMessage`   | Yes             |
 
 Three different approaches for the same try/loading/catch/error/finally pattern. A shared `createAsyncAction` helper would standardize this.
 
@@ -183,12 +184,210 @@ This field was replaced by `title` in migration v2 but never cleaned up. As the 
 
 ### Summary: What breaks first when scaling
 
-| Scenario | What breaks | Findings |
-|----------|------------|----------|
-| Add a second bank (PrivatBank) | Domain types balloon, repository contracts need vendor methods, no service interface, duplicate token/error/rate-limiter code | S1, S3, S7, S8, S9, S10, S12 |
-| Add 5 new entities (budgets, categories, tags, recurring, attachments) | Repository boilerplate × 5, no base class, no cross-repo transactions, inconsistent ID strategy | S4, S5, S6 |
-| Add manual transaction entry | No source discriminator on Transaction | S2 |
-| Add more features with stores | Cross-store coupling grows, inconsistent async/DI patterns, stores call UI | S13, S14, S15, S16 |
+| Scenario                                                               | What breaks                                                                                                                   | Findings                     |
+| ---------------------------------------------------------------------- | ----------------------------------------------------------------------------------------------------------------------------- | ---------------------------- |
+| Add a second bank (PrivatBank)                                         | Domain types balloon, repository contracts need vendor methods, no service interface, duplicate token/error/rate-limiter code | S1, S3, S7, S8, S9, S10, S12 |
+| Add 5 new entities (budgets, categories, tags, recurring, attachments) | Repository boilerplate × 5, no base class, no cross-repo transactions, inconsistent ID strategy                               | S4, S5, S6                   |
+| Add manual transaction entry                                           | No source discriminator on Transaction                                                                                        | S2                           |
+| Add more features with stores                                          | Cross-store coupling grows, inconsistent async/DI patterns, stores call UI                                                    | S13, S14, S15, S16           |
+
+---
+
+## Maintainability Audit (2026-04-15)
+
+> Goal: identify code-quality, readability, testability, and consistency issues that make the codebase harder to modify, debug, or onboard into. Grouped by severity.
+
+---
+
+### Critical — Will Bite You in Production
+
+**M1. No React error boundary — render errors crash the app**
+
+**File:** [App.tsx](App.tsx)
+
+There is no `ErrorBoundary` component wrapping the app or its navigation tree. Any unhandled exception during render (bad data shape, null dereference in a component) produces an unrecoverable white screen. React Native does not recover from render errors automatically.
+
+**Fix:** Add an `ErrorBoundary` around `<AppShell />` (or at minimum around `<RootNavigator />`) with a fallback "something went wrong" screen and a restart button.
+
+**M2. `formatMoneyAmount` hardcodes USD currency**
+
+**File:** [src/features/cards/components/CardItem.tsx:12-17](src/features/cards/components/CardItem.tsx#L12-L17)
+
+```typescript
+const formatMoneyAmount = (value: number): string =>
+  new Intl.NumberFormat('en-US', {
+    style: 'currency',
+    currency: 'USD',
+    maximumFractionDigits: 2,
+  }).format(value);
+```
+
+This is the only money formatter in the app, and it's hardcoded to USD with `en-US` locale. Monobank returns UAH amounts. Every card displays the wrong currency symbol. This function should:
+
+- Accept a currency code parameter (or read it from the `Card.currencySymbol` field)
+- Live in a shared utility, not inline in a component
+- Be reused by `TransactionItem` as well (which currently has no formatting)
+
+---
+
+### High — Actively Hurts Day-to-Day Development
+
+**M3. HomeScreen orchestrates too much logic**
+
+**File:** [src/features/home/HomeScreen.tsx](src/features/home/HomeScreen.tsx)
+
+This 132-line screen subscribes to **4 separate stores** (lines 21–44), runs **3 `useEffect` hooks** (lines 47–62), manages pull-to-refresh (lines 64–75), foreground sync (lines 77–83), and renders cards, transactions, and quick actions.
+
+Issues:
+
+- Hard to test: you need to mock 4 stores and track 3 effect chains
+- Hard to reason about: changing the sync flow requires understanding all the interactions
+- Loading/empty/error states are fragmented (loading text on line 100, error on line 101, but no empty state when `cards.length === 0` and not loading)
+
+**Fix direction:** Extract a `useHomeScreenData()` custom hook that orchestrates all data loading and returns a unified state. The screen becomes purely presentational.
+
+**M4. Dead "New Transaction" button**
+
+**File:** [src/features/transactions/TransactionsScreen.tsx:120](src/features/transactions/TransactionsScreen.tsx#L120)
+
+```typescript
+<Button title="New Transaction" onPress={() => {}} variant="primary" />
+```
+
+A visible, tappable button with an empty handler. This confuses users (nothing happens on press) and confuses developers (is this intentional? WIP? forgotten?). Either implement it, hide it behind a feature flag, or remove it with a TODO comment.
+
+**M5. Two unresolved TODOs left in TransactionsScreen**
+
+**File:** [src/features/transactions/TransactionsScreen.tsx:73,97](src/features/transactions/TransactionsScreen.tsx#L73)
+
+```typescript
+// TODO: Replace ActivityIndicator with custom branded loader
+```
+
+Both loaders are raw `ActivityIndicator` with no branding. If the intent is to keep them, remove the TODO. If the intent is to replace them, do it — stale TODOs erode trust in comments.
+
+**M6. Inefficient double `database.write()` in `upsertMonobankCards`**
+
+**File:** [src/models/cards/CardsRepository.ts:115-127](src/models/cards/CardsRepository.ts#L115-L127)
+
+```typescript
+const updated = await database.write(async () => {
+  return existing[0].prepareUpdate(r => { ... });
+});
+await database.write(async () => {
+  await database.batch(updated);
+});
+```
+
+`prepareUpdate` is wrapped in one `database.write()`, then the batch is executed in a _second_ `database.write()`. This is redundant — both should be a single write transaction. Each `database.write()` acquires a write lock, so this doubles the locking overhead for every existing card update.
+
+---
+
+### Medium — Inconsistency That Accumulates
+
+**M7. `AppTextVariant` missing `'button'` despite token existing**
+
+**Files:** [src/shared/ui/AppText.tsx:5](src/shared/ui/AppText.tsx#L5) and [src/shared/theme/tokens.ts:55-59](src/shared/theme/tokens.ts#L55-L59)
+
+The tokens define `typography.button` (fontSize 15, fontWeight 600), but `AppTextVariant` only includes `'h1' | 'h2' | 'body' | 'caption'`. The `Button` component uses `variant="body"` for its label text, ignoring the button-specific typography token. This means button text uses fontSize 16/fontWeight 400 instead of the intended fontSize 15/fontWeight 600.
+
+**Fix:** Either add `'button'` to the `AppTextVariant` union and use it in `Button.tsx`, or remove the unused `button` entry from tokens to avoid confusion.
+
+**M8. `CardItem.type.slice(0, 1).toUpperCase()` — magic inline expression**
+
+**File:** [src/features/cards/components/CardItem.tsx:41](src/features/cards/components/CardItem.tsx#L41)
+
+```typescript
+{
+  card.type.slice(0, 1).toUpperCase();
+}
+```
+
+This renders a single-letter type initial as placeholder text. The intent isn't obvious without reading surrounding context. Should be a named utility (e.g., `getCardTypeInitial(type)`) in `src/features/cards/utils.ts` — both for readability and so it can be reused if card types appear elsewhere.
+
+**M9. Missing accessibility attributes on drag-to-reorder cards**
+
+**File:** [src/features/cards/components/CardStack.tsx:81](src/features/cards/components/CardStack.tsx#L81)
+
+```typescript
+<Pressable onLongPress={() => onLongPress(index)} delayLongPress={400}>
+```
+
+No `accessibilityRole`, `accessibilityLabel`, or `accessibilityHint`. Screen readers won't know this is draggable or what the long-press does. Every interactive element needs at minimum an `accessibilityLabel`.
+
+**M10. CardStack mixes animation, gesture, and business logic in one 216-line file**
+
+**File:** [src/features/cards/components/CardStack.tsx](src/features/cards/components/CardStack.tsx)
+
+While `DraggableCardItem` is correctly extracted as a sub-component (line 27), all three concerns live in the same file:
+
+- Animation: `useAnimatedReaction`, `useAnimatedStyle`, spring config (lines 38–78)
+- Gesture handling: `PanResponder.create()` with 4 callbacks (lines 127–186)
+- Business logic: `reorderCards(next)` call and array splice (lines 169–174)
+
+This isn't blocking but is the hardest file to modify safely. Extracting `usePanResponder()` or the reorder logic into helpers would reduce cognitive load.
+
+**M11. `CardItem.styles.ts` has hardcoded dimensions**
+
+**File:** [src/features/cards/components/CardItem.styles.ts:5,19,62-63](src/features/cards/components/CardItem.styles.ts#L5)
+
+```typescript
+minHeight: 160,     // line 5 — card height
+minHeight: 40,      // line 19 — header min height
+width: 56,          // line 62 — placeholder size
+height: 56,         // line 63 — placeholder size
+```
+
+These are layout constants that should either live in the theme as `components.card.height` or be extracted as named constants with comments explaining why they're those specific values. The `CARD_HEIGHT = 160` in `CardStack.styles.ts` duplicates the same value — a change in one must be mirrored in the other.
+
+---
+
+### Low — Polish Items
+
+**M12. `GlobalBottomSheet` returns `null` vs `undefined` inconsistently**
+
+**File:** [src/shared/ui/bottom-sheet/GlobalBottomSheet.tsx:76-77](src/shared/ui/bottom-sheet/GlobalBottomSheet.tsx#L76-L77)
+
+```typescript
+const iconName = config ? VARIANT_ICON[config.variant] : null;
+const iconColor = config
+  ? getVariantIconColor(config.variant, theme.colors)
+  : undefined;
+```
+
+One returns `null`, the other `undefined` for the same "no config" scenario. Standardize to `null` (React convention for "intentionally empty").
+
+**M13. `Button` uses `array index` as key in `GlobalBottomSheet`**
+
+**File:** [src/shared/ui/bottom-sheet/GlobalBottomSheet.tsx:106](src/shared/ui/bottom-sheet/GlobalBottomSheet.tsx#L106)
+
+```typescript
+config.actions.map((action, index) => (
+  <Button key={index} ... />
+```
+
+Using array index as `key` is fine here (actions don't reorder), but if action arrays change between renders the stale key can cause incorrect state retention. Using `action.label` as key would be safer.
+
+**M14. Barrel export gap: `iconRegistry` not exported**
+
+**File:** [src/shared/ui/icons/index.ts](src/shared/ui/icons/index.ts)
+
+Only exports `Icon` and `types`. The `iconRegistry` object (from `registry.ts`) is not exported, so consumers can't inspect available icons at runtime or in tests. Add `export { iconRegistry } from './registry'`.
+
+---
+
+### Summary: Maintainability Risk Areas
+
+| Area                     | Risk                                   | Findings    |
+| ------------------------ | -------------------------------------- | ----------- |
+| Production resilience    | No crash recovery                      | M1          |
+| Data correctness         | Wrong currency display                 | M2          |
+| Dead/stale code          | Confusing future contributors          | M3, M4, M5  |
+| Screen complexity        | Hardest files to change safely         | M11         |
+| Design system compliance | Token violations undermine consistency | M8, M12     |
+| Performance              | Unnecessary double writes              | M6          |
+| Cross-screen consistency | Each screen invents its own patterns   | M7, M13     |
+| Accessibility            | Screen reader users blocked            | M10         |
 
 ---
 
