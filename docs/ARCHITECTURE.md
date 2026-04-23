@@ -281,3 +281,11 @@ Sub-components: `HeaderTitle`, `HeaderBackButton`, `HeaderIconButton`.
 - Public API: `<Icon name="..." size="sm|md|lg" color="..." />`
 
 To add an icon: drop the `.svg` in `assets/`, create a wrapper component, add it to `registry.ts`.
+
+## UI State Patterns
+
+Standard components for handling loading, error, and empty states across the app:
+
+- **Loading** — use `<LoadingOverlay />` from `src/shared/ui/LoadingOverlay.tsx`. Renders a full-screen semi-transparent overlay with a centered spinner. Use it whenever an async operation blocks the screen.
+- **Errors** — use `showErrorBottomSheet` to surface errors. Never use inline error banners or alerts for operation failures — always go through the bottom sheet.
+- **Empty state** — use `<EmptyState />` when a screen has no data to display (e.g., no transactions, no cards). Never show a blank screen.
