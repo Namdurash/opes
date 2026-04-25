@@ -3,6 +3,27 @@ import { addColumns, createTable, schemaMigrations } from '@nozbe/watermelondb/S
 export const databaseMigrations = schemaMigrations({
   migrations: [
     {
+      toVersion: 7,
+      steps: [
+        createTable({
+          name: 'user_overrides',
+          columns: [
+            { name: 'transaction_id', type: 'string', isIndexed: true },
+            { name: 'category_id', type: 'string' },
+            { name: 'created_at', type: 'number' },
+          ],
+        }),
+        createTable({
+          name: 'merchant_rules',
+          columns: [
+            { name: 'merchant_name', type: 'string', isIndexed: true },
+            { name: 'category_id', type: 'string' },
+            { name: 'created_at', type: 'number' },
+          ],
+        }),
+      ],
+    },
+    {
       toVersion: 6,
       steps: [
         createTable({

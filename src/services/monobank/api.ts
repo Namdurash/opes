@@ -80,7 +80,7 @@ export class MonobankService {
     } catch (cause) {
       throw new MonobankError(
         'NETWORK_ERROR',
-        'Network request failed. Check your internet connection.',
+        `Network request failed. Check your internet connection. (${cause instanceof Error ? cause.message : String(cause)})`,
       );
     }
 

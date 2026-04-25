@@ -1,6 +1,12 @@
 import { Database } from '@nozbe/watermelondb';
 import { DatabaseAdapter } from '@nozbe/watermelondb/adapters/type';
-import { CardModel, TransactionModel, UserModel } from './models';
+import {
+  CardModel,
+  MerchantRuleModel,
+  TransactionModel,
+  UserModel,
+  UserOverrideModel,
+} from './models';
 import { databaseMigrations } from './migrations';
 import { databaseSchema } from './schema';
 
@@ -39,5 +45,11 @@ const createAdapter = (): DatabaseAdapter => {
 
 export const database = new Database({
   adapter: createAdapter(),
-  modelClasses: [UserModel, CardModel, TransactionModel],
+  modelClasses: [
+    UserModel,
+    CardModel,
+    TransactionModel,
+    UserOverrideModel,
+    MerchantRuleModel,
+  ],
 });
