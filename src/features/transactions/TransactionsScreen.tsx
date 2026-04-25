@@ -1,13 +1,12 @@
 import React, { useCallback, useEffect, useMemo, useState } from 'react';
 import { RefreshControl, SectionList, View } from 'react-native';
 import { useNavigation } from '@react-navigation/native';
-import { useShallow } from 'zustand/shallow';
 import { ROOT_ROUTES, TransactionsScreenNavigationProp } from '../../app/navigation';
 import { useUserStore } from '../../stores/useUserStore';
 import { useMonobankStore } from '../monobank';
 import { Button, EmptyState, HeaderBackButton, HeaderTitle, LoadingOverlay, Screen } from '../../shared/ui';
 import { useTheme } from '../../shared/theme';
-import { useTransactionsStore } from './state/useTransactionsStore';
+import { useTransactionsViewModel } from './state/useTransactionsViewModel';
 import { groupTransactionsByDate } from './utils';
 import { TransactionItem } from './components/TransactionItem';
 import { SectionHeader } from './components/SectionHeader';
@@ -24,16 +23,13 @@ export const TransactionsScreen = () => {
   const currentUserId = useUserStore(state => state.currentUserId);
   const monobankStatus = useMonobankStore(state => state.status);
 
-  const { transactions, isLoadingFromDb, loadTransactions, syncFromMonobank } =
-    useTransactionsStore(
-      useShallow(state => ({
-        transactions: state.transactions,
-        syncStatus: state.syncStatus,
-        isLoadingFromDb: state.isLoadingFromDb,
-        loadTransactions: state.loadTransactions,
-        syncFromMonobank: state.syncFromMonobank,
-      })),
-    );
+  const {
+    transactions,
+    isLoadingFromDb,
+    loadTransactions,
+    syncFromMonobank,
+    getCategoryForTransaction,
+  } = useTransactionsViewModel();
 
   useEffect(() => {
     loadTransactions();
@@ -52,8 +48,13 @@ export const TransactionsScreen = () => {
   }, [currentUserId, monobankStatus, syncFromMonobank]);
 
   const renderItem = useCallback(
-    ({ item }: { item: Transaction }) => <TransactionItem transaction={item} />,
-    [],
+    ({ item }: { item: Transaction }) => (
+      <TransactionItem
+        transaction={item}
+        category={getCategoryForTransaction(item.id)}
+      />
+    ),
+    [getCategoryForTransaction],
   );
 
   const renderSectionHeader = useCallback(
