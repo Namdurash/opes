@@ -7,7 +7,7 @@ export const useTransactionItemStyles = makeStyles(theme => ({
     paddingVertical: theme.spacing.md,
     paddingHorizontal: theme.spacing.lg,
   },
-  categoryDot: {
+  categoryIcon: {
     width: 36,
     height: 36,
     borderRadius: theme.radii.sm,
@@ -15,10 +15,8 @@ export const useTransactionItemStyles = makeStyles(theme => ({
     justifyContent: 'center' as const,
     marginRight: theme.spacing.md,
   },
-  dotInner: {
-    width: 10,
-    height: 10,
-    borderRadius: 5,
+  emoji: {
+    fontSize: 18,
   },
   content: {
     flex: 1,

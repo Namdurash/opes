@@ -1,5 +1,5 @@
 import React, { useMemo } from 'react';
-import { View } from 'react-native';
+import { Text, View } from 'react-native';
 import type { Transaction } from '../../../domain/transactions';
 import type { Category } from '../../../domain/categorization';
 import { AppText } from '../../../shared/ui';
@@ -18,17 +18,15 @@ export const TransactionItem = ({
   const styles = useTransactionItemStyles();
   const isIncome = transaction.amount >= 0;
 
-  const dotBackgroundColor = useMemo(
+  const iconBackgroundColor = useMemo(
     () => (category ? `${category.color}1A` : '#9E9E9E1A'),
     [category],
   );
 
-  const dotColor = category?.color ?? '#9E9E9E';
-
   return (
     <View style={styles.container}>
-      <View style={[styles.categoryDot, { backgroundColor: dotBackgroundColor }]}>
-        <View style={[styles.dotInner, { backgroundColor: dotColor }]} />
+      <View style={[styles.categoryIcon, { backgroundColor: iconBackgroundColor }]}>
+        <Text style={styles.emoji}>{category?.emoji ?? '🔘'}</Text>
       </View>
       <View style={styles.content}>
         <AppText variant="body" numberOfLines={1}>

@@ -5873,10 +5873,10 @@ react-native-linear-gradient@^2.8.3:
   resolved "https://registry.npmjs.org/react-native-linear-gradient/-/react-native-linear-gradient-2.8.3.tgz"
   integrity sha512-KflAXZcEg54PXkLyflaSZQ3PJp4uC4whM7nT/Uot9m0e/qxFV3p6uor1983D1YOBJbJN7rrWdqIjq0T42jOJyA==
 
-react-native-mmkv@^4.1.2:
-  version "4.1.2"
-  resolved "https://registry.npmjs.org/react-native-mmkv/-/react-native-mmkv-4.1.2.tgz"
-  integrity sha512-6LHb2DQBXuo96Aues13EugmlWw/HAYuh3KoJoQNrC4JsBwn3J3KiRYAg2mCm5Je0VYq2YsmbgZG7XJwX/WFYZA==
+react-native-mmkv@^4.3.1:
+  version "4.3.1"
+  resolved "https://registry.npmjs.org/react-native-mmkv/-/react-native-mmkv-4.3.1.tgz"
+  integrity sha512-APyGGaaHtayVgT18dBM8QGGZKr9pGfSTiBwbbPNzhGGfJQSU7awLGRGq879OqYl31HmVks9hOBLCs+qfgacRZg==
 
 react-native-nitro-modules@*, react-native-nitro-modules@^0.35.0:
   version "0.35.0"
