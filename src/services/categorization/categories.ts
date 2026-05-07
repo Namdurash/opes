@@ -7,6 +7,7 @@ export const CATEGORIES: Record<CategoryId, Category> = {
     icon: 'cart',
     emoji: '🛒',
     color: '#4CAF50',
+    bgColor: '#FEF3C7',
   },
   transport: {
     id: 'transport',
@@ -14,6 +15,7 @@ export const CATEGORIES: Record<CategoryId, Category> = {
     icon: 'bus',
     emoji: '🚇',
     color: '#2196F3',
+    bgColor: '#DBEAFE',
   },
   entertainment: {
     id: 'entertainment',
@@ -21,6 +23,7 @@ export const CATEGORIES: Record<CategoryId, Category> = {
     icon: 'film',
     emoji: '🎬',
     color: '#9C27B0',
+    bgColor: '#F3E8FF',
   },
   cafes_restaurants: {
     id: 'cafes_restaurants',
@@ -28,6 +31,7 @@ export const CATEGORIES: Record<CategoryId, Category> = {
     icon: 'coffee',
     emoji: '☕',
     color: '#FF9800',
+    bgColor: '#FFE4E6',
   },
   shopping: {
     id: 'shopping',
@@ -35,6 +39,7 @@ export const CATEGORIES: Record<CategoryId, Category> = {
     icon: 'shopping-bag',
     emoji: '🛍️',
     color: '#E91E63',
+    bgColor: '#FCE7F3',
   },
   utilities: {
     id: 'utilities',
@@ -42,6 +47,7 @@ export const CATEGORIES: Record<CategoryId, Category> = {
     icon: 'zap',
     emoji: '💡',
     color: '#009688',
+    bgColor: '#ECFDF5',
   },
   transfers: {
     id: 'transfers',
@@ -49,13 +55,15 @@ export const CATEGORIES: Record<CategoryId, Category> = {
     icon: 'arrow-right-left',
     emoji: '💸',
     color: '#78909C',
+    bgColor: '#E0F2FE',
   },
   donations: {
     id: 'donations',
     label: 'Донати',
     icon: 'heart',
     emoji: '🫶',
-    color: '#FFC107',
+    color: '#8B5CF6',
+    bgColor: '#EDE9FE',
   },
   other: {
     id: 'other',
@@ -63,6 +71,7 @@ export const CATEGORIES: Record<CategoryId, Category> = {
     icon: 'circle',
     emoji: '🔘',
     color: '#9E9E9E',
+    bgColor: '#F4F4F5',
   },
 } as const;
 

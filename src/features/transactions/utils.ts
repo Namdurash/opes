@@ -1,6 +1,12 @@
 import type { Transaction } from '../../domain/transactions';
 import type { TransactionSection } from './types';
 
+export const formatTransactionTime = (isoString: string): string =>
+  new Date(isoString).toLocaleTimeString('uk-UA', {
+    hour: '2-digit',
+    minute: '2-digit',
+  });
+
 export const formatAmount = (amount: number, currencySymbol: string): string => {
   const sign = amount >= 0 ? '+' : '';
   return `${sign}${amount.toFixed(2)} ${currencySymbol}`;

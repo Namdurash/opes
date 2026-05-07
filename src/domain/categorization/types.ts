@@ -17,6 +17,7 @@ export interface Category {
   icon: string;
   emoji: string;
   color: string;
+  bgColor: string;
 }
 
 export interface UserOverride {

@@ -8,7 +8,7 @@ import { Button, EmptyState, HeaderBackButton, HeaderTitle, LoadingOverlay, Scre
 import { useTheme } from '../../shared/theme';
 import { useTransactionsViewModel } from './state/useTransactionsViewModel';
 import { groupTransactionsByDate } from './utils';
-import { TransactionItem } from './components/TransactionItem';
+import { TransactionListItem } from './components/TransactionListItem';
 import { SectionHeader } from './components/SectionHeader';
 import { useTransactionsScreenStyles } from './TransactionsScreen.styles';
 import type { Transaction } from '../../domain/transactions';
@@ -49,7 +49,7 @@ export const TransactionsScreen = () => {
 
   const renderItem = useCallback(
     ({ item }: { item: Transaction }) => (
-      <TransactionItem
+      <TransactionListItem
         transaction={item}
         category={getCategoryForTransaction(item.id)}
       />
@@ -60,11 +60,6 @@ export const TransactionsScreen = () => {
   const renderSectionHeader = useCallback(
     ({ section }: { section: TransactionSection }) => <SectionHeader title={section.title} />,
     [],
-  );
-
-  const renderSeparator = useCallback(
-    () => <View style={styles.separator} />,
-    [styles.separator],
   );
 
   const renderEmpty = useCallback(
@@ -92,7 +87,6 @@ export const TransactionsScreen = () => {
         keyExtractor={item => item.id}
         renderItem={renderItem}
         renderSectionHeader={renderSectionHeader}
-        ItemSeparatorComponent={renderSeparator}
         ListEmptyComponent={renderEmpty}
         contentContainerStyle={styles.listContent}
         stickySectionHeadersEnabled

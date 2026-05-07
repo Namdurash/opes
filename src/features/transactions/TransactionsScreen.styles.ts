@@ -2,12 +2,9 @@ import { makeStyles } from '../../shared/theme';
 
 export const useTransactionsScreenStyles = makeStyles(theme => ({
   listContent: {
+    paddingHorizontal: theme.spacing.lg,
     paddingBottom: theme.spacing.xl,
-  },
-  separator: {
-    height: 1,
-    backgroundColor: theme.colors.border,
-    marginHorizontal: theme.spacing.lg,
+    gap: theme.spacing.sm,
   },
   emptyContainer: {
     flex: 1,
@@ -16,7 +13,6 @@ export const useTransactionsScreenStyles = makeStyles(theme => ({
     paddingVertical: theme.spacing.xxl,
   },
   footer: {
-    paddingHorizontal: theme.spacing.lg,
     paddingVertical: theme.spacing.md,
   },
 }));
