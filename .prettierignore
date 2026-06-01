@@ -1,0 +1,11 @@
+node_modules/
+ios/Pods/
+ios/build/
+android/build/
+android/app/build/
+android/.gradle/
+coverage/
+vendor/
+*.lock
+package-lock.json
+yarn.lock
