@@ -49,6 +49,6 @@ rules:
     - The final task group must satisfy the Definition of Done (tsc --noEmit, lint, test) before the change is apply-complete.
     - Group tasks by layer when a change spans several (domain -> models -> services -> features).
   specs:
-    - One delta spec per capability at specs/<capability>/spec.md, capability name in kebab-case.
-    - Use `## ADDED|MODIFIED|REMOVED|RENAMED Requirements`, then `### Requirement: <name>` (SHALL/MUST wording), then `#### Scenario:` with `- **WHEN**` / `- **THEN**` bullets.
-    - Deltas express intent — for MODIFIED, include only the requirement/scenarios that change, not a full copy.
+    - "One delta spec per capability at specs/<capability>/spec.md, capability name in kebab-case."
+    - "Use the delta headers `## ADDED|MODIFIED|REMOVED|RENAMED Requirements`, then `### Requirement: <name>` with SHALL/MUST wording, then `#### Scenario:` blocks of `- **WHEN**` / `- **THEN**` bullets."
+    - "Deltas express intent — for MODIFIED, include only the requirement and scenarios that change, not a full copy."
