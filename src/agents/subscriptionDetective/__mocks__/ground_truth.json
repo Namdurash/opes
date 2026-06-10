@@ -1,0 +1,162 @@
+{
+  "metadata": {
+    "period_days": 90,
+    "period_start_iso": "2026-02-06",
+    "period_end_iso": "2026-05-07",
+    "total_transactions": 150,
+    "currency": "UAH"
+  },
+  "expected_subscriptions": [
+    {
+      "merchant": "Netflix",
+      "expected_match_strings": [
+        "Netflix.com",
+        "Netflix"
+      ],
+      "estimated_monthly_uah": 249.0,
+      "frequency_days": 30,
+      "expected_confidence": "high",
+      "rationale": "3 платежі, ідентична сума, чіткий 30-денний інтервал"
+    },
+    {
+      "merchant": "Spotify",
+      "expected_match_strings": [
+        "Spotify Premium"
+      ],
+      "estimated_monthly_uah": 169.0,
+      "frequency_days": 30,
+      "expected_confidence": "high",
+      "rationale": "4 платежі — найбільше циклів у датасеті, ідеальна регулярність"
+    },
+    {
+      "merchant": "iCloud / Apple Storage",
+      "expected_match_strings": [
+        "APPLE.COM/BILL"
+      ],
+      "estimated_monthly_uah": 29.0,
+      "frequency_days": 30,
+      "expected_confidence": "high",
+      "rationale": "Мала сума — перевіряє що агент не ігнорує дрібні підписки. УВАГА: APPLE.COM/BILL також використовується для Apple Music — агент має бачити дві різні суми (29 і 79) і розрізнити їх або об'єднати під одним merchant — обидва рішення прийнятні"
+    },
+    {
+      "merchant": "Megogo",
+      "expected_match_strings": [
+        "MEGOGO"
+      ],
+      "estimated_monthly_uah": 199.0,
+      "frequency_days": 30,
+      "expected_confidence": "high",
+      "rationale": "Український стрімінг — перевіряє розпізнавання локальних сервісів"
+    },
+    {
+      "merchant": "SportLife (спортзал)",
+      "expected_match_strings": [
+        "SPORTLIFE LVIV"
+      ],
+      "estimated_monthly_uah": 1200.0,
+      "frequency_days": 30,
+      "expected_confidence": "medium",
+      "rationale": "Інтервали трохи плавають через свята → stdev зростає, але це досі підписка"
+    },
+    {
+      "merchant": "Hostpro (хостинг)",
+      "expected_match_strings": [
+        "HOSTPRO.UA"
+      ],
+      "estimated_monthly_uah": 910.0,
+      "frequency_days": 30,
+      "expected_confidence": "medium",
+      "rationale": "3 платежі, остання сума різниться через курс долара → amount_cv вища"
+    },
+    {
+      "merchant": "Apple Music",
+      "expected_match_strings": [
+        "APPLE.COM/BILL (₴79)"
+      ],
+      "estimated_monthly_uah": 79.0,
+      "frequency_days": 30,
+      "expected_confidence": "medium",
+      "rationale": "Мінімум 3 цикли, той самий merchant string що і iCloud (₴29) — тест на те чи агент розрізнить їх по сумі"
+    }
+  ],
+  "must_not_be_subscriptions": [
+    {
+      "merchant": "АТБ",
+      "why_tempting": "Регулярні платежі щочетверга, ~12-13 повторень",
+      "why_not_sub": "Продуктовий магазин, MCC 5411, варіація сум, користувач свідомо ходить туди — це не автоплатіж"
+    },
+    {
+      "merchant": "Сільпо",
+      "why_tempting": "14 повторень за період",
+      "why_not_sub": "Продукти, нерегулярні інтервали, розкид сум від 180 до 1450"
+    },
+    {
+      "merchant": "WOG / ОККО",
+      "why_tempting": "WOG має ~22-денний інтервал що виглядає як cadence",
+      "why_not_sub": "АЗС, MCC 5541, дискреційна покупка"
+    },
+    {
+      "merchant": "Uklon",
+      "why_tempting": "11 поїздок",
+      "why_not_sub": "Хаотичні інтервали, високий stdev, MCC 4121 (taxi)"
+    },
+    {
+      "merchant": "ТОВ \"ТЕХ-СОФТ\" (зарплата)",
+      "why_tempting": "Ідеально регулярні +25000 щомісяця",
+      "why_not_sub": "ВХІДНА транзакція (positive amount) — це дохід, не витрата. Агент має фільтрувати позитивні суми."
+    },
+    {
+      "merchant": "Зняття готівки",
+      "why_tempting": "Велика сума, MCC 6011",
+      "why_not_sub": "Одиничне зняття"
+    },
+    {
+      "merchant": "P2P перекази (мамі, другу)",
+      "why_tempting": "—",
+      "why_not_sub": "Поодинокі транзакції, MCC 4829"
+    }
+  ],
+  "grey_zones": [
+    {
+      "merchant": "Орендодавець Іван П. (оренда)",
+      "issue": "Це регулярний автоплатіж по суті, але P2P-переказ за оренду. Формально підпадає під визначення підписки (регулярний, той самий, та сама сума). Однак для користувача це не 'підписка яку забув скасувати'.",
+      "acceptable_outcomes": [
+        "Знайти і позначити low/medium confidence",
+        "Не знаходити (фільтр по MCC P2P)"
+      ]
+    },
+    {
+      "merchant": "КИЇВЕНЕРГО (комуналка)",
+      "issue": "Регулярна, monthly, але суми сильно різняться (850 → 1100 → 1250). Це utility bill, не підписка в традиційному сенсі.",
+      "acceptable_outcomes": [
+        "Знайти з low confidence (висока amount_cv)",
+        "Не знаходити"
+      ]
+    },
+    {
+      "merchant": "Disney+",
+      "issue": "Тільки 2 платежі, потім тиша 60+ днів — підписку скасували. Технічно виявити можна, але вона неактивна.",
+      "acceptable_outcomes": [
+        "Не знаходити (тільки 2 цикли — нижче порога)",
+        "Знайти з міткою 'можливо скасована'"
+      ]
+    },
+    {
+      "merchant": "Донати ЗСУ",
+      "issue": "5 донатів за 90 днів, різні отримувачі, різні суми. Це charity habit, не підписка. Агент НЕ має об'єднати їх у підписку.",
+      "acceptable_outcomes": [
+        "Не знаходити"
+      ],
+      "why_in_dataset": "Перевіряє що агент розрізняє 'часта поведінка' від 'автоплатіж тому самому merchant'"
+    }
+  ],
+  "evaluation_checklist": [
+    "Знайдено 4-7 підписок (baseline 4 high-confidence + 3 medium)",
+    "Не знайдено АТБ, Сільпо, Uklon, WOG як підписки",
+    "Не знайдено зарплату як підписку (фільтр income)",
+    "Не знайдено донати ЗСУ як підписку (різні отримувачі)",
+    "Якщо знайдено оренду/комуналку — confidence = low",
+    "Якщо знайдено Disney+ — позначено як можливо скасовану",
+    "Загальна сума підписок на місяць у діапазоні ₴2000-3500"
+  ]
+}
