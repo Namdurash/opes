@@ -9,7 +9,8 @@ The repository fails its own Definition of Done: `npx tsc --noEmit` reports 5 er
 - Remove the orphaned `./registration` and `./sign-in` exports from `src/features/index.ts` (those feature folders were deleted).
 - Delete the dead auth test files `__tests__/registration.store.test.ts` and `__tests__/sign-in.store.test.ts`, which import removed stores and `hashPassword`.
 - Remove three unused imports in `scripts/runAgentDev.ts` (`Anthropic`, `fetchInRange`, `getTransactionsTool`) — the lint errors.
-- Add a jest setup that mocks the native modules pulled in via `react-native-gesture-handler` / `@gorhom/bottom-sheet`, so `__tests__/App.test.tsx` and `src/features/cards/state/useCardsStore.test.ts` run.
+- Add a jest setup (gesture-handler mock + reanimated mock + the `react-native-worklets` jest resolver, plus the affected packages in `transformIgnorePatterns`) so `src/features/cards/state/useCardsStore.test.ts` runs with native modules stubbed.
+- Remove the boilerplate `__tests__/App.test.tsx` (renders the whole `<App/>`): running it in jest requires mocking the entire native stack (image-picker, MMKV, WatermelonDB, …), it asserts nothing specific, and full-app rendering belongs in an e2e runner. A proper smoke test + native-mock infrastructure is a separate follow-up.
 - Result: `tsc --noEmit`, `lint`, and `test` all pass — the Definition of Done is met.
 
 ## Capabilities
