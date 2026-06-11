@@ -8,6 +8,11 @@ module.exports = {
   // handles that keep jest from exiting; force exit once the suites finish so
   // `npm test` (the Definition-of-Done gate) doesn't hang.
   forceExit: true,
+  // Stub static .svg asset imports. react-native-svg-transformer turns these
+  // into components under Metro, but jest has no such transform.
+  moduleNameMapper: {
+    '\\.svg$': '<rootDir>/jest/svgMock.js',
+  },
   transformIgnorePatterns: [
     'node_modules/(?!(@react-native|react-native|@react-navigation|react-native-safe-area-context|react-native-screens|react-native-gesture-handler|react-native-reanimated|react-native-worklets|@gorhom/bottom-sheet)/)',
   ],

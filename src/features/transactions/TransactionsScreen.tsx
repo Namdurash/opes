@@ -4,7 +4,7 @@ import { useNavigation } from '@react-navigation/native';
 import { ROOT_ROUTES, TransactionsScreenNavigationProp } from '../../app/navigation';
 import { useUserStore } from '../../stores/useUserStore';
 import { useMonobankStore } from '../monobank';
-import { Button, EmptyState, HeaderBackButton, HeaderTitle, LoadingOverlay, Screen } from '../../shared/ui';
+import { EmptyState, HeaderBackButton, HeaderTitle, LoadingOverlay, Screen } from '../../shared/ui';
 import { useTheme } from '../../shared/theme';
 import { useTransactionsViewModel } from './state/useTransactionsViewModel';
 import { groupTransactionsByDate } from './utils';
@@ -96,11 +96,6 @@ export const TransactionsScreen = () => {
             onRefresh={handleRefresh}
             tintColor={theme.colors.primary}
           />
-        }
-        ListFooterComponent={
-          <View style={styles.footer}>
-            <Button title="New Transaction" onPress={() => { }} variant="primary" />
-          </View>
         }
       />
       {isLoadingFromDb ? <LoadingOverlay /> : null}

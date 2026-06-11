@@ -12,7 +12,4 @@ export const useTransactionsScreenStyles = makeStyles(theme => ({
     justifyContent: 'center' as const,
     paddingVertical: theme.spacing.xxl,
   },
-  footer: {
-    paddingVertical: theme.spacing.md,
-  },
 }));

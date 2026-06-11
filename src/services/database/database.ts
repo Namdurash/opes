@@ -14,7 +14,6 @@ const isJestEnvironment = typeof jest !== 'undefined';
 
 const createAdapter = (): DatabaseAdapter => {
   if (isJestEnvironment) {
-    // eslint-disable-next-line @typescript-eslint/no-var-requires,global-require
     const LokiJSAdapter = require('@nozbe/watermelondb/adapters/lokijs').default as new (
       options: Record<string, unknown>,
     ) => DatabaseAdapter;
@@ -27,7 +26,6 @@ const createAdapter = (): DatabaseAdapter => {
     });
   }
 
-  // eslint-disable-next-line @typescript-eslint/no-var-requires,global-require
   const SQLiteAdapter = require('@nozbe/watermelondb/adapters/sqlite').default as new (
     options: Record<string, unknown>,
   ) => DatabaseAdapter;

@@ -2,8 +2,8 @@ import React from 'react';
 import { View } from 'react-native';
 import { useShallow } from 'zustand/shallow';
 import { AppText } from '../../../shared/ui';
+import { formatMoney } from '../../../shared/utils';
 import { useTransactionsStore } from '../../transactions/state/useTransactionsStore';
-import { formatAmount } from '../../transactions/utils';
 import { useTransactionHistorySectionStyles } from './TransactionHistorySection.styles';
 
 const MAX_DISPLAYED = 10;
@@ -45,7 +45,7 @@ export const TransactionHistorySection = () => {
                 variant="caption"
                 style={tx.amount >= 0 ? styles.amountPositive : styles.amountNegative}
               >
-                {formatAmount(tx.amount, tx.currencySymbol)}
+                {formatMoney(tx.amount, { code: tx.currencyCode, symbol: tx.currencySymbol }, { showSign: true })}
               </AppText>
             </View>
           </React.Fragment>

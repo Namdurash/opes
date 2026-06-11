@@ -189,13 +189,14 @@ export const CardStack = ({ cards, onDragStateChange }: CardStackProps) => {
     <View style={styles.container} {...panResponder.panHandlers}>
       {cards.map((card, index) => {
         const isDragging = draggingIndex === index;
+        const layerStyle = { zIndex: isDragging ? 100 : index + 1 };
         return (
           <View
             key={card.id}
             style={[
               styles.cardLayer,
               index > 0 ? styles.overlapLayer : null,
-              { zIndex: isDragging ? 100 : index + 1 },
+              layerStyle,
               isDragging ? styles.draggingLayer : null,
             ]}
           >

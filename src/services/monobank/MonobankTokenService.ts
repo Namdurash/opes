@@ -20,7 +20,6 @@ const createDefaultStorage = (): KeyValueStorage => {
   }
 
   try {
-    // eslint-disable-next-line @typescript-eslint/no-var-requires,global-require
     const { createMMKV } = require('react-native-mmkv') as {
       createMMKV: () => {
         set: (key: string, value: string) => void;

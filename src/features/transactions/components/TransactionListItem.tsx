@@ -12,7 +12,8 @@ import LinearGradient from 'react-native-linear-gradient';
 import type { Transaction } from '../../../domain/transactions';
 import type { Category } from '../../../domain/categorization';
 import { useTheme } from '../../../shared/theme';
-import { formatAmount, formatTransactionTime } from '../utils';
+import { formatMoney } from '../../../shared/utils';
+import { formatTransactionTime } from '../utils';
 import { useTransactionListItemStyles } from './TransactionListItem.styles';
 
 const SPRING_CONFIG = { stiffness: 300, damping: 30, mass: 0.8 };
@@ -136,7 +137,7 @@ export const TransactionListItem = ({
                   {transaction.title}
                 </Text>
                 <Text style={[styles.amount, isIncome && styles.amountIncome]}>
-                  {formatAmount(transaction.amount, transaction.currencySymbol)}
+                  {formatMoney(transaction.amount, { code: transaction.currencyCode, symbol: transaction.currencySymbol }, { showSign: true })}
                 </Text>
               </View>
 
@@ -147,7 +148,7 @@ export const TransactionListItem = ({
                 {cashback != null && cashback > 0 && (
                   <View style={styles.cashbackPill}>
                     <Text style={styles.cashbackText}>
-                      ✓ +{cashback.toFixed(2)} {transaction.currencySymbol}
+                      ✓ {formatMoney(cashback, { code: transaction.currencyCode, symbol: transaction.currencySymbol }, { showSign: true })}
                     </Text>
                   </View>
                 )}

@@ -2,19 +2,13 @@ import React from 'react';
 import { ImageBackground, View } from 'react-native';
 import { Card } from '../../../domain/cards';
 import { AppText } from '../../../shared/ui';
+import { formatMoney } from '../../../shared/utils';
 import { useCardItemStyles } from './CardItem.styles';
 
 interface CardItemProps {
   card: Card;
   collapsed?: boolean;
 }
-
-const formatMoneyAmount = (value: number): string =>
-  new Intl.NumberFormat('en-US', {
-    style: 'currency',
-    currency: 'USD',
-    maximumFractionDigits: 2,
-  }).format(value);
 
 const canRenderImage = (image: string | null): image is string =>
   Boolean(image && /^(https?:|file:|data:|content:)/.test(image));
@@ -30,7 +24,7 @@ export const CardItem = ({ card, collapsed = false }: CardItemProps) => {
           {card.title}
         </AppText>
         <AppText numberOfLines={1} variant={collapsed ? 'body' : 'h2'} style={styles.amount}>
-          {formatMoneyAmount(card.moneyAmount)}
+          {formatMoney(card.moneyAmount, { code: card.currencyCode, symbol: card.currencySymbol })}
         </AppText>
       </View>
 
