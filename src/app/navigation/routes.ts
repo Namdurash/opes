@@ -5,4 +5,5 @@ export const ROOT_ROUTES = {
   CARD_DETAIL: 'CardDetail',
   CREATE_CARD: 'CreateCard',
   CONNECT_MONOBANK: 'ConnectMonobank',
+  DONATIONS: 'Donations',
 } as const;

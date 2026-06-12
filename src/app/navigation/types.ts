@@ -9,6 +9,7 @@ export type RootStackParamList = {
   // `cardId` switches the screen into edit mode; omit it to create a new card.
   [ROOT_ROUTES.CREATE_CARD]: { cardId?: string } | undefined;
   [ROOT_ROUTES.CONNECT_MONOBANK]: undefined;
+  [ROOT_ROUTES.DONATIONS]: undefined;
 };
 
 export type WelcomeScreenNavigationProp = NativeStackNavigationProp<
@@ -34,4 +35,8 @@ export type CreateCardScreenNavigationProp = NativeStackNavigationProp<
 export type ConnectMonobankScreenNavigationProp = NativeStackNavigationProp<
   RootStackParamList,
   typeof ROOT_ROUTES.CONNECT_MONOBANK
+>;
+export type DonationsScreenNavigationProp = NativeStackNavigationProp<
+  RootStackParamList,
+  typeof ROOT_ROUTES.DONATIONS
 >;

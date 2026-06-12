@@ -1,6 +1,7 @@
 import React from 'react';
 import { createNativeStackNavigator } from '@react-navigation/native-stack';
 import { CardDetailScreen, CreateCardScreen } from '../../features/cards';
+import { DonationsScreen } from '../../features/donations';
 import { HomeScreen } from '../../features/home';
 import { ConnectMonobankScreen } from '../../features/monobank';
 import { TransactionsScreen } from '../../features/transactions';
@@ -39,6 +40,10 @@ export const RootNavigator = () => {
       <Stack.Screen
         component={ConnectMonobankScreen}
         name={ROOT_ROUTES.CONNECT_MONOBANK}
+      />
+      <Stack.Screen
+        component={DonationsScreen}
+        name={ROOT_ROUTES.DONATIONS}
       />
     </Stack.Navigator>
   );
