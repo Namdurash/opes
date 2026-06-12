@@ -10,6 +10,7 @@ export type RootStackParamList = {
   [ROOT_ROUTES.CREATE_CARD]: { cardId?: string } | undefined;
   [ROOT_ROUTES.CONNECT_MONOBANK]: undefined;
   [ROOT_ROUTES.DONATIONS]: undefined;
+  [ROOT_ROUTES.SETTINGS]: undefined;
 };
 
 export type WelcomeScreenNavigationProp = NativeStackNavigationProp<
@@ -39,4 +40,8 @@ export type ConnectMonobankScreenNavigationProp = NativeStackNavigationProp<
 export type DonationsScreenNavigationProp = NativeStackNavigationProp<
   RootStackParamList,
   typeof ROOT_ROUTES.DONATIONS
+>;
+export type SettingsScreenNavigationProp = NativeStackNavigationProp<
+  RootStackParamList,
+  typeof ROOT_ROUTES.SETTINGS
 >;

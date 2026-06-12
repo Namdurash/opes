@@ -61,4 +61,25 @@ export const tokens = {
   },
 } as const;
 
+// Dark-mode colors. Must declare exactly the same keys as `tokens.colors` so the
+// two palettes share one `ThemeColors` shape (see theme.ts).
+export const darkColors = {
+  primary: '#A78BFA',
+  primarySoft: '#8B5CF6',
+  secondary: '#211C30',
+  success: '#22C55E',
+  error: '#F87171',
+  cta: '#2DD4BF',
+  ctaSoft: '#14B8A6',
+  background: '#121016',
+  gradientLightPurple: '#241F33',
+  gradientBoldPurple: '#2E2747',
+  subtle: '#2E2747',
+  surface: '#1B1822',
+  border: '#2E2A38',
+  textPrimary: '#F4F4F5',
+  textSecondary: '#A1A1AA',
+  textMuted: '#71717A',
+} as const;
+
 export type ThemeTokens = typeof tokens;

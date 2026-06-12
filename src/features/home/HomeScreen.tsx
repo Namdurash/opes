@@ -125,6 +125,13 @@ export const HomeScreen = () => {
           </View>
           <View style={styles.quickActionsButton}>
             <Button
+              title="Settings"
+              onPress={() => navigation.navigate(ROOT_ROUTES.SETTINGS)}
+              variant="secondary"
+            />
+          </View>
+          <View style={styles.quickActionsButton}>
+            <Button
               title={
                 monobankStatus === 'connected'
                   ? `Monobank${monobankClientName ? `: ${monobankClientName}` : ' (connected)'}`

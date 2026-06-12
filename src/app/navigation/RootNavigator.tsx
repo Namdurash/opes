@@ -4,6 +4,7 @@ import { CardDetailScreen, CreateCardScreen } from '../../features/cards';
 import { DonationsScreen } from '../../features/donations';
 import { HomeScreen } from '../../features/home';
 import { ConnectMonobankScreen } from '../../features/monobank';
+import { SettingsScreen } from '../../features/settings';
 import { TransactionsScreen } from '../../features/transactions';
 import { WelcomeScreen } from '../../features/welcome';
 import { ROOT_ROUTES } from './routes';
@@ -44,6 +45,10 @@ export const RootNavigator = () => {
       <Stack.Screen
         component={DonationsScreen}
         name={ROOT_ROUTES.DONATIONS}
+      />
+      <Stack.Screen
+        component={SettingsScreen}
+        name={ROOT_ROUTES.SETTINGS}
       />
     </Stack.Navigator>
   );
