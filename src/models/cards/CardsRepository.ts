@@ -12,9 +12,19 @@ export interface CreateCardInput {
   image?: string | null;
 }
 
+export interface UpdateCardInput {
+  title?: string;
+  moneyAmount?: number;
+  type?: CardType;
+  image?: string | null;
+}
+
 export interface CardsRepositoryContract {
   getCardsByUser(userId: string): Promise<Card[]>;
+  findById(cardId: string): Promise<Card | null>;
   createCard(input: CreateCardInput): Promise<Card>;
+  updateCard(cardId: string, fields: UpdateCardInput): Promise<Card>;
+  deleteCard(cardId: string): Promise<void>;
   reorderCards(orderedIds: string[]): Promise<void>;
   findByMonobankAccountId(monobankAccountId: string): Promise<Card | null>;
   upsertMonobankCards(userId: string, accounts: MonobankAccount[]): Promise<Card[]>;
@@ -55,6 +65,17 @@ export class CardsRepository implements CardsRepositoryContract {
     return cards.map(toDomain);
   }
 
+  async findById(cardId: string): Promise<Card | null> {
+    const collection = database.get<CardModel>('cards');
+    try {
+      const record = await collection.find(cardId);
+      return toDomain(record);
+    } catch {
+      // WatermelonDB rejects find() for a missing id — treat as "not found".
+      return null;
+    }
+  }
+
   async createCard(input: CreateCardInput): Promise<Card> {
     const collection = database.get<CardModel>('cards');
     const createdAt = Date.now();
@@ -74,6 +95,33 @@ export class CardsRepository implements CardsRepositoryContract {
     });
 
     return toDomain(card);
+  }
+
+  async updateCard(cardId: string, fields: UpdateCardInput): Promise<Card> {
+    const collection = database.get<CardModel>('cards');
+
+    const updated = await database.write(async () => {
+      const record = await collection.find(cardId);
+      await record.update(r => {
+        if (fields.title !== undefined) r.title = fields.title;
+        if (fields.moneyAmount !== undefined) r.moneyAmount = fields.moneyAmount;
+        if (fields.type !== undefined) r.type = fields.type;
+        if (fields.image !== undefined) r.image = fields.image;
+      });
+      return record;
+    });
+
+    return toDomain(updated);
+  }
+
+  async deleteCard(cardId: string): Promise<void> {
+    const collection = database.get<CardModel>('cards');
+
+    await database.write(async () => {
+      const record = await collection.find(cardId);
+      // Offline-only DB: there is no remote to sync a soft-delete to.
+      await record.destroyPermanently();
+    });
   }
 
   async reorderCards(orderedIds: string[]): Promise<void> {

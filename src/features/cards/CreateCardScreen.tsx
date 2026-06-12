@@ -1,12 +1,17 @@
 import React from 'react';
 import { Image, ScrollView, View } from 'react-native';
-import { useNavigation } from '@react-navigation/native';
+import { useNavigation, useRoute } from '@react-navigation/native';
+import type { RouteProp } from '@react-navigation/native';
 import { useShallow } from 'zustand/shallow';
 import { useForm } from 'react-hook-form';
 import { yupResolver } from '@hookform/resolvers/yup';
 import { launchImageLibrary } from 'react-native-image-picker';
 import type { CardType } from '../../domain/cards';
-import type { CreateCardScreenNavigationProp } from '../../app/navigation';
+import { ROOT_ROUTES } from '../../app/navigation';
+import type {
+  CreateCardScreenNavigationProp,
+  RootStackParamList,
+} from '../../app/navigation';
 import { AppText, Button, FormInput, Screen } from '../../shared/ui';
 import { showErrorBottomSheet } from '../../shared/ui/bottom-sheet';
 import { createCardSchema } from '../../shared/validation';
@@ -21,6 +26,9 @@ const CARD_TYPES: CardType[] = ['salary', 'credit', 'storage'];
 export const CreateCardScreen = () => {
   const styles = useCreateCardScreenStyles();
   const navigation = useNavigation<CreateCardScreenNavigationProp>();
+  const { params } = useRoute<RouteProp<RootStackParamList, typeof ROOT_ROUTES.CREATE_CARD>>();
+  const editingCardId = params?.cardId ?? null;
+  const isEditing = editingCardId != null;
   const currentUserId = useUserStore(state => state.currentUserId);
 
   const { control, handleSubmit, reset } = useForm<CreateCardFormValues>({
@@ -41,19 +49,46 @@ export const CreateCardScreen = () => {
       })),
     );
 
-  const appendCard = useCardsStore(state => state.appendCard);
+  const { appendCard, updateCard } = useCardsStore(
+    useShallow(state => ({ appendCard: state.appendCard, updateCard: state.updateCard })),
+  );
 
   React.useEffect(() => {
-    reset();
-    resetForm();
+    // Read the working set imperatively so the prefill effect only re-runs when
+    // the edited card id changes, not on every cards-array update.
+    const editingCard = editingCardId
+      ? useCardsStore.getState().cards.find(c => c.id === editingCardId) ?? null
+      : null;
+
+    if (editingCard) {
+      reset({ title: editingCard.title, moneyAmount: String(editingCard.moneyAmount) });
+      setType(editingCard.type as CardType);
+      setImage(editingCard.image ?? '');
+    } else {
+      reset();
+      resetForm();
+    }
 
     return () => {
       reset();
       resetForm();
     };
-  }, [reset, resetForm]);
+  }, [editingCardId, reset, resetForm, setType, setImage]);
 
   const onSubmit = handleSubmit(async data => {
+    if (editingCardId) {
+      const updated = await updateCard(editingCardId, {
+        title: data.title.trim(),
+        moneyAmount: Number(data.moneyAmount),
+        type,
+        image: image.trim() || null,
+      });
+      if (updated) {
+        navigation.goBack();
+      }
+      return;
+    }
+
     if (!currentUserId) {
       return;
     }
@@ -103,8 +138,12 @@ export const CreateCardScreen = () => {
   return (
     <Screen>
       <ScrollView contentContainerStyle={styles.content} keyboardDismissMode="on-drag">
-        <AppText variant="h1">Create card</AppText>
-        <AppText tone="secondary">Add a money source or account for the current user.</AppText>
+        <AppText variant="h1">{isEditing ? 'Edit card' : 'Create card'}</AppText>
+        <AppText tone="secondary">
+          {isEditing
+            ? 'Update the details for this card.'
+            : 'Add a money source or account for the current user.'}
+        </AppText>
 
         <View style={styles.form}>
           <FormInput
@@ -153,7 +192,11 @@ export const CreateCardScreen = () => {
             ) : null}
           </View>
 
-          <Button loading={isSubmitting} onPress={onSubmit} title="Save card" />
+          <Button
+            loading={isSubmitting}
+            onPress={onSubmit}
+            title={isEditing ? 'Save changes' : 'Save card'}
+          />
         </View>
       </ScrollView>
     </Screen>

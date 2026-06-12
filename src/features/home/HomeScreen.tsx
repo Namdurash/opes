@@ -96,7 +96,13 @@ export const HomeScreen = () => {
           <AppText tone="secondary">Track your cards and move quickly between flows.</AppText>
         </View>
 
-        {cards.length > 0 ? <CardStack cards={cards} onDragStateChange={isDragging => setScrollEnabled(!isDragging)} /> : null}
+        {cards.length > 0 ? (
+          <CardStack
+            cards={cards}
+            onDragStateChange={isDragging => setScrollEnabled(!isDragging)}
+            onCardPress={card => navigation.navigate(ROOT_ROUTES.CARD_DETAIL, { cardId: card.id })}
+          />
+        ) : null}
         <Button onPress={() => navigation.navigate(ROOT_ROUTES.CREATE_CARD)} title="Create card" />
 
         {monobankStatus === 'connected' ? <TransactionHistorySection /> : null}

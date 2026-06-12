@@ -1,6 +1,7 @@
 import { create } from 'zustand';
 import { Card } from '../../../domain/cards';
 import { CardsRepository, CardsRepositoryContract } from '../../../models/cards';
+import type { UpdateCardInput } from '../../../models/cards';
 import { showErrorBottomSheet } from '../../../shared/ui/bottom-sheet';
 
 interface CardsStoreState {
@@ -9,6 +10,8 @@ interface CardsStoreState {
   errorMessage: string | null;
   loadCardsByUser: (userId: string) => Promise<void>;
   appendCard: (card: Card) => void;
+  updateCard: (cardId: string, fields: UpdateCardInput) => Promise<Card | null>;
+  deleteCard: (cardId: string) => Promise<void>;
   reorderCards: (newOrder: Card[]) => Promise<void>;
 }
 
@@ -40,6 +43,43 @@ export const createCardsStore = (deps: CardsStoreDeps) => {
       }
     },
     appendCard: card => set(state => ({ cards: [...state.cards, card] })),
+    updateCard: async (cardId, fields) => {
+      const previousCards = get().cards;
+      set({
+        cards: previousCards.map(c => (c.id === cardId ? { ...c, ...fields } : c)),
+      });
+
+      try {
+        const updated = await deps.cardsRepository.updateCard(cardId, fields);
+        set({ cards: get().cards.map(c => (c.id === cardId ? updated : c)) });
+        return updated;
+      } catch {
+        set({ cards: previousCards, errorMessage: 'Failed to update card.' });
+        showErrorBottomSheet({
+          title: 'Update Failed',
+          message: 'Failed to update card.',
+          buttonTitle: 'OK',
+          onPress: () => {},
+        });
+        return null;
+      }
+    },
+    deleteCard: async cardId => {
+      const previousCards = get().cards;
+      set({ cards: previousCards.filter(c => c.id !== cardId) });
+
+      try {
+        await deps.cardsRepository.deleteCard(cardId);
+      } catch {
+        set({ cards: previousCards, errorMessage: 'Failed to delete card.' });
+        showErrorBottomSheet({
+          title: 'Delete Failed',
+          message: 'Failed to delete card.',
+          buttonTitle: 'OK',
+          onPress: () => {},
+        });
+      }
+    },
     reorderCards: async newOrder => {
       const previousCards = get().cards;
       set({ cards: newOrder });

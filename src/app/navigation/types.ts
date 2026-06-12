@@ -5,7 +5,9 @@ export type RootStackParamList = {
   [ROOT_ROUTES.WELCOME]: undefined;
   [ROOT_ROUTES.HOME]: undefined;
   [ROOT_ROUTES.TRANSACTIONS]: undefined;
-  [ROOT_ROUTES.CREATE_CARD]: undefined;
+  [ROOT_ROUTES.CARD_DETAIL]: { cardId: string };
+  // `cardId` switches the screen into edit mode; omit it to create a new card.
+  [ROOT_ROUTES.CREATE_CARD]: { cardId?: string } | undefined;
   [ROOT_ROUTES.CONNECT_MONOBANK]: undefined;
 };
 
@@ -20,6 +22,10 @@ export type HomeScreenNavigationProp = NativeStackNavigationProp<
 export type TransactionsScreenNavigationProp = NativeStackNavigationProp<
   RootStackParamList,
   typeof ROOT_ROUTES.TRANSACTIONS
+>;
+export type CardDetailScreenNavigationProp = NativeStackNavigationProp<
+  RootStackParamList,
+  typeof ROOT_ROUTES.CARD_DETAIL
 >;
 export type CreateCardScreenNavigationProp = NativeStackNavigationProp<
   RootStackParamList,

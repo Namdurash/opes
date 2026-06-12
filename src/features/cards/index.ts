@@ -1,3 +1,4 @@
+export * from './CardDetailScreen';
 export * from './CreateCardScreen';
 export * from './components/CardItem';
 export * from './components/CardStack';

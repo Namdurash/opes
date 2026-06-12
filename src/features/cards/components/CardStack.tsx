@@ -22,6 +22,7 @@ interface DraggableCardItemProps {
   draggingTargetIndex: SharedValue<number>;
   dragOffsetY: SharedValue<number>;
   onLongPress: (index: number) => void;
+  onPress?: (card: Card) => void;
 }
 
 const DraggableCardItem = ({
@@ -32,6 +33,7 @@ const DraggableCardItem = ({
   draggingTargetIndex,
   dragOffsetY,
   onLongPress,
+  onPress,
 }: DraggableCardItemProps) => {
   const shiftY = useSharedValue(0);
 
@@ -78,7 +80,11 @@ const DraggableCardItem = ({
   });
 
   return (
-    <Pressable onLongPress={() => onLongPress(index)} delayLongPress={400}>
+    <Pressable
+      onPress={() => onPress?.(card)}
+      onLongPress={() => onLongPress(index)}
+      delayLongPress={400}
+    >
       <Animated.View style={animatedStyle}>
         <CardItem card={card} collapsed={collapsed} />
       </Animated.View>
@@ -89,9 +95,10 @@ const DraggableCardItem = ({
 interface CardStackProps {
   cards: Card[];
   onDragStateChange?: (isDragging: boolean) => void;
+  onCardPress?: (card: Card) => void;
 }
 
-export const CardStack = ({ cards, onDragStateChange }: CardStackProps) => {
+export const CardStack = ({ cards, onDragStateChange, onCardPress }: CardStackProps) => {
   const styles = useCardStackStyles();
   const reorderCards = useCardsStore(state => state.reorderCards);
 
@@ -208,6 +215,7 @@ export const CardStack = ({ cards, onDragStateChange }: CardStackProps) => {
               draggingTargetIndex={draggingTargetIndex}
               dragOffsetY={dragOffsetY}
               onLongPress={handleLongPress}
+              onPress={onCardPress}
             />
           </View>
         );
