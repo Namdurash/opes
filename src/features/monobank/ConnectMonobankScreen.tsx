@@ -1,5 +1,5 @@
 import React from 'react';
-import { Linking, ScrollView, View } from 'react-native';
+import { Linking, ScrollView, Switch, View } from 'react-native';
 import { useNavigation } from '@react-navigation/native';
 import { useShallow } from 'zustand/shallow';
 import { useForm } from 'react-hook-form';
@@ -8,6 +8,8 @@ import type { ConnectMonobankScreenNavigationProp } from '../../app/navigation';
 import { ROOT_ROUTES } from '../../app/navigation';
 import { useUserStore } from '../../stores/useUserStore';
 import { AppText, Button, FormInput, HeaderBackButton, HeaderTitle, Screen } from '../../shared/ui';
+import { useTheme } from '../../shared/theme';
+import { formatMoney } from '../../shared/utils';
 import { connectMonobankSchema } from '../../shared/validation';
 import type { ConnectMonobankFormValues } from '../../shared/validation';
 import { useMonobankStore } from './state/useMonobankStore';
@@ -18,19 +20,24 @@ const MONOBANK_TOKEN_URL = 'https://api.monobank.ua/';
 export const ConnectMonobankScreen = () => {
   const navigation = useNavigation<ConnectMonobankScreenNavigationProp>();
   const styles = useConnectMonobankScreenStyles();
+  const { theme } = useTheme();
 
   const { currentUserId, isCheckedIn, markCheckedIn } = useUserStore(
     useShallow(state => ({ currentUserId: state.currentUserId, isCheckedIn: state.isCheckedIn, markCheckedIn: state.markCheckedIn })),
   );
 
-  const { status, clientName, connect, disconnect, loadSavedToken } =
+  const { status, clientName, accounts, selectedAccountIds, connect, disconnect, loadSavedToken, loadAccounts, toggleAccount } =
     useMonobankStore(
       useShallow(state => ({
         status: state.status,
         clientName: state.clientName,
+        accounts: state.accounts,
+        selectedAccountIds: state.selectedAccountIds,
         connect: state.connect,
         disconnect: state.disconnect,
         loadSavedToken: state.loadSavedToken,
+        loadAccounts: state.loadAccounts,
+        toggleAccount: state.toggleAccount,
       })),
     );
 
@@ -52,8 +59,17 @@ export const ConnectMonobankScreen = () => {
     }
   }, [status, isCheckedIn, markCheckedIn, navigation]);
 
+  React.useEffect(() => {
+    if (status === 'connected' && currentUserId) {
+      loadAccounts(currentUserId);
+    }
+  }, [status, currentUserId, loadAccounts]);
+
   const isConnecting = status === 'connecting';
   const isConnected = status === 'connected';
+
+  const isAccountEnabled = (accountId: string): boolean =>
+    selectedAccountIds == null || selectedAccountIds.includes(accountId);
 
   const onConnect = handleSubmit(data => {
     connect(currentUserId!, data.token);
@@ -73,15 +89,50 @@ export const ConnectMonobankScreen = () => {
         </View>
 
         {isConnected ? (
-          <View style={styles.connectedCard}>
-            <View style={styles.badge}>
-              <AppText variant="caption" style={styles.badgeText}>Connected</AppText>
+          <>
+            <View style={styles.connectedCard}>
+              <View style={styles.badge}>
+                <AppText variant="caption" style={styles.badgeText}>Connected</AppText>
+              </View>
+              {clientName ? (
+                <AppText variant="h2">{clientName}</AppText>
+              ) : null}
+              <AppText tone="secondary">Your Monobank account is linked.</AppText>
             </View>
-            {clientName ? (
-              <AppText variant="h2">{clientName}</AppText>
+
+            {accounts.length > 0 ? (
+              <View style={styles.accountsSection}>
+                <AppText variant="h2">Accounts to sync</AppText>
+                <AppText variant="caption" tone="secondary">
+                  Only the accounts you enable are synced.
+                </AppText>
+                {accounts.map(account => {
+                  const accountId = account.monobankAccountId;
+                  if (!accountId) {
+                    return null;
+                  }
+                  return (
+                    <View key={account.id} style={styles.accountRow}>
+                      <View style={styles.accountInfo}>
+                        <AppText numberOfLines={1}>{account.title}</AppText>
+                        <AppText variant="caption" tone="secondary">
+                          {formatMoney(account.moneyAmount, {
+                            code: account.currencyCode,
+                            symbol: account.currencySymbol,
+                          })}
+                        </AppText>
+                      </View>
+                      <Switch
+                        value={isAccountEnabled(accountId)}
+                        onValueChange={() => toggleAccount(accountId)}
+                        trackColor={{ true: theme.colors.primary, false: theme.colors.border }}
+                      />
+                    </View>
+                  );
+                })}
+              </View>
             ) : null}
-            <AppText tone="secondary">Your Monobank account is linked.</AppText>
-          </View>
+          </>
         ) : (
           <View style={styles.form}>
             <FormInput

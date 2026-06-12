@@ -43,16 +43,28 @@ export class TransactionSyncService {
   async syncAllAccounts(
     userId: string,
     monobankService: MonobankService,
+    selectedAccountIds?: string[] | null,
   ): Promise<SyncResult> {
     const monobankCards = await this.cardsRepository.getMonobankCards(userId);
 
-    if (monobankCards.length === 0) {
+    // `null`/`undefined` means the user hasn't chosen a subset → sync every
+    // account. An explicit list restricts the sync to the selected accounts.
+    const cardsToSync =
+      selectedAccountIds == null
+        ? monobankCards
+        : monobankCards.filter(
+            card =>
+              card.monobankAccountId != null &&
+              selectedAccountIds.includes(card.monobankAccountId),
+          );
+
+    if (cardsToSync.length === 0) {
       return { totalSynced: 0, accountsSynced: 0 };
     }
 
     // Fetch all accounts in parallel — each account has its own rate limit key
     const results = await Promise.allSettled(
-      monobankCards.map(card =>
+      cardsToSync.map(card =>
         fetchAccountTransactions(card, monobankService, this.transactionsRepository),
       ),
     );
@@ -77,7 +89,7 @@ export class TransactionSyncService {
 
     return {
       totalSynced: allTransactions.length,
-      accountsSynced: monobankCards.length,
+      accountsSynced: cardsToSync.length,
     };
   }
 }

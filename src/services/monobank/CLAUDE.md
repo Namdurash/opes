@@ -23,6 +23,14 @@ Monobank enforces **1 request / 60s per endpoint**. The shared limiter is in [ra
 
 Use the same Jest-vs-device branch when adding any new native-backed storage in this codebase.
 
+## Account-sync selection
+
+[MonobankAccountSelectionService.ts](MonobankAccountSelectionService.ts) persists which linked accounts to sync (same MMKV-vs-Jest storage pattern as the token service):
+
+- `getSelectedAccountIds()` returns the enabled account ids, or **`null` when the user hasn't chosen** — callers treat `null` as "sync every account".
+- `TransactionSyncService.syncAllAccounts(userId, service, selectedAccountIds)` filters the Monobank cards by this list; `useTransactionsStore.syncFromMonobank` reads the selection and passes it in.
+- The selector UI lives on the connected `ConnectMonobankScreen`; `disconnect()` clears the selection.
+
 ## Public types
 
 API response shapes and domain-facing types live in [types.ts](types.ts); use them through the barrel. Transformers ([transformers.ts](transformers.ts)) convert Monobank payloads into shapes the rest of the app can consume.

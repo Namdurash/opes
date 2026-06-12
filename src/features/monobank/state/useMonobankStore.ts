@@ -2,6 +2,7 @@ import { create } from 'zustand';
 import { MonobankError } from '../../../services/monobank';
 import { getMonobankService, clearMonobankService } from '../../../services/monobank/serviceInstance';
 import { monobankTokenService } from '../../../services/monobank/MonobankTokenService';
+import { monobankAccountSelectionService } from '../../../services/monobank/MonobankAccountSelectionService';
 import { CardsRepository } from '../../../models/cards';
 import { useTransactionsStore } from '../../transactions/state/useTransactionsStore';
 import { showErrorBottomSheet } from '../../../shared/ui/bottom-sheet';
@@ -9,10 +10,12 @@ import type { MonobankStoreState, MonobankStoreActions } from '../types';
 
 const cardsRepository = new CardsRepository();
 
-export const useMonobankStore = create<MonobankStoreState & MonobankStoreActions>((set) => ({
+export const useMonobankStore = create<MonobankStoreState & MonobankStoreActions>((set, get) => ({
   status: 'idle',
   clientName: null,
   errorMessage: null,
+  accounts: [],
+  selectedAccountIds: null,
 
   async connect(userId: string, token: string) {
     const trimmed = token.trim();
@@ -51,9 +54,10 @@ export const useMonobankStore = create<MonobankStoreState & MonobankStoreActions
 
   disconnect() {
     monobankTokenService.clear();
+    monobankAccountSelectionService.clear();
     clearMonobankService();
     useTransactionsStore.getState().reset();
-    set({ status: 'idle', clientName: null, errorMessage: null });
+    set({ status: 'idle', clientName: null, errorMessage: null, accounts: [], selectedAccountIds: null });
   },
 
   loadSavedToken() {
@@ -63,5 +67,26 @@ export const useMonobankStore = create<MonobankStoreState & MonobankStoreActions
     }
     set({ status: 'connected', clientName: saved.clientName ?? null });
     return saved.token;
+  },
+
+  async loadAccounts(userId: string) {
+    const accounts = await cardsRepository.getMonobankCards(userId);
+    set({ accounts, selectedAccountIds: monobankAccountSelectionService.getSelectedAccountIds() });
+  },
+
+  toggleAccount(accountId: string) {
+    const { accounts, selectedAccountIds } = get();
+    const allAccountIds = accounts
+      .map(card => card.monobankAccountId)
+      .filter((id): id is string => id != null);
+
+    // `null` means "all enabled" — materialise it before flipping one off.
+    const currentEnabled = selectedAccountIds ?? allAccountIds;
+    const nextEnabled = currentEnabled.includes(accountId)
+      ? currentEnabled.filter(id => id !== accountId)
+      : [...currentEnabled, accountId];
+
+    monobankAccountSelectionService.setSelectedAccountIds(nextEnabled);
+    set({ selectedAccountIds: nextEnabled });
   },
 }));

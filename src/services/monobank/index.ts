@@ -2,6 +2,10 @@ export { MonobankService } from './api';
 export { getMonobankService, clearMonobankService } from './serviceInstance';
 export { MonobankTokenService, monobankTokenService } from './MonobankTokenService';
 export type { MonobankCredentials } from './MonobankTokenService';
+export {
+  MonobankAccountSelectionService,
+  monobankAccountSelectionService,
+} from './MonobankAccountSelectionService';
 export { MonobankError } from './types';
 export type {
   MonobankClientInfo,

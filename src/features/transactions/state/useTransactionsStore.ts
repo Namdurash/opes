@@ -3,6 +3,7 @@ import type { Transaction } from '../../../domain/transactions';
 import { MonobankError } from '../../../services/monobank';
 import { getMonobankService } from '../../../services/monobank/serviceInstance';
 import { monobankTokenService } from '../../../services/monobank/MonobankTokenService';
+import { monobankAccountSelectionService } from '../../../services/monobank/MonobankAccountSelectionService';
 import { TransactionSyncService } from '../../../services/sync';
 import { TransactionsRepository } from '../../../models/transactions';
 import { CardsRepository } from '../../../models/cards';
@@ -60,7 +61,8 @@ export const useTransactionsStore = create<TransactionsState & TransactionsActio
     try {
       const service = getMonobankService(saved.token);
       const syncService = new TransactionSyncService(transactionsRepository, cardsRepository);
-      await syncService.syncAllAccounts(userId, service);
+      const selectedAccountIds = monobankAccountSelectionService.getSelectedAccountIds();
+      await syncService.syncAllAccounts(userId, service, selectedAccountIds);
 
       const transactions = await transactionsRepository.getAll();
       set({ transactions, syncStatus: 'idle' });

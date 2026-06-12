@@ -33,6 +33,25 @@ export const useConnectMonobankScreenStyles = makeStyles(theme => ({
   badgeText: {
     color: theme.colors.background,
   },
+  accountsSection: {
+    gap: theme.spacing.sm,
+  },
+  accountRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+    gap: theme.spacing.md,
+    backgroundColor: theme.colors.surface,
+    borderWidth: 1,
+    borderColor: theme.colors.border,
+    borderRadius: theme.radii.md,
+    paddingVertical: theme.spacing.sm,
+    paddingHorizontal: theme.spacing.md,
+  },
+  accountInfo: {
+    flex: 1,
+    gap: theme.spacing.xs,
+  },
   spacer: {
     flex: 1,
   },
