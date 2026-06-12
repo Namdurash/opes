@@ -1,10 +1,15 @@
-import { NormalizedTransaction, RawTransaction } from './types';
+import type { NormalizedTransaction, RawTransaction } from './types';
 import Transactions from './__mocks__/mock_transactions.json';
 
-async function fetchInRange(
+/**
+ * Returns expenses (outflows) from the MOCK dataset that fall within the given
+ * date range, normalized to major UAH units. This is the dev/eval data source;
+ * wiring real DB/Monobank data is a separate task.
+ */
+export const fetchInRange = async (
   startDate: string,
   endDate: string,
-): Promise<NormalizedTransaction[]> {
+): Promise<NormalizedTransaction[]> => {
   const transactions = Transactions as RawTransaction[];
 
   const expenses = transactions.filter(tx => tx.amount < 0);
@@ -20,6 +25,4 @@ async function fetchInRange(
     const txDate = new Date(tx.date);
     return txDate >= new Date(startDate) && txDate <= new Date(endDate);
   });
-}
-
-export { fetchInRange };
+};

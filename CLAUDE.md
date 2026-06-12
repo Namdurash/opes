@@ -131,6 +131,7 @@ These rules apply across every `.ts` / `.tsx` file in the project.
 | Layer | File | What it covers |
 |---|---|---|
 | App shell + navigation | [src/app/CLAUDE.md](src/app/CLAUDE.md) | Root navigator, typed routes, header convention |
+| Agents (LLM) | [src/agents/CLAUDE.md](src/agents/CLAUDE.md) | Dev-only Subscription Detective harness, mock data, `agent:dev` |
 | Domain types | [src/domain/CLAUDE.md](src/domain/CLAUDE.md) | Purity rules — no React/RN/storage |
 | Feature screens | [src/features/CLAUDE.md](src/features/CLAUDE.md) | Feature folder shape, styles, forms, store usage |
 | Repositories | [src/models/CLAUDE.md](src/models/CLAUDE.md) | Contract + class + `toDomain` mapper pattern |

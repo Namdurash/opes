@@ -21,11 +21,29 @@ export const getTransactionsTool: Anthropic.Tool = {
   },
 };
 
-export async function executeTool(name: string, input: any): Promise<string> {
+interface GetTransactionsInput {
+  from_date: string;
+  to_date: string;
+}
+
+const isGetTransactionsInput = (input: unknown): input is GetTransactionsInput => {
+  if (typeof input !== 'object' || input === null) {
+    return false;
+  }
+  const { from_date, to_date } = input as Record<string, unknown>;
+  return typeof from_date === 'string' && typeof to_date === 'string';
+};
+
+export const executeTool = async (
+  name: string,
+  input: unknown,
+): Promise<string> => {
   if (name === 'get_transactions') {
+    if (!isGetTransactionsInput(input)) {
+      throw new Error('get_transactions called with invalid input.');
+    }
     const txs = await fetchInRange(input.from_date, input.to_date);
-    // console.log('INTERNAL RESULT:', txs);
     return JSON.stringify(txs);
   }
   throw new Error(`Unknown tool: ${name}`);
-}
+};
