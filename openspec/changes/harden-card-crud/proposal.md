@@ -9,8 +9,10 @@ Manual-card CRUD shipped ad-hoc before the OpenSpec workflow (commits OPES-36 ca
 ## What Changes
 
 - **Persist picked images.** Copy the selected photo into the app's own document directory at create/edit time and store that stable local path instead of the picker's transient URI. Images survive app restarts and cache eviction. Requires a file-system capability (no project code copies files today) — justified in `design.md`.
-- **Currency on manual cards.** Add a currency choice (UAH / USD / EUR / …) to the create/edit form; persist `currencyCode` + `currencySymbol` on the card and surface it everywhere money is shown (`CardItem`, `CardDetailScreen`). Reuses the existing `currency_code` / `currency_symbol` columns — **no schema migration**.
-- **Harden validation.** Add a `title` max length and `moneyAmount` bounds + normalization to 2 decimal places in `createCardSchema`.
+- **Currency on manual cards.** Add a currency choice (UAH / USD / EUR) to the create/edit form; persist `currencyCode` + `currencySymbol` on the card and surface it everywhere money is shown (`CardItem`, `CardDetailScreen`). Reuses the existing `currency_code` / `currency_symbol` columns — **no schema migration**.
+- **Harden validation.** Add a `title` max length (60) and `moneyAmount` bounds (`>= 0`, `<= 9 999 999 999`) + normalization to 2 decimal places in `createCardSchema`.
+- **Drop the `credit` type** from the create/edit selector (it had no defined behavior); selectable types become `salary` and `storage`. The `CardType` union keeps `credit` so existing cards still render.
+- **Show amounts in full.** Auto-fit the amount font on the card (`adjustsFontSizeToFit`) so large balances stay fully readable instead of truncating.
 - **UX polish.** A friendly empty-state on Home when the user has no cards (today there is only a bare "Create card" button), an undo affordance after a delete, and an unsaved-changes guard when leaving the edit screen with pending edits.
 - **Repository tests.** Add `CardsRepository` tests covering `sortOrder` assignment on create, `reorderCards` batching, and `updateCard`/`deleteCard` — the repository currently has zero coverage.
 
@@ -36,6 +38,7 @@ Manual-card CRUD shipped ad-hoc before the OpenSpec workflow (commits OPES-36 ca
 
 - Editing, currency selection, or any mutation of **monobank-synced** cards — they stay read-only.
 - Multi-currency conversion / FX rates / aggregating mixed-currency totals — each card keeps its own currency; no conversion.
+- Designing a real **credit-card** flow — `credit` is removed from the selector for now, not reworked (its behavior is undefined).
 - Soft-delete / trash / recoverable bin — delete stays a permanent hard-delete (the undo is an in-session pre-commit affordance, not a recycle bin).
 - Image cropping, resizing, or compression — only a verbatim copy into app storage.
 - Reworking the monobank `upsertMonobankCards` sync path or the drag-reorder interaction.

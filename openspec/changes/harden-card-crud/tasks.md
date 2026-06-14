@@ -6,8 +6,8 @@
 ## 2. Shared helpers (no DB/UI deps)
 
 - [ ] 2.1 Add `src/shared/files/` with `persistImageToAppStorage(uri): Promise<string>` (copy into `<DocumentDir>/card-images/<uuid>.<ext>`, base64 read/write fallback for content-scheme URIs) and `deletePersistedImage(path): Promise<void>` (best-effort), plus a barrel `index.ts`
-- [ ] 2.2 Add a supported-currency list (`as const`: UAH 980/₴, USD 840/$, EUR 978/€, …) reusing the glyphs in `shared/utils/money.ts`; export through the appropriate barrel
-- [ ] 2.3 Extend `createCardSchema` in `src/shared/validation/cardSchema.ts`: `title` max length, `moneyAmount` finite + bounded magnitude, and a `currency` field; update the inferred `CreateCardFormValues` type
+- [ ] 2.2 Add a supported-currency list (`as const`, exactly three: UAH 980/₴, USD 840/$, EUR 978/€) reusing the glyphs in `shared/utils/money.ts`; export through the appropriate barrel
+- [ ] 2.3 Extend `createCardSchema` in `src/shared/validation/cardSchema.ts`: `title` max 60 chars, `moneyAmount` finite + `>= 0` + `<= 9999999999`, and a `currency` field; update the inferred `CreateCardFormValues` type
 - [ ] 2.4 Add unit tests for the file helper (copy vs. fallback path) and the extended schema (title length, non-numeric amount, decimal handling)
 
 ## 3. Repository (models/)
@@ -21,6 +21,8 @@
 - [ ] 4.2 Add a currency button-group to `CreateCardScreen` (mirror the existing `type` selector); normalize `moneyAmount` to 2 decimals before passing to the store/`updateCard`; prefill currency in edit mode
 - [ ] 4.3 Verify `CardItem` and `CardDetailScreen` render the chosen currency via `formatMoney` (no change expected — confirm with a card in a non-default currency)
 - [ ] 4.4 Update store tests in `useCardsStore.test.ts` to assert currency is passed through create/update
+- [ ] 4.5 Remove `credit` from `CARD_TYPES` in `CreateCardScreen` (selectable types → `salary`, `storage`); keep the `CardType` union unchanged so existing credit/synced cards still render
+- [ ] 4.6 Make the amount in `CardItem` auto-fit: `adjustsFontSizeToFit` + `numberOfLines={1}` (sensible `minimumFontScale`) so full large amounts stay readable without truncation
 
 ## 5. Image persistence wiring (features/)
 

@@ -37,16 +37,18 @@ When the user picks an image, copy it from the picker's transient URI into the a
 
 Add a `currency` choice to the create/edit form. Persist both `currencyCode` (ISO-4217 numeric) and `currencySymbol` (alpha, e.g. `"USD"`) on the card, mirroring how monobank cards are stored, so `formatMoney` resolves the glyph with no change.
 
-- A small `as const` list of supported currencies (UAH 980/₴, USD 840/$, EUR 978/€, …) lives next to the form or in `shared/` and reuses the glyphs already in `money.ts`. Selection renders with the existing button-group pattern used for card `type` (no new UI dependency).
+- A small `as const` list of **exactly three** supported currencies — UAH (980/₴), USD (840/$), EUR (978/€) — lives next to the form or in `shared/` and reuses the glyphs already in `money.ts`. Selection renders with the existing button-group pattern used for card `type` (no new UI dependency).
 - `CreateCardInput` and `UpdateCardInput` gain optional `currencyCode` / `currencySymbol`; `createCard` / `updateCard` persist them. Default to UAH when unset for backward compatibility (existing manual cards keep rendering ₴).
 - `CardItem` and `CardDetailScreen` already call `formatMoney` with the card's currency, so they update automatically once the fields are populated.
 
-### 3. Validation hardening — extend `createCardSchema`
+### 3. Validation hardening + drop the `credit` type — extend `createCardSchema`
 
 Extend the Yup schema in place (still the single source for RHF):
-- `title`: required, trimmed, **max length** (e.g. 60 chars).
-- `moneyAmount`: required, must be a finite number, bounded magnitude (reject absurd values), and **normalized to 2 decimal places** before it reaches the store. Normalization happens in the store/submit mapping so the persisted number is clean.
+- `title`: required, trimmed, **max 60 characters**.
+- `moneyAmount`: required, must be a finite number, **`>= 0`** (no negatives — see below), **`<= 9_999_999_999`**, and **normalized to 2 decimal places** before it reaches the store. Normalization happens in the store/submit mapping so the persisted number is clean.
 - Add the `currency` field to the schema/inferred type.
+
+**Drop `credit` from the selector.** The `credit` card type had no defined behavior, so it is removed from the create/edit type options — selectable types are now `salary` and `storage`. The `CardType` union keeps `'credit'` (and `'monobank'`) so any pre-existing credit/synced cards still render; we only stop *offering* it. With `credit` gone, manual balances are always `>= 0` (the only rationale for negatives was credit debt).
 
 ### 4. Empty-state — reuse `EmptyState`
 
@@ -57,11 +59,15 @@ On Home, when `cards.length === 0`, render the existing `EmptyState` component w
 Keep hard-delete, but defer it. On confirm, optimistically remove the card from the store and show a bottom-sheet notification with an **Undo** action; the repository `deleteCard` is only committed after the undo window elapses (or the sheet is dismissed). Undo restores the card to the store and skips the repository call. Commit early if the app backgrounds.
 
 - **Why not a recycle bin.** Out of scope (non-goal) and heavier; a deferred-commit window is the lightest correct undo and needs no schema change.
-- **Surface.** Reuse the existing bottom-sheet notification with an action button — avoids adding a snackbar/toast dependency. (Open question below on exact ergonomics.)
+- **Surface.** Reuse the existing bottom-sheet notification with an **Undo** action button (decided — no new snackbar/toast dependency). Undo window ≈ 5 seconds; commit the delete on window expiry or app background.
 
 ### 6. Unsaved-changes guard — `beforeRemove`
 
 On the edit screen, subscribe to React Navigation's `beforeRemove` event. If the RHF form `isDirty` or the store-held `type`/`image`/`currency` changed, prevent the default, show a "Discard changes?" confirm bottom-sheet, and only pop on confirm. Reuses `useNavigation` + `showBottomSheet`; no new dependency.
+
+### 7. Large amounts — auto-fit font, never truncate
+
+The card face SHALL always show the **full** formatted amount; when it is too wide, shrink the font to fit rather than truncate. In `CardItem`, the amount `AppText` gets `adjustsFontSizeToFit` + `numberOfLines={1}` (with a sensible `minimumFontScale`). This matches how real banking apps (mono/privat) render balances and avoids hiding real data behind an ellipsis or "+". It applies to **all** cards — important because monobank-synced balances are not bound by the manual-entry `<= 9_999_999_999` cap. No compact ("млн") abbreviation; the full number is preferred.
 
 ## Risks / Trade-offs
 
@@ -76,8 +82,11 @@ On the edit screen, subscribe to React Navigation's `beforeRemove` event. If the
 - **No schema migration** — `image`, `currency_code`, `currency_symbol` already exist (schema v7). No `version` bump.
 - Add `react-native-fs`, run pod install, add jest mock. Rollback = revert the commit; persisted image files and any currency values already written remain harmless and ignored by the reverted code.
 
-## Open Questions
+## Resolved Decisions
 
-- `moneyAmount` bounds: exact max magnitude, and whether negative balances are permitted (e.g. for `credit` cards carrying debt) or clamped to ≥ 0.
-- Undo ergonomics: bottom-sheet-with-action vs. introducing a lightweight in-house snackbar (no dependency) — pick during apply.
-- Initial currency list to expose (UAH/USD/EUR only, or the full glyph set in `money.ts`).
+Product calls made before apply (previously open questions):
+- **`moneyAmount` bounds:** `>= 0` and `<= 9_999_999_999`; negatives dropped along with the `credit` type.
+- **Large-amount display:** auto-fit font showing the full number (Decision 7) — no `+` cap, no `млн` abbreviation.
+- **Undo ergonomics:** reuse the bottom-sheet notification with an Undo action (~5 s window); no new snackbar.
+- **Currency list:** exactly UAH / USD / EUR.
+- **`credit` type:** removed from the selector; union value retained for backward-compatible rendering.

@@ -15,6 +15,10 @@ The system SHALL let a user create a manual card for the current user with a tit
 - **WHEN** there is no current user id
 - **THEN** the create action does not persist a card
 
+#### Scenario: Selectable card types
+- **WHEN** the user opens the create or edit form
+- **THEN** the offered card types are `salary` and `storage` only — `credit` is not offered
+
 ### Requirement: View cards
 The system SHALL display the current user's cards on Home ordered by `sortOrder`, and SHALL show a detail view for a selected card with its balance, type, creation date, and any monobank metadata.
 
@@ -112,7 +116,7 @@ When a user selects an image for a card, the system SHALL copy the image into th
 - **THEN** the system still persists the image bytes into app storage via a read/write fallback
 
 ### Requirement: Manual card currency selection
-The system SHALL let a user choose the currency of a manual card at create and edit time, persist it as the card's currency code and symbol, and render the card's money in that currency everywhere money is shown. Existing manual cards without a stored currency SHALL continue to display in the default currency (UAH).
+The system SHALL let a user choose the currency of a manual card at create and edit time from a fixed set — **UAH, USD, EUR** — persist it as the card's currency code and symbol, and render the card's money in that currency everywhere money is shown. Existing manual cards without a stored currency SHALL continue to display in the default currency (UAH).
 
 #### Scenario: Create a card in a non-default currency
 - **WHEN** the user selects USD as the currency and creates a card
@@ -127,16 +131,35 @@ The system SHALL let a user choose the currency of a manual card at create and e
 - **THEN** both render the amount in the card's currency
 
 ### Requirement: Card form validation rules
-The system SHALL validate card form input: a title is required and bounded in length, and the money amount is required, must be a finite number within an allowed range, and is normalized to two decimal places before persistence.
+The system SHALL validate card form input: a title is required and at most 60 characters; the money amount is required, must be a finite number, MUST be `>= 0`, MUST NOT exceed `9999999999`, and is normalized to two decimal places before persistence.
 
 #### Scenario: Reject an over-long title
-- **WHEN** the user submits a title longer than the allowed maximum
+- **WHEN** the user submits a title longer than 60 characters
 - **THEN** the form is rejected with a validation message and no card is persisted
 
 #### Scenario: Reject a non-numeric amount
 - **WHEN** the user submits a money amount that is not a finite number
 - **THEN** the form is rejected with a validation message and no card is persisted
 
+#### Scenario: Reject a negative amount
+- **WHEN** the user submits a money amount below `0`
+- **THEN** the form is rejected with a validation message and no card is persisted
+
+#### Scenario: Reject an amount above the maximum
+- **WHEN** the user submits a money amount greater than `9999999999`
+- **THEN** the form is rejected with a validation message and no card is persisted
+
 #### Scenario: Amount normalized to two decimals
 - **WHEN** the user submits a money amount with more than two decimal places
 - **THEN** the persisted amount is rounded to two decimal places
+
+### Requirement: Amounts render in full without truncation
+The system SHALL always display a card's full formatted amount. When the amount is too wide for the card, the system MUST shrink the text to fit rather than truncate it or replace it with a cap symbol.
+
+#### Scenario: Large amount fits by shrinking
+- **WHEN** a card's formatted amount is wider than the available space on the card
+- **THEN** the amount text shrinks to fit and the full value remains readable (no ellipsis, no "+" cap)
+
+#### Scenario: Synced balances are not capped
+- **WHEN** a monobank-synced card has a balance larger than the manual-entry maximum
+- **THEN** its full balance is still displayed (the `9999999999` limit applies only to manual input, not to display)
