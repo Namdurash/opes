@@ -1,6 +1,6 @@
 Ticket: OPES-41
 
-<!-- OPES-41 is the next ticket after OPES-40; confirm the number before committing. -->
+<!-- OPES-41 = highest OPES-NN in git log (OPES-40) + 1, per the autonomous ticket-numbering rule in CLAUDE.md. -->
 
 ## Why
 
