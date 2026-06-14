@@ -25,6 +25,13 @@ Each phase is committed automatically via `/sdlc:commit`, which runs the Definit
 
 **Escape hatch (pragmatic).** Truly trivial edits — typos, formatting, comment fixes, version bumps — may be committed directly without a proposal, as `chore:`/`docs:`. Everything else (new behavior, structural refactors, logic bug fixes) needs a change.
 
+**Autonomous operation (full hands-off).** The maintainer has durably authorized Claude to run the **entire** loop without pausing between phases: `/opsx:propose` → `/opsx:apply` → `/opsx:archive`, committing each phase via `/sdlc:commit` the moment it completes. The maintainer reviews after the fact through `git log` on `main` — do **not** wait for per-phase or per-commit approval.
+
+- **Ticket numbering is automatic.** At propose time set `Ticket: OPES-NN` to one greater than the highest `OPES-NN` in `git log`. Never write `OPES-TBD`, never stop to ask for the number.
+- **The Definition of Done is the gate — not a human.** `/sdlc:commit` runs `tsc`/`lint`/`test` first and refuses to commit on a red build. If the DoD fails, STOP, surface the failure, do not commit.
+- **Still stop for genuine judgment calls** — a real product decision (e.g. an unresolved `## Open Questions` item in `design.md`), a destructive/irreversible action, or ambiguity where guessing would waste work. Autonomy means "don't ask permission to follow the process," not "never ask anything."
+- **Never `git push`** and never create a branch unless explicitly asked — work stays committed locally on `main`.
+
 ## Commit convention
 
 Every commit — Claude or human — follows Conventional Commits with the OPES ticket as scope:
