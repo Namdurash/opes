@@ -78,3 +78,10 @@ yarn-error.log
 .env
 .env.*
 !.env.example
+
+# aif:begin — managed by ai-foundry; edits inside are overwritten
+# per-developer model choice; the shared set is committed
+.aif/profile.local
+# gate scratch
+.aif/tmp/
+# aif:end

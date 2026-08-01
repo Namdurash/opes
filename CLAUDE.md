@@ -151,3 +151,7 @@ These rules apply across every `.ts` / `.tsx` file in the project.
 | Validation | [src/shared/validation/CLAUDE.md](src/shared/validation/CLAUDE.md) | Yup schema location |
 | Global stores | [src/stores/CLAUDE.md](src/stores/CLAUDE.md) | Cross-feature Zustand stores |
 | AI SDLC / OpenSpec | [openspec/config.yaml](openspec/config.yaml) · `/sdlc:commit` | Spec-driven workflow, per-artifact rules, per-phase commit convention |
+
+<!-- aif:begin — managed by ai-foundry; edits inside are overwritten -->
+@.aif/foundry.md
+<!-- aif:end -->

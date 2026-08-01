@@ -1,0 +1,140 @@
+{
+  "schema": 1,
+  "aif_version": "0.1.0",
+  "profile": "anthropic",
+  "set": "claude",
+  "set_version": "0.2.2",
+  "installed_at": "2026-08-01T09:09:21Z",
+  "files": [
+    {
+      "path": ".aif/foundry.md",
+      "sha256": "95b325f8036b79aeb8ba0c974353ef7472762b9ce341dd5913d8475eaefc093a"
+    },
+    {
+      "path": ".claude/skills/aif-fix/SKILL.md",
+      "sha256": "2cac27efd0d2ab680d682d736c77c71f31614dfa1c32e35c19026c707ec695eb"
+    },
+    {
+      "path": ".claude/skills/aif-hello/SKILL.md",
+      "sha256": "dcb1d23379b5c5ab1a417b1307c2841c4b57c7b53b3e6c6e1db19ba8f03d5525"
+    },
+    {
+      "path": ".claude/skills/aif-ticket/SKILL.md",
+      "sha256": "1a4337a78e773a02d01b845bf7edbc949a9b936ab451c0bf3cd320d2d099b9d7"
+    },
+    {
+      "path": ".claude/agents/aif-ticket-critic.md",
+      "sha256": "10e8ba4099c5d6df0f48b0fa4d4024493886403fad0bfe7a066f4e7992b53a3e"
+    },
+    {
+      "path": ".claude/commands/aif-fix.md",
+      "sha256": "1a270aea1678fdbcb1a9e745a1837c37ebcf82e98307faf87ff099801e382459"
+    },
+    {
+      "path": ".claude/commands/aif-ticket.md",
+      "sha256": "39efca4087c64760d268446e5dbce3189524bab9d4117734107d5c7dd4d67b20"
+    },
+    {
+      "path": ".aif/gates/spec-judge.sh",
+      "sha256": "6735cc2a4587e754bfb1b1fa36f73d3773dabcabe0bd2a23235707facdeccef9"
+    },
+    {
+      "path": ".aif/gates/spec-approve.sh",
+      "sha256": "42dd2d394c2263d0743a735ceb8493a8eb4584c258b73e225ed1f5948f34af1d"
+    },
+    {
+      "path": ".aif/gates/_lib.sh",
+      "sha256": "6220ac4bfca294067d11dddef1d19c2b1d0a94ddf79061211ace42571d7cf540"
+    },
+    {
+      "path": ".aif/gates/scope.sh",
+      "sha256": "c87dd19deb543da7a90181ee5b07e158b5ceafd4e2a2cd15b2078a1c688c537f"
+    },
+    {
+      "path": ".aif/gates/plan-form.sh",
+      "sha256": "1a5101529bc14d64efc10ed5645085c7b06d9ced91fa9589096b4a1421cc9b0e"
+    },
+    {
+      "path": ".aif/gates/green.sh",
+      "sha256": "b3b4ea7cd9888158c6fdd651427d01a45b071c9426fc32563cd74038d1f3d8bf"
+    },
+    {
+      "path": ".aif/gates/plan-judge.sh",
+      "sha256": "5da77aa03f0bf06c509b4fb5c0065f2fa6d5a714a308980ad983c14423b31d2e"
+    },
+    {
+      "path": ".aif/gates/junit.py",
+      "sha256": "14af9886a2aeb3ea5ce81758aacad0edb0567ff82a7e8b2c44f81e270c33d3d6"
+    },
+    {
+      "path": ".aif/gates/verify-red.sh",
+      "sha256": "7732eec774eac4efaeb48e77328c960ab51cef1dfe42012d3bdb42de74fe186f"
+    },
+    {
+      "path": ".aif/gates/spec-form.sh",
+      "sha256": "9e244df9b7d17b6e6f6a4e1991219e77631aad3195c4ee8d809d032201568ede"
+    },
+    {
+      "path": ".aif/stations/implement.md",
+      "sha256": "11d0b9b39138f5a7bcf030fb4d2f390b8868c0191f52d4bee99310da2eebc2e2"
+    },
+    {
+      "path": ".aif/stations/spec-judge.md",
+      "sha256": "7c01dc0c0962189b68a3d35304cba3053f3ca56f6f259227e26356cb954f70d8"
+    },
+    {
+      "path": ".aif/stations/tests.md",
+      "sha256": "8fae96ae79deaf2825ec721a30f69d8e945f85ac3876efe739251241531ed632"
+    },
+    {
+      "path": ".aif/stations/plan-judge.md",
+      "sha256": "8caccf69dd34afec0543a7ed6e867409d439b38e270e8d4c8eb7538264def792"
+    },
+    {
+      "path": ".aif/stations/plan.md",
+      "sha256": "9baed040e147dcaed9f793f294e326224a1d69e4ad7467ce2533dbcbf16db7a2"
+    },
+    {
+      "path": ".aif/stations/spec.md",
+      "sha256": "2927c0d6b5ed93eb10a231ceef6419176b16e69b7d47aa929fbfce417d9f8278"
+    },
+    {
+      "path": ".aif/hooks/guard.sh",
+      "sha256": "fd9b420e46b012233ebfb269f7f95d5bb89c8113ff00b065a754fdbf5dd50996"
+    },
+    {
+      "path": ".aif/profile.local",
+      "sha256": "7e20c18a8d41e6126ef324d9315f37549d1625feef451d8f5be82011a9234379"
+    }
+  ],
+  "edits": [
+    {
+      "path": ".claude/settings.json",
+      "kind": "json_merge",
+      "fragment": {
+        "hooks": {
+          "PreToolUse": [
+            {
+              "matcher": "Write|Edit|MultiEdit|NotebookEdit",
+              "hooks": [
+                {
+                  "type": "command",
+                  "command": "$CLAUDE_PROJECT_DIR/.aif/hooks/guard.sh"
+                }
+              ]
+            }
+          ]
+        }
+      },
+      "pre_existed": false
+    },
+    {
+      "path": "CLAUDE.md",
+      "kind": "marker_block_md"
+    },
+    {
+      "path": ".gitignore",
+      "kind": "marker_block_hash"
+    }
+  ]
+}

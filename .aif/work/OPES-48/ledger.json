@@ -1,0 +1,77 @@
+{
+  "schema": 1,
+  "ticket": "OPES-48",
+  "entries": [
+    {
+      "station": "spec",
+      "attempt": 1,
+      "model": "opus",
+      "usage": {
+        "input_tokens": 6,
+        "output_tokens": 8449,
+        "cache_read_input_tokens": 74446,
+        "cache_creation_input_tokens": 23833
+      },
+      "reported_cost_usd": 0.487467,
+      "cost_source": "reported",
+      "duration_ms": 101334,
+      "num_turns": 3,
+      "outputs": [
+        {
+          "path": "spec.md",
+          "sha256": "c1919404526eecab82184986dc4a8333d8879d33734cab1e3ce51c64c3008557"
+        }
+      ],
+      "seq": 1,
+      "at": "2026-08-01T10:11:49Z",
+      "prev": null
+    },
+    {
+      "gate": "spec-form",
+      "result": "fail",
+      "subject": "spec.md",
+      "subject_sha256": "c1919404526eecab82184986dc4a8333d8879d33734cab1e3ce51c64c3008557",
+      "gate_sha256": "9e244df9b7d17b6e6f6a4e1991219e77631aad3195c4ee8d809d032201568ede",
+      "reason": "REJECT spec.md: 1 problem(s)",
+      "seq": 2,
+      "at": "2026-08-01T10:11:49Z",
+      "prev": "bc958e3d0c943ec04d871bf65264589a9342c7082f305f9d39757f68618ee4b1"
+    },
+    {
+      "station": "spec-judge",
+      "attempt": 1,
+      "model": "opus",
+      "usage": {
+        "input_tokens": 8,
+        "output_tokens": 3080,
+        "cache_read_input_tokens": 113045,
+        "cache_creation_input_tokens": 21420
+      },
+      "reported_cost_usd": 0.34850249999999994,
+      "cost_source": "reported",
+      "duration_ms": 52638,
+      "num_turns": 5,
+      "outputs": [
+        {
+          "path": "verdict-spec.json",
+          "sha256": "c711ef9043e746372af5feb32a20dc802df1d9391984ab8716e5efb4dc424f5c"
+        }
+      ],
+      "seq": 3,
+      "at": "2026-08-01T10:19:29Z",
+      "prev": "31366815e1d32d268da80460bebb0d74bc8a87deb086dbfaf90323900b757fe7"
+    },
+    {
+      "gate": "spec-judge",
+      "result": "pass",
+      "subject": "verdict-spec.json",
+      "subject_sha256": "c711ef9043e746372af5feb32a20dc802df1d9391984ab8716e5efb4dc424f5c",
+      "gate_sha256": "6735cc2a4587e754bfb1b1fa36f73d3773dabcabe0bd2a23235707facdeccef9",
+      "reason": "spec-judge: passed, no blockers",
+      "seq": 4,
+      "at": "2026-08-01T10:19:29Z",
+      "prev": "6e5adf799d4030092f7f07c1c90a1f6885f793dbaad94915bcaf4a0675aedcff"
+    }
+  ],
+  "accepted_at": null
+}
