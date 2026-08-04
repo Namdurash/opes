@@ -1,0 +1,17 @@
+{
+  "schema": 1,
+  "subject": "spec.md",
+  "subject_sha256": "b6de7493ef70ac883eaa8bac2d27ad988f325fbd29d38f7ffa62eee4465a367c",
+  "approver": "Namdurash",
+  "at": "2026-08-04T09:56:44Z",
+  "tty": true,
+  "approved_assumptions": [
+    "AS-001",
+    "AS-002",
+    "AS-003",
+    "AS-004",
+    "AS-005",
+    "AS-006",
+    "AS-007"
+  ]
+}
