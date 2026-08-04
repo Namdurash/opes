@@ -115,6 +115,111 @@
       "seq": 7,
       "at": "2026-08-04T10:05:23Z",
       "prev": "03dcfe1a81aca6838b4b528ccb38867df7e768d679f8752c567ed49d21baa9b7"
+    },
+    {
+      "station": "plan-judge",
+      "attempt": 1,
+      "model": "haiku",
+      "usage": {
+        "input_tokens": 247,
+        "output_tokens": 8227,
+        "cache_read_input_tokens": 675193,
+        "cache_creation_input_tokens": 37444
+      },
+      "reported_cost_usd": 0.1845263,
+      "cost_source": "reported",
+      "duration_ms": 114676,
+      "num_turns": 31,
+      "outputs": [
+        {
+          "path": "verdict-plan.json",
+          "sha256": "d7a6c08cce9c81bcf37c972ea8e65c52b2aaa338ff28aaed07ab1032de61e538"
+        }
+      ],
+      "seq": 8,
+      "at": "2026-08-04T10:07:33Z",
+      "prev": "2e69286aa40448c6a90684bfb0e67035d1dc596099fff4f0f30d535db727a123"
+    },
+    {
+      "gate": "plan-judge",
+      "result": "fail",
+      "subject": "verdict-plan.json",
+      "subject_sha256": "d7a6c08cce9c81bcf37c972ea8e65c52b2aaa338ff28aaed07ab1032de61e538",
+      "gate_sha256": "5da77aa03f0bf06c509b4fb5c0065f2fa6d5a714a308980ad983c14423b31d2e",
+      "reason": "REJECT plan.md: the implementer would have to guess in 2 place(s)",
+      "seq": 9,
+      "at": "2026-08-04T10:07:33Z",
+      "prev": "4929e5306cf0527030d8bb76d5a0b66dc1c3b2a2c1fbeec6a1981acc915168ac"
+    },
+    {
+      "station": "plan-judge",
+      "attempt": 2,
+      "model": "haiku",
+      "usage": {
+        "input_tokens": 154,
+        "output_tokens": 18709,
+        "cache_read_input_tokens": 916986,
+        "cache_creation_input_tokens": 48190
+      },
+      "reported_cost_usd": 0.28251660000000006,
+      "cost_source": "reported",
+      "duration_ms": 227811,
+      "num_turns": 27,
+      "outputs": [
+        {
+          "path": "verdict-plan.json",
+          "sha256": "aaa1bea585ecb9c1faf08a030840ef5cc19d922773f24d4c42617b1dd3b39546"
+        }
+      ],
+      "seq": 10,
+      "at": "2026-08-04T10:15:01Z",
+      "prev": "fb38f9aed028a6d9e59ae803356e5ab504146c259ead7a97088fec598d36ea07"
+    },
+    {
+      "gate": "plan-judge",
+      "result": "fail",
+      "subject": "verdict-plan.json",
+      "subject_sha256": "aaa1bea585ecb9c1faf08a030840ef5cc19d922773f24d4c42617b1dd3b39546",
+      "gate_sha256": "5da77aa03f0bf06c509b4fb5c0065f2fa6d5a714a308980ad983c14423b31d2e",
+      "reason": "REJECT plan.md: the implementer would have to guess in 1 place(s)",
+      "seq": 11,
+      "at": "2026-08-04T10:15:01Z",
+      "prev": "39efefe48b572fa6b293489f3756e46940dc494abd50cc8fcd88d788e4e01b25"
+    },
+    {
+      "station": "plan-judge",
+      "attempt": 3,
+      "model": "haiku",
+      "usage": {
+        "input_tokens": 178,
+        "output_tokens": 20680,
+        "cache_read_input_tokens": 1042053,
+        "cache_creation_input_tokens": 46967
+      },
+      "reported_cost_usd": 0.30246129999999993,
+      "cost_source": "reported",
+      "duration_ms": 255278,
+      "num_turns": 30,
+      "outputs": [
+        {
+          "path": "verdict-plan.json",
+          "sha256": "fa9e4652d6ae26a0c53ba5af2daa08d21e4b1ddbc136266478e8cd2c3d8f779c"
+        }
+      ],
+      "seq": 12,
+      "at": "2026-08-04T10:19:41Z",
+      "prev": "f083f8aab8189df50c1104584288f147533345b21a79d3d92df5b0aa0e721bcf"
+    },
+    {
+      "gate": "plan-judge",
+      "result": "pass",
+      "subject": "verdict-plan.json",
+      "subject_sha256": "fa9e4652d6ae26a0c53ba5af2daa08d21e4b1ddbc136266478e8cd2c3d8f779c",
+      "gate_sha256": "5da77aa03f0bf06c509b4fb5c0065f2fa6d5a714a308980ad983c14423b31d2e",
+      "reason": "plan-judge: nothing left to guess",
+      "seq": 13,
+      "at": "2026-08-04T10:19:41Z",
+      "prev": "343a843145a4fbd9297e5b1c02e1b47b5cba9ed054937dc047412e28125d1322"
     }
   ],
   "accepted_at": null
