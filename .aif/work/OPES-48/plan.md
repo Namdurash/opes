@@ -12,6 +12,7 @@
       "src/app/navigation/types.ts",
       "src/features/transactions/state/useTransactionsViewModel.ts",
       "src/features/transactions/TransactionsScreen.tsx",
+      "src/features/transactions/TransactionsScreen.styles.ts",
       "src/features/transactions/utils.ts"
     ],
     "tests": [

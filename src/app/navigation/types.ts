@@ -4,7 +4,7 @@ import { ROOT_ROUTES } from './routes';
 export type RootStackParamList = {
   [ROOT_ROUTES.WELCOME]: undefined;
   [ROOT_ROUTES.HOME]: undefined;
-  [ROOT_ROUTES.TRANSACTIONS]: undefined;
+  [ROOT_ROUTES.TRANSACTIONS]: { filter?: { categoryId?: string; month?: string } } | undefined;
   [ROOT_ROUTES.CARD_DETAIL]: { cardId: string };
   // `cardId` switches the screen into edit mode; omit it to create a new card.
   [ROOT_ROUTES.CREATE_CARD]: { cardId?: string } | undefined;

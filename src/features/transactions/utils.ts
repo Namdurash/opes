@@ -7,6 +7,11 @@ export const formatTransactionTime = (isoString: string): string =>
     minute: '2-digit',
   });
 
+export const formatMonthLabel = (month: string): string => {
+  const date = new Date(`${month}-01T00:00:00`);
+  return date.toLocaleDateString('en-US', { month: 'short', year: 'numeric' });
+};
+
 export const formatDateHeader = (dateKey: string): string => {
   const date = new Date(dateKey + 'T00:00:00');
   const now = new Date();

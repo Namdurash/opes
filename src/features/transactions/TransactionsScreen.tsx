@@ -10,6 +10,7 @@ import { useTransactionsViewModel } from './state/useTransactionsViewModel';
 import { groupTransactionsByDate } from './utils';
 import { TransactionListItem } from './components/TransactionListItem';
 import { SectionHeader } from './components/SectionHeader';
+import { FilterChip } from './components/FilterChip';
 import { useTransactionsScreenStyles } from './TransactionsScreen.styles';
 import type { Transaction } from '../../domain/transactions';
 import type { TransactionSection } from './types';
@@ -24,11 +25,15 @@ export const TransactionsScreen = () => {
   const monobankStatus = useMonobankStore(state => state.status);
 
   const {
-    transactions,
+    filteredTransactions,
     isLoadingFromDb,
     loadTransactions,
     syncFromMonobank,
     getCategoryForTransaction,
+    categoryChipLabel,
+    monthChipLabel,
+    dismissCategoryFilter,
+    dismissMonthFilter,
   } = useTransactionsViewModel();
 
   useEffect(() => {
@@ -36,8 +41,8 @@ export const TransactionsScreen = () => {
   }, [loadTransactions]);
 
   const sections: TransactionSection[] = useMemo(
-    () => groupTransactionsByDate(transactions),
-    [transactions],
+    () => groupTransactionsByDate(filteredTransactions),
+    [filteredTransactions],
   );
 
   const handleRefresh = useCallback(async () => {
@@ -65,10 +70,16 @@ export const TransactionsScreen = () => {
   const renderEmpty = useCallback(
     () => (
       <View style={styles.emptyContainer}>
-        <EmptyState message="No transactions yet." />
+        <EmptyState
+          message={
+            categoryChipLabel || monthChipLabel
+              ? 'No transactions match this filter.'
+              : 'No transactions yet.'
+          }
+        />
       </View>
     ),
-    [styles.emptyContainer],
+    [styles.emptyContainer, categoryChipLabel, monthChipLabel],
   );
 
   return (
@@ -82,6 +93,22 @@ export const TransactionsScreen = () => {
       }
       headerCenter={<HeaderTitle>Transactions</HeaderTitle>}
     >
+      <View style={styles.chipRow} testID="transactions-filter-chips">
+        {categoryChipLabel ? (
+          <FilterChip
+            label={categoryChipLabel}
+            onDismiss={dismissCategoryFilter}
+            testID="filter-chip-category"
+          />
+        ) : null}
+        {monthChipLabel ? (
+          <FilterChip
+            label={monthChipLabel}
+            onDismiss={dismissMonthFilter}
+            testID="filter-chip-month"
+          />
+        ) : null}
+      </View>
       <SectionList
         sections={sections}
         keyExtractor={item => item.id}

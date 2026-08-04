@@ -12,4 +12,12 @@ export const useTransactionsScreenStyles = makeStyles(theme => ({
     justifyContent: 'center' as const,
     paddingVertical: theme.spacing.xxl,
   },
+  chipRow: {
+    flexDirection: 'row' as const,
+    alignItems: 'center' as const,
+    gap: theme.spacing.sm,
+    flexWrap: 'wrap' as const,
+    paddingHorizontal: theme.spacing.lg,
+    paddingVertical: theme.spacing.sm,
+  },
 }));
