@@ -23,7 +23,9 @@ context: |
   exports. Keep changes small, additive, and scoped — prefer reuse over new abstractions;
   no new dependency without justification.
 
-  Process: trunk-based — all work is committed directly to `main`, no branches.
+  Process: one branch per ticket, cut from `main` when work starts, named
+  `<domain>/opes-<ticket-number>-<short-name>` where domain is feat|fix|chore|docs.
+  All of a ticket's commits land on that branch; never merge or push — the maintainer lands it.
   Every non-trivial change runs the full OpenSpec loop (propose -> apply -> archive) and
   is committed per phase as `<type>(OPES-XX): <subject>` (Conventional Commits + a `Ticket:`
   line in proposal.md is the scope source of truth).
