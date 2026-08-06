@@ -1,6 +1,6 @@
 ---
 name: aif-fix
-description: Walk a human through a rejected foundry artifact — read the gate's complaints, explain why each one was raised, fix what is mechanically fixable, and send the rest back upstream where it belongs. Use when a gate has rejected spec.md, plan.md, tests or code, when `aif station run` or `aif run` reports REJECT, or when the user invokes /aif-fix. Not for writing a ticket from scratch — that is aif-ticket.
+description: Walk a human through a rejected foundry artifact — read the gate's complaints, explain why each one was raised, fix what is mechanically fixable, and send the rest back upstream where it belongs. Use when a gate has rejected spec.md, plan.md, tests or code, when a station is rejected during `aif run`, or when the user invokes /aif-fix. Not for writing a ticket from scratch — that is aif-ticket.
 ---
 
 # aif-fix — the repair bench at a gate
@@ -32,9 +32,11 @@ take it to the user. Do not do it quietly.
 
 Do not work from the error text the user pasted; it may be stale. Re-derive it:
 
-- The station file `.aif/stations/<STATION>.md` names the artifact (`produces`) and its
-  gate(s) (`form_gate`, or `gates`) in its `aif:meta` block.
-- Run each gate yourself: `bash .aif/gates/<GATE>.sh .aif/work/<ID>` — exit `0` pass,
+- The station's agent file `.claude/agents/aif-<STATION>.md` names the artifact (`produces`)
+  and its gate(s) (`form_gate`, or `gates`) in its `aif:meta` block. It also carries
+  `expects` — one line saying what the station was supposed to produce, which is the
+  cheapest way to see how far the output fell short.
+- Run each gate yourself: `bash .aif/gates/<GATE>.sh tasks/<ID>` — exit `0` pass,
   `1` the artifact is rejected, `3` the gate could not render a verdict.
 - **Exit 3 is not yours to fix in the artifact.** It means the gate broke or the environment
   is wrong (an unparseable file, a missing tool, an already-broken repo). Report it and stop;
@@ -65,14 +67,23 @@ the input was too vague.** These are the user's call, never yours:
 
 For a structural finding, propose the split or the question concretely — name which criteria
 would stay and which would move — and let the user decide. When they decide, the change goes
-into `.aif/work/<ID>/ticket.md`, because the spec station reads the ticket and nothing else.
+into `tasks/<ID>/ticket.md`, because the spec station reads the ticket and nothing else.
 
-### 3. Fix the mechanical pile, one at a time
+### 3. Fix the mechanical pile
 
-Show the user each fix as a before/after of the exact field. Keep the meaning identical —
-you are re-expressing an assertion, not choosing a new one. Where splitting one criterion
-into two changes the ids that follow, renumber contiguously from `AC-001`, as the gate
-requires.
+**Prefer re-dispatching the station over editing the artifact yourself.** Hand it the gate's
+objection verbatim and let it rewrite its own output: it has the full instructions and the
+context that produced the artifact, where you have one line of complaint. That is the normal
+path and it is usually cheaper than the argument about whether a hand edit was faithful.
+
+Edit by hand when re-dispatching would be absurd for the size of the fix — a mistyped id, a
+`surface` naming something the spec calls slightly differently — or when the station has
+already been re-dispatched and produced the same defect.
+
+When you do edit, show the user each fix as a before/after of the exact field. Keep the
+meaning identical — you are re-expressing an assertion, not choosing a new one. Where
+splitting one criterion into two changes the ids that follow, renumber contiguously from
+`AC-001`, as the gate requires.
 
 Where a fix would require *deciding* something the artifact did not say — a boundary, a
 status code, an exact literal — stop and ask. An invented literal is an unreviewed decision
@@ -93,11 +104,14 @@ information, not an obstacle.
 
 State the artifact's state plainly, and name the next command without running it:
 
-- gate green → `aif run <ID>` continues the pipeline (or `aif station run <next> <ID>` for
-  the single step). If `aif run` invoked you, it re-runs the gate itself when you exit — you
-  do not need to do anything except be finished.
-- gate still red for structural reasons → the change belongs in `ticket.md`; `/aif-ticket
-  <ID>` re-opens the interview, and the spec is redone from the amended ticket.
+- gate green → say so and stop. If the `aif` orchestrator invoked you, simply return: it
+  asks `aif _state <ID>` what comes next and re-checks with `aif _gate` itself. Do not
+  dispatch the next station yourself — that decision comes from derived state, not from your
+  memory of what you just fixed.
+- gate still red for structural reasons → the change belongs in `ticket.md`. `aif _rework
+  <ID> "<what should change>"` folds it in as prose, which is what the spec station actually
+  reads, and the spec is redone against it.
+- a person invoked you directly → `aif run <ID>` continues from here.
 
 ## What this skill cannot do — stated so it does not oversell
 
@@ -107,4 +121,4 @@ State the artifact's state plainly, and name the next command without running it
 - It cannot rescue a bad ticket. Where the rejection traces to an unclear or oversized
   ticket, the honest outcome of this skill is a change to `ticket.md` and a re-run — not a
   patched artifact.
-- A green gate here is not an approval. `aif approve` is still yours to give.
+- A green gate here is not an approval. The human approval is still yours to give.

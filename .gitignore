@@ -84,4 +84,6 @@ yarn-error.log
 .aif/profile.local
 # gate scratch
 .aif/tmp/
+# session-local pointer for the metering hook
+.aif/state/
 # aif:end
