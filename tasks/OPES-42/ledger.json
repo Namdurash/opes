@@ -1,0 +1,29 @@
+{
+  "schema": 1,
+  "ticket": "OPES-42",
+  "entries": [
+    {
+      "gate": "spec-form",
+      "result": "fail",
+      "subject": "spec.md",
+      "subject_sha256": "f5e18a84c9f86e9e09116eea8b69fd42e0d1db8c80c11b4abe004b6b0c9a88c2",
+      "gate_sha256": "9e244df9b7d17b6e6f6a4e1991219e77631aad3195c4ee8d809d032201568ede",
+      "reason": "REJECT spec.md: 11 problem(s)",
+      "seq": 1,
+      "at": "2026-08-06T12:58:20Z",
+      "prev": null
+    },
+    {
+      "gate": "spec-form",
+      "result": "pass",
+      "subject": "spec.md",
+      "subject_sha256": "15cd44a01d42c9cd5a2a54f8d452d32e3e5e5560cfdc5e9a949a51dfc8144e6e",
+      "gate_sha256": "9e244df9b7d17b6e6f6a4e1991219e77631aad3195c4ee8d809d032201568ede",
+      "reason": "spec-form: 15 criteria, all admissible",
+      "seq": 2,
+      "at": "2026-08-07T09:55:13Z",
+      "prev": "ff9d4e0a4c124439d56fadf1e5ed80aa880b490272aa672456d30b5b52453c4f"
+    }
+  ],
+  "accepted_at": null
+}
