@@ -1,11 +1,8 @@
 { "schema": 1,
   "gate": "plan-judge",
   "subject": "plan.md",
-  "subject_sha256": "9f1bb9a42a19305b183aa46f25912150192508eb79765dac3feb3bfe0f62c406",
+  "subject_sha256": "e77106bdf18b75d13b389af1c49810ab628e6d042b5a55027127d624f65067f9",
   "judge_agent": "aif-plan-judge",
-  "at": "2026-08-07T12:00:00Z",
-  "guesses": [
-    { "file": "src/services/secret-storage/keychainKeyStore.ts",
-      "question": "In the real-default factory (used only by the production singleton, gated by the typeof jest branch D-012 requires), when require('react-native-keychain') itself throws — native module missing/unlinked, not a getGenericPassword call failure covered by D-004 — should that be caught and fall back to some substitute keychain implementation, mirroring the try/catch-plus-console.warn fallback that MonobankTokenService.ts/MonobankAccountSelectionService.ts use for react-native-mmkv (which D-012's own prose calls 'the same idiom'), or should it propagate uncaught so bootstrap rejects, matching D-006/D-008's fail-closed posture? D-008 explicitly forbids exactly this kind of fallback for the parallel encryptedStore.ts require path; D-012 states no equivalent permission or prohibition for keychainKeyStore.ts, and a silent in-memory fallback here would be a live security regression rather than a stylistic one." }
-  ],
+  "at": "2026-08-07T00:00:00Z",
+  "guesses": [],
   "missing_files": [] }

@@ -144,6 +144,17 @@
       "seq": 13,
       "at": "2026-08-07T11:32:05Z",
       "prev": "6b6e5465c075f61cc52c129bada125c499591f545ce5040c478f05f8d90d4084"
+    },
+    {
+      "gate": "plan-judge",
+      "result": "pass",
+      "subject": "verdict-plan.json",
+      "subject_sha256": "1fceeb893c4108face0af2fefdb5358f22f24054a897bd968170135ccb314cb1",
+      "gate_sha256": "b55d6086f323d917d6b664326f8afc24aa06ac151e84b22f968e4bdf20ef8e63",
+      "reason": "plan-judge: nothing left to guess, manifest covers the work",
+      "seq": 14,
+      "at": "2026-08-07T11:35:42Z",
+      "prev": "e519c2a80a1bd003fca9dbd0f616ae305dd739dd334d1ed0e03368adcb263fd7"
     }
   ],
   "accepted_at": null
