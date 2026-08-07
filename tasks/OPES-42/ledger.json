@@ -23,6 +23,28 @@
       "seq": 2,
       "at": "2026-08-07T09:55:13Z",
       "prev": "ff9d4e0a4c124439d56fadf1e5ed80aa880b490272aa672456d30b5b52453c4f"
+    },
+    {
+      "gate": "spec-judge",
+      "result": "fail",
+      "subject": "verdict-spec.json",
+      "subject_sha256": "13a91a72a0e7300d8a3f303940c7e75ac59ccbaf826018337eefee5acf6b1999",
+      "gate_sha256": "26dc1fe798566d89e4493c398916518954a20a6400cdb9d4698d18ada45dd65e",
+      "reason": "REJECT verdict is for a different spec — it changed since it was judged; re-run the judge",
+      "seq": 3,
+      "at": "2026-08-07T09:57:41Z",
+      "prev": "df6cc985a3ed8b0d8fc871afc7bfbf9a3559243aca6aa1faa7aecceb063d8c17"
+    },
+    {
+      "gate": "spec-judge",
+      "result": "pass",
+      "subject": "verdict-spec.json",
+      "subject_sha256": "1276f2cdbdd2f63434f1299c168f961f467a842a7497043b87ad74b8049bcab3",
+      "gate_sha256": "26dc1fe798566d89e4493c398916518954a20a6400cdb9d4698d18ada45dd65e",
+      "reason": "spec-judge: passed, no blockers",
+      "seq": 4,
+      "at": "2026-08-07T09:59:27Z",
+      "prev": "fd0fc550e671da856bf8aace5da08899d33b02bb7983000495bf2f27b1841f48"
     }
   ],
   "accepted_at": null
