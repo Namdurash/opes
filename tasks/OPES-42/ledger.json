@@ -177,6 +177,17 @@
       "seq": 16,
       "at": "2026-08-07T20:07:05Z",
       "prev": "b0b90e740c026e2e1c0fb39cd884b04d31e5c784e47e5e31afcf087582c2e4cb"
+    },
+    {
+      "gate": "verify-red",
+      "result": "pass",
+      "subject": "tests.lock",
+      "subject_sha256": "0866a01cce4478015a0402a705a498887e13dbeea6c89f40b597df9e8698316b",
+      "gate_sha256": "7732eec774eac4efaeb48e77328c960ab51cef1dfe42012d3bdb42de74fe186f",
+      "reason": "verify-red: 15 new test(s) red for the right reason, all criteria covered",
+      "seq": 17,
+      "at": "2026-08-07T20:28:05Z",
+      "prev": "ee56913b07dde3fed5ae7e6c9aca765d3ed930f9aaad60f74ad6f1360a8d3ca3"
     }
   ],
   "accepted_at": null

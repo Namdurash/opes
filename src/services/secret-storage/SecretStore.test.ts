@@ -238,7 +238,9 @@ describe('keychainKeyStore.writeKey', () => {
   it('writes the key device-only, not synchronizable to iCloud', async () => {
     // AC-009 — setGenericPassword receives accessible WHEN_UNLOCKED_THIS_DEVICE_ONLY.
     const { createKeychainKeyStore } = require('./keychainKeyStore');
-    const setGenericPassword = jest.fn(async () => true);
+    const setGenericPassword = jest.fn(
+      async (_service: string, _account: string, _options: { accessible: string }) => true,
+    );
     const keychainApi = {
       getGenericPassword: jest.fn(async () => false),
       setGenericPassword,
