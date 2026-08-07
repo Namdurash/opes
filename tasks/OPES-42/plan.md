@@ -60,7 +60,11 @@
     { "id": "D-013",
       "statement": "Encode the raw 32-byte key to base64 with a small hand-rolled encoder inside cryptoKey.ts (standard alphabet, plain char/bitwise ops running under Node/Jest), not Buffer, btoa, or a new dependency.",
       "because": "src/ has no Buffer polyfill, btoa/atob, or base64 helper; the project's no-new-dependency rule (the ticket's one-small-crypto-dep allowance covered the RNG source, not base64); AS-007/AC-007 keep the raw key at 32 bytes measured before this encoding, and the base64 form is what is handed to Keychain/MMKV.",
-      "rejected": "Do not rely on Buffer/btoa/atob and do not add a base64 dependency." } ],
+      "rejected": "Do not rely on Buffer/btoa/atob and do not add a base64 dependency." },
+    { "id": "D-014",
+      "statement": "If require('react-native-keychain') itself throws (native module missing/unlinked), let it propagate uncaught so bootstrap rejects; add no try/catch fallback to any substitute keychain.",
+      "because": "Fail-closed per D-006/D-008 and AC-011/AC-012 (never keyless, never plaintext); a silent in-memory keychain would be a security regression. This is a load failure, distinct from D-004's getGenericPassword read failure.",
+      "rejected": "Do not copy the react-native-mmkv try/catch idiom that console.warns and swaps in an in-memory substitute when the require fails." } ],
   "ac_coverage": {
     "AC-001": ["src/services/secret-storage/SecretStore.ts", "src/services/secret-storage/encryptedStore.ts"],
     "AC-002": ["src/services/secret-storage/SecretStore.ts", "src/services/secret-storage/encryptedStore.ts"],
@@ -98,10 +102,14 @@ so the test can substitute fakes:
   and **rejects** on any thrown/rejected result (transient). `writeKey` calls
   `setGenericPassword(..., { accessible: ACCESSIBLE.WHEN_UNLOCKED_THIS_DEVICE_ONLY })`.
   The real `react-native-keychain` is reached only behind a `typeof jest` guard via a
-  lazy `require('react-native-keychain')` cast (D-012), the same idiom
+  lazy `require('react-native-keychain')` cast (D-012) — mirroring only the
+  typeof-jest-guarded lazy-require *shape*
   `MonobankTokenService.ts`/`MonobankAccountSelectionService.ts` use for
-  `react-native-mmkv` — never a top-level import, so the uninstalled, unmocked module
-  never loads under Jest (tests inject a fake keychain instead; no `jest.setup.js` mock).
+  `react-native-mmkv`, **not** their silent try/catch fallback: if the require itself
+  throws (native module missing/unlinked) the error propagates uncaught and bootstrap
+  rejects, with no fallback to a substitute keychain (D-014, fail-closed). Never a
+  top-level import, so the uninstalled, unmocked module never loads under Jest (tests
+  inject a fake keychain instead; no `jest.setup.js` mock).
 - **encrypted** — `encryptedStore.ts` exposes `open(keyBase64)` (getString/set/delete)
   and `wipe()`. Device: `createMMKV({ id, encryptionKey, encryptionType: 'AES-256' })`
   and `deleteMMKV(id)`; a `typeof jest` branch backs both with an in-memory `Map`.

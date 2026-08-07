@@ -122,6 +122,28 @@
       "seq": 11,
       "at": "2026-08-07T11:15:23Z",
       "prev": "16198cdcdad1e7cdd0c91ffedfe79a1bae079758a9180a591c4fda88604ff4f9"
+    },
+    {
+      "gate": "plan-judge",
+      "result": "fail",
+      "subject": "verdict-plan.json",
+      "subject_sha256": "838fa4340499c7f52fedfdf54a583292e61c64340c63894c23d25dd4a00b1875",
+      "gate_sha256": "b55d6086f323d917d6b664326f8afc24aa06ac151e84b22f968e4bdf20ef8e63",
+      "reason": "REJECT plan.md: the implementer would have to guess in 1 place(s)",
+      "seq": 12,
+      "at": "2026-08-07T11:30:37Z",
+      "prev": "819ab4969bb3a7644fecb71a02c13899747aa64f143d0d022ce0395a51e4f88e"
+    },
+    {
+      "gate": "plan-form",
+      "result": "pass",
+      "subject": "plan.md",
+      "subject_sha256": "e77106bdf18b75d13b389af1c49810ab628e6d042b5a55027127d624f65067f9",
+      "gate_sha256": "1a5101529bc14d64efc10ed5645085c7b06d9ced91fa9589096b4a1421cc9b0e",
+      "reason": "plan-form: 7 implementation file(s), 1 test file(s), 15 AC covered",
+      "seq": 13,
+      "at": "2026-08-07T11:32:05Z",
+      "prev": "6b6e5465c075f61cc52c129bada125c499591f545ce5040c478f05f8d90d4084"
     }
   ],
   "accepted_at": null
