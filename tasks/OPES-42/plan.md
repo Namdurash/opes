@@ -54,7 +54,7 @@
       "statement": "Add \"react-native-keychain\": \"^10.0.0\" to dependencies in package.json, matching the ^x.y.z style of every other dependency.",
       "because": "AC-015; ^10.0.0 is the current stable major; native install/rebuild is a device concern outside the test suite." },
     { "id": "D-012",
-      "statement": "Access react-native-keychain in keychainKeyStore.ts only behind a typeof jest !== 'undefined' guard via a lazy require('react-native-keychain') cast, mirroring the react-native-mmkv idiom in MonobankTokenService.ts/MonobankAccountSelectionService.ts; never import it at module top level.",
+      "statement": "Access react-native-keychain in keychainKeyStore.ts only behind a typeof jest guard via a lazy require(...) cast, never a top-level import.",
       "because": "react-native-keychain is uninstalled with no jest.setup.js mock; D-010 loads real default constructor args on module import, so a static top-level import would crash SecretStore.test.ts at import time. Constructor-DI means tests inject a fake keychain and never hit the require, so no jest.setup.js mock is added.",
       "rejected": "Do not add a static top-level import of react-native-keychain and do not add a jest.setup.js mock for it." },
     { "id": "D-013",

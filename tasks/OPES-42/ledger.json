@@ -100,6 +100,28 @@
       "seq": 9,
       "at": "2026-08-07T11:14:19Z",
       "prev": "b500e55b73aa135e2903b0988a4d42d161331edc0aeb2a67bf18a9a485cd9c62"
+    },
+    {
+      "gate": "plan-form",
+      "result": "fail",
+      "subject": "plan.md",
+      "subject_sha256": "24a132111d2ae41afa7ce9ffb111e3fd24ffbe40fa47d6643cf8af0d2983924d",
+      "gate_sha256": "1a5101529bc14d64efc10ed5645085c7b06d9ced91fa9589096b4a1421cc9b0e",
+      "reason": "REJECT plan.md: 1 problem(s)",
+      "seq": 10,
+      "at": "2026-08-07T11:14:29Z",
+      "prev": "ac522caca6720fd967e884cd06427aa35c81d034f6901c5899a3f1d16fd7fe1a"
+    },
+    {
+      "gate": "plan-form",
+      "result": "pass",
+      "subject": "plan.md",
+      "subject_sha256": "9f1bb9a42a19305b183aa46f25912150192508eb79765dac3feb3bfe0f62c406",
+      "gate_sha256": "1a5101529bc14d64efc10ed5645085c7b06d9ced91fa9589096b4a1421cc9b0e",
+      "reason": "plan-form: 7 implementation file(s), 1 test file(s), 15 AC covered",
+      "seq": 11,
+      "at": "2026-08-07T11:15:23Z",
+      "prev": "16198cdcdad1e7cdd0c91ffedfe79a1bae079758a9180a591c4fda88604ff4f9"
     }
   ],
   "accepted_at": null
