@@ -78,6 +78,28 @@
       "seq": 7,
       "at": "2026-08-07T11:00:04Z",
       "prev": "945078874d78dc68aa549d153453bf83c27ba946fa396a7ced7490c97f4f0d10"
+    },
+    {
+      "gate": "plan-judge",
+      "result": "fail",
+      "subject": "verdict-plan.json",
+      "subject_sha256": "3423d45b2bcee136f231df6ac2ed6fa63691ef936b531687e6f663fc99adee05",
+      "gate_sha256": "b55d6086f323d917d6b664326f8afc24aa06ac151e84b22f968e4bdf20ef8e63",
+      "reason": "REJECT plan.md: the implementer would have to guess in 3 place(s)",
+      "seq": 8,
+      "at": "2026-08-07T11:05:53Z",
+      "prev": "c512550e5606e9089bc3cf064342f998538d7315b38a66e321a191cd33a79296"
+    },
+    {
+      "gate": "plan-judge",
+      "result": "pass",
+      "subject": "verdict-plan.json",
+      "subject_sha256": "a199559b4db211a2acf2ed5de28bb00e7df191c50977155c3ad878a8eea75253",
+      "gate_sha256": "b55d6086f323d917d6b664326f8afc24aa06ac151e84b22f968e4bdf20ef8e63",
+      "reason": "plan-judge: nothing left to guess, manifest covers the work",
+      "seq": 9,
+      "at": "2026-08-07T11:14:19Z",
+      "prev": "b500e55b73aa135e2903b0988a4d42d161331edc0aeb2a67bf18a9a485cd9c62"
     }
   ],
   "accepted_at": null

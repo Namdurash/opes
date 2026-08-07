@@ -51,8 +51,16 @@
       "statement": "Wire SecretStore's three backends (keychain API, encrypted backend, generateKey) as constructor dependencies with real defaults, so tests inject fakes as MonobankAccountSelectionService does.",
       "because": "AC-005/006/008/009/011/012/013/014 require injecting transient/absent/throwing backends and counting spies." },
     { "id": "D-011",
-      "statement": "Add \"react-native-keychain\" to dependencies in package.json.",
-      "because": "AC-015; native install/rebuild is a device concern outside the test suite." } ],
+      "statement": "Add \"react-native-keychain\": \"^10.0.0\" to dependencies in package.json, matching the ^x.y.z style of every other dependency.",
+      "because": "AC-015; ^10.0.0 is the current stable major; native install/rebuild is a device concern outside the test suite." },
+    { "id": "D-012",
+      "statement": "Access react-native-keychain in keychainKeyStore.ts only behind a typeof jest !== 'undefined' guard via a lazy require('react-native-keychain') cast, mirroring the react-native-mmkv idiom in MonobankTokenService.ts/MonobankAccountSelectionService.ts; never import it at module top level.",
+      "because": "react-native-keychain is uninstalled with no jest.setup.js mock; D-010 loads real default constructor args on module import, so a static top-level import would crash SecretStore.test.ts at import time. Constructor-DI means tests inject a fake keychain and never hit the require, so no jest.setup.js mock is added.",
+      "rejected": "Do not add a static top-level import of react-native-keychain and do not add a jest.setup.js mock for it." },
+    { "id": "D-013",
+      "statement": "Encode the raw 32-byte key to base64 with a small hand-rolled encoder inside cryptoKey.ts (standard alphabet, plain char/bitwise ops running under Node/Jest), not Buffer, btoa, or a new dependency.",
+      "because": "src/ has no Buffer polyfill, btoa/atob, or base64 helper; the project's no-new-dependency rule (the ticket's one-small-crypto-dep allowance covered the RNG source, not base64); AS-007/AC-007 keep the raw key at 32 bytes measured before this encoding, and the base64 form is what is handed to Keychain/MMKV.",
+      "rejected": "Do not rely on Buffer/btoa/atob and do not add a base64 dependency." } ],
   "ac_coverage": {
     "AC-001": ["src/services/secret-storage/SecretStore.ts", "src/services/secret-storage/encryptedStore.ts"],
     "AC-002": ["src/services/secret-storage/SecretStore.ts", "src/services/secret-storage/encryptedStore.ts"],
@@ -89,11 +97,18 @@ so the test can substitute fakes:
   resolves `null` only when `getGenericPassword` returns `false` (genuine absence),
   and **rejects** on any thrown/rejected result (transient). `writeKey` calls
   `setGenericPassword(..., { accessible: ACCESSIBLE.WHEN_UNLOCKED_THIS_DEVICE_ONLY })`.
+  The real `react-native-keychain` is reached only behind a `typeof jest` guard via a
+  lazy `require('react-native-keychain')` cast (D-012), the same idiom
+  `MonobankTokenService.ts`/`MonobankAccountSelectionService.ts` use for
+  `react-native-mmkv` — never a top-level import, so the uninstalled, unmocked module
+  never loads under Jest (tests inject a fake keychain instead; no `jest.setup.js` mock).
 - **encrypted** — `encryptedStore.ts` exposes `open(keyBase64)` (getString/set/delete)
   and `wipe()`. Device: `createMMKV({ id, encryptionKey, encryptionType: 'AES-256' })`
   and `deleteMMKV(id)`; a `typeof jest` branch backs both with an in-memory `Map`.
 - **generateKey** — `cryptoKey.ts` returns a 32-byte `Uint8Array` from
-  `globalThis.crypto.getRandomValues` (never `Math.random`) plus a base64 encoder.
+  `globalThis.crypto.getRandomValues` (never `Math.random`); a small hand-rolled base64
+  encoder in the same file (D-013 — no Buffer/btoa, no new dep) turns those raw 32 bytes
+  into the base64 string handed to Keychain/MMKV, with the length measured before encoding.
 
 **Bootstrap** (one memoized readiness Promise, D-002): `readKey()`; if it resolves a
 key, `open` it; if it resolves `null`, `generateKey` → `writeKey` → `wipe` → `open`

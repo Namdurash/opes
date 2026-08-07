@@ -1,0 +1,8 @@
+{ "schema": 1,
+  "gate": "plan-judge",
+  "subject": "plan.md",
+  "subject_sha256": "24a132111d2ae41afa7ce9ffb111e3fd24ffbe40fa47d6643cf8af0d2983924d",
+  "judge_agent": "aif-plan-judge",
+  "at": "2026-08-07T00:00:00Z",
+  "guesses": [],
+  "missing_files": [] }
