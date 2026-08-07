@@ -155,6 +155,28 @@
       "seq": 14,
       "at": "2026-08-07T11:35:42Z",
       "prev": "e519c2a80a1bd003fca9dbd0f616ae305dd739dd334d1ed0e03368adcb263fd7"
+    },
+    {
+      "gate": "verify-red",
+      "result": "error",
+      "subject": "ERROR  the pre-existing suite is not green (15 failing) — fix the repo before authoring tests; red is meaningless otherwise",
+      "subject_sha256": "",
+      "gate_sha256": "7732eec774eac4efaeb48e77328c960ab51cef1dfe42012d3bdb42de74fe186f",
+      "reason": "",
+      "seq": 15,
+      "at": "2026-08-07T11:44:13Z",
+      "prev": "c518765f155cdbd7882d0241cb9404b244b3575737e8489ca2af2b2bfa15fd22"
+    },
+    {
+      "gate": "verify-red",
+      "result": "pass",
+      "subject": "tests.lock",
+      "subject_sha256": "45040b711f3ae98552a54040244e846a057ec091ef6d835d9aae26c6f877612c",
+      "gate_sha256": "7732eec774eac4efaeb48e77328c960ab51cef1dfe42012d3bdb42de74fe186f",
+      "reason": "verify-red: 15 new test(s) red for the right reason, all criteria covered",
+      "seq": 16,
+      "at": "2026-08-07T20:07:05Z",
+      "prev": "b0b90e740c026e2e1c0fb39cd884b04d31e5c784e47e5e31afcf087582c2e4cb"
     }
   ],
   "accepted_at": null

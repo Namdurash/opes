@@ -1,0 +1,37 @@
+{
+  "schema": 1,
+  "plan_sha256": "e77106bdf18b75d13b389af1c49810ab628e6d042b5a55027127d624f65067f9",
+  "mode": "per-test",
+  "at": "2026-08-07T20:07:05Z",
+  "tests": {
+    "__tests__/App.test.tsx": "7808165702d195da6367058c679b662c5677432dbe26cd3680449ee8973e1ada"
+  },
+  "covering": [
+    "SecretStore resolves null when nothing is stored under the key::SecretStore resolves null when nothing is stored under the key",
+    "SecretStore round-trips a value through set then get::SecretStore round-trips a value through set then get",
+    "SecretStore removes a stored value on delete::SecretStore removes a stored value on delete",
+    "SecretStore is a silent no-op deleting an absent key::SecretStore is a silent no-op deleting an absent key",
+    "SecretStore rejects get when the Keychain read fails transiently::SecretStore rejects get when the Keychain read fails transiently",
+    "SecretStore generates the encryption key exactly once for concurrent first callers::SecretStore generates the encryption key exactly once for concurrent first callers",
+    "SecretStore retries bootstrap and resolves after a transient failure recovers::SecretStore retries bootstrap and resolves after a transient failure recovers",
+    "SecretStore rejects set when the encryption-key write fails::SecretStore rejects set when the encryption-key write fails",
+    "SecretStore never writes plaintext when the encryption-key write fails::SecretStore never writes plaintext when the encryption-key write fails",
+    "SecretStore regenerates the key and wipes stale ciphertext on a genuinely absent entry::SecretStore regenerates the key and wipes stale ciphertext on a genuinely absent entry",
+    "SecretStore preserves the stored value across a transient Keychain read failure::SecretStore preserves the stored value across a transient Keychain read failure",
+    "cryptoKey.generateKey produces a 32-byte raw key before base64 encoding::cryptoKey.generateKey produces a 32-byte raw key before base64 encoding",
+    "cryptoKey.generateKey never draws key material from Math.random::cryptoKey.generateKey never draws key material from Math.random",
+    "keychainKeyStore.writeKey writes the key device-only, not synchronizable to iCloud::keychainKeyStore.writeKey writes the key device-only, not synchronizable to iCloud",
+    "package.json declares react-native-keychain as a dependency::package.json declares react-native-keychain as a dependency"
+  ],
+  "impl_frozen": {
+    "package.json": "a6f7f37acfdcee0c06385af57f15108ef075de6deef5122d3ef161387c20670a"
+  },
+  "impl_created": [
+    "src/services/secret-storage/SecretStore.ts",
+    "src/services/secret-storage/keychainKeyStore.ts",
+    "src/services/secret-storage/encryptedStore.ts",
+    "src/services/secret-storage/cryptoKey.ts",
+    "src/services/secret-storage/index.ts",
+    "src/services/secret-storage/CLAUDE.md"
+  ]
+}
