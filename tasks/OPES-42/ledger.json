@@ -45,6 +45,17 @@
       "seq": 4,
       "at": "2026-08-07T09:59:27Z",
       "prev": "fd0fc550e671da856bf8aace5da08899d33b02bb7983000495bf2f27b1841f48"
+    },
+    {
+      "event": "approve",
+      "subject": "spec.md",
+      "subject_sha256": "15cd44a01d42c9cd5a2a54f8d452d32e3e5e5560cfdc5e9a949a51dfc8144e6e",
+      "approver": "Namdurash",
+      "channel": "chat",
+      "confirmation": "Approve",
+      "seq": 5,
+      "at": "2026-08-07T10:54:47Z",
+      "prev": "c977eec96139d252ff868ff884f2a0dbb36428424cd6d1e9b72a45df185b1b4c"
     }
   ],
   "accepted_at": null
