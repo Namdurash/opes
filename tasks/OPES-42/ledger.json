@@ -1,0 +1,194 @@
+{
+  "schema": 1,
+  "ticket": "OPES-42",
+  "entries": [
+    {
+      "gate": "spec-form",
+      "result": "fail",
+      "subject": "spec.md",
+      "subject_sha256": "f5e18a84c9f86e9e09116eea8b69fd42e0d1db8c80c11b4abe004b6b0c9a88c2",
+      "gate_sha256": "9e244df9b7d17b6e6f6a4e1991219e77631aad3195c4ee8d809d032201568ede",
+      "reason": "REJECT spec.md: 11 problem(s)",
+      "seq": 1,
+      "at": "2026-08-06T12:58:20Z",
+      "prev": null
+    },
+    {
+      "gate": "spec-form",
+      "result": "pass",
+      "subject": "spec.md",
+      "subject_sha256": "15cd44a01d42c9cd5a2a54f8d452d32e3e5e5560cfdc5e9a949a51dfc8144e6e",
+      "gate_sha256": "9e244df9b7d17b6e6f6a4e1991219e77631aad3195c4ee8d809d032201568ede",
+      "reason": "spec-form: 15 criteria, all admissible",
+      "seq": 2,
+      "at": "2026-08-07T09:55:13Z",
+      "prev": "ff9d4e0a4c124439d56fadf1e5ed80aa880b490272aa672456d30b5b52453c4f"
+    },
+    {
+      "gate": "spec-judge",
+      "result": "fail",
+      "subject": "verdict-spec.json",
+      "subject_sha256": "13a91a72a0e7300d8a3f303940c7e75ac59ccbaf826018337eefee5acf6b1999",
+      "gate_sha256": "26dc1fe798566d89e4493c398916518954a20a6400cdb9d4698d18ada45dd65e",
+      "reason": "REJECT verdict is for a different spec — it changed since it was judged; re-run the judge",
+      "seq": 3,
+      "at": "2026-08-07T09:57:41Z",
+      "prev": "df6cc985a3ed8b0d8fc871afc7bfbf9a3559243aca6aa1faa7aecceb063d8c17"
+    },
+    {
+      "gate": "spec-judge",
+      "result": "pass",
+      "subject": "verdict-spec.json",
+      "subject_sha256": "1276f2cdbdd2f63434f1299c168f961f467a842a7497043b87ad74b8049bcab3",
+      "gate_sha256": "26dc1fe798566d89e4493c398916518954a20a6400cdb9d4698d18ada45dd65e",
+      "reason": "spec-judge: passed, no blockers",
+      "seq": 4,
+      "at": "2026-08-07T09:59:27Z",
+      "prev": "fd0fc550e671da856bf8aace5da08899d33b02bb7983000495bf2f27b1841f48"
+    },
+    {
+      "event": "approve",
+      "subject": "spec.md",
+      "subject_sha256": "15cd44a01d42c9cd5a2a54f8d452d32e3e5e5560cfdc5e9a949a51dfc8144e6e",
+      "approver": "Namdurash",
+      "channel": "chat",
+      "confirmation": "Approve",
+      "seq": 5,
+      "at": "2026-08-07T10:54:47Z",
+      "prev": "c977eec96139d252ff868ff884f2a0dbb36428424cd6d1e9b72a45df185b1b4c"
+    },
+    {
+      "gate": "plan-form",
+      "result": "fail",
+      "subject": "plan.md",
+      "subject_sha256": "d05a9e36e50265e39acee64f7291a76310be84c0c00b38089015bef1e633139f",
+      "gate_sha256": "1a5101529bc14d64efc10ed5645085c7b06d9ced91fa9589096b4a1421cc9b0e",
+      "reason": "REJECT plan.md: 1 problem(s)",
+      "seq": 6,
+      "at": "2026-08-07T10:59:31Z",
+      "prev": "09efbeace36e327a06dd13ec7573f9c51d95d91b759d0a9de4df517c1f8827f5"
+    },
+    {
+      "gate": "plan-form",
+      "result": "pass",
+      "subject": "plan.md",
+      "subject_sha256": "29187a0a951d9fb39adc855a7d0b647fe099eb86a05f0e7b4a2cecb2b21d5a76",
+      "gate_sha256": "1a5101529bc14d64efc10ed5645085c7b06d9ced91fa9589096b4a1421cc9b0e",
+      "reason": "plan-form: 7 implementation file(s), 1 test file(s), 15 AC covered",
+      "seq": 7,
+      "at": "2026-08-07T11:00:04Z",
+      "prev": "945078874d78dc68aa549d153453bf83c27ba946fa396a7ced7490c97f4f0d10"
+    },
+    {
+      "gate": "plan-judge",
+      "result": "fail",
+      "subject": "verdict-plan.json",
+      "subject_sha256": "3423d45b2bcee136f231df6ac2ed6fa63691ef936b531687e6f663fc99adee05",
+      "gate_sha256": "b55d6086f323d917d6b664326f8afc24aa06ac151e84b22f968e4bdf20ef8e63",
+      "reason": "REJECT plan.md: the implementer would have to guess in 3 place(s)",
+      "seq": 8,
+      "at": "2026-08-07T11:05:53Z",
+      "prev": "c512550e5606e9089bc3cf064342f998538d7315b38a66e321a191cd33a79296"
+    },
+    {
+      "gate": "plan-judge",
+      "result": "pass",
+      "subject": "verdict-plan.json",
+      "subject_sha256": "a199559b4db211a2acf2ed5de28bb00e7df191c50977155c3ad878a8eea75253",
+      "gate_sha256": "b55d6086f323d917d6b664326f8afc24aa06ac151e84b22f968e4bdf20ef8e63",
+      "reason": "plan-judge: nothing left to guess, manifest covers the work",
+      "seq": 9,
+      "at": "2026-08-07T11:14:19Z",
+      "prev": "b500e55b73aa135e2903b0988a4d42d161331edc0aeb2a67bf18a9a485cd9c62"
+    },
+    {
+      "gate": "plan-form",
+      "result": "fail",
+      "subject": "plan.md",
+      "subject_sha256": "24a132111d2ae41afa7ce9ffb111e3fd24ffbe40fa47d6643cf8af0d2983924d",
+      "gate_sha256": "1a5101529bc14d64efc10ed5645085c7b06d9ced91fa9589096b4a1421cc9b0e",
+      "reason": "REJECT plan.md: 1 problem(s)",
+      "seq": 10,
+      "at": "2026-08-07T11:14:29Z",
+      "prev": "ac522caca6720fd967e884cd06427aa35c81d034f6901c5899a3f1d16fd7fe1a"
+    },
+    {
+      "gate": "plan-form",
+      "result": "pass",
+      "subject": "plan.md",
+      "subject_sha256": "9f1bb9a42a19305b183aa46f25912150192508eb79765dac3feb3bfe0f62c406",
+      "gate_sha256": "1a5101529bc14d64efc10ed5645085c7b06d9ced91fa9589096b4a1421cc9b0e",
+      "reason": "plan-form: 7 implementation file(s), 1 test file(s), 15 AC covered",
+      "seq": 11,
+      "at": "2026-08-07T11:15:23Z",
+      "prev": "16198cdcdad1e7cdd0c91ffedfe79a1bae079758a9180a591c4fda88604ff4f9"
+    },
+    {
+      "gate": "plan-judge",
+      "result": "fail",
+      "subject": "verdict-plan.json",
+      "subject_sha256": "838fa4340499c7f52fedfdf54a583292e61c64340c63894c23d25dd4a00b1875",
+      "gate_sha256": "b55d6086f323d917d6b664326f8afc24aa06ac151e84b22f968e4bdf20ef8e63",
+      "reason": "REJECT plan.md: the implementer would have to guess in 1 place(s)",
+      "seq": 12,
+      "at": "2026-08-07T11:30:37Z",
+      "prev": "819ab4969bb3a7644fecb71a02c13899747aa64f143d0d022ce0395a51e4f88e"
+    },
+    {
+      "gate": "plan-form",
+      "result": "pass",
+      "subject": "plan.md",
+      "subject_sha256": "e77106bdf18b75d13b389af1c49810ab628e6d042b5a55027127d624f65067f9",
+      "gate_sha256": "1a5101529bc14d64efc10ed5645085c7b06d9ced91fa9589096b4a1421cc9b0e",
+      "reason": "plan-form: 7 implementation file(s), 1 test file(s), 15 AC covered",
+      "seq": 13,
+      "at": "2026-08-07T11:32:05Z",
+      "prev": "6b6e5465c075f61cc52c129bada125c499591f545ce5040c478f05f8d90d4084"
+    },
+    {
+      "gate": "plan-judge",
+      "result": "pass",
+      "subject": "verdict-plan.json",
+      "subject_sha256": "1fceeb893c4108face0af2fefdb5358f22f24054a897bd968170135ccb314cb1",
+      "gate_sha256": "b55d6086f323d917d6b664326f8afc24aa06ac151e84b22f968e4bdf20ef8e63",
+      "reason": "plan-judge: nothing left to guess, manifest covers the work",
+      "seq": 14,
+      "at": "2026-08-07T11:35:42Z",
+      "prev": "e519c2a80a1bd003fca9dbd0f616ae305dd739dd334d1ed0e03368adcb263fd7"
+    },
+    {
+      "gate": "verify-red",
+      "result": "error",
+      "subject": "ERROR  the pre-existing suite is not green (15 failing) — fix the repo before authoring tests; red is meaningless otherwise",
+      "subject_sha256": "",
+      "gate_sha256": "7732eec774eac4efaeb48e77328c960ab51cef1dfe42012d3bdb42de74fe186f",
+      "reason": "",
+      "seq": 15,
+      "at": "2026-08-07T11:44:13Z",
+      "prev": "c518765f155cdbd7882d0241cb9404b244b3575737e8489ca2af2b2bfa15fd22"
+    },
+    {
+      "gate": "verify-red",
+      "result": "pass",
+      "subject": "tests.lock",
+      "subject_sha256": "45040b711f3ae98552a54040244e846a057ec091ef6d835d9aae26c6f877612c",
+      "gate_sha256": "7732eec774eac4efaeb48e77328c960ab51cef1dfe42012d3bdb42de74fe186f",
+      "reason": "verify-red: 15 new test(s) red for the right reason, all criteria covered",
+      "seq": 16,
+      "at": "2026-08-07T20:07:05Z",
+      "prev": "b0b90e740c026e2e1c0fb39cd884b04d31e5c784e47e5e31afcf087582c2e4cb"
+    },
+    {
+      "gate": "verify-red",
+      "result": "pass",
+      "subject": "tests.lock",
+      "subject_sha256": "0866a01cce4478015a0402a705a498887e13dbeea6c89f40b597df9e8698316b",
+      "gate_sha256": "7732eec774eac4efaeb48e77328c960ab51cef1dfe42012d3bdb42de74fe186f",
+      "reason": "verify-red: 15 new test(s) red for the right reason, all criteria covered",
+      "seq": 17,
+      "at": "2026-08-07T20:28:05Z",
+      "prev": "ee56913b07dde3fed5ae7e6c9aca765d3ed930f9aaad60f74ad6f1360a8d3ca3"
+    }
+  ],
+  "accepted_at": null
+}
