@@ -1,10 +1,10 @@
 {
   "schema": 1,
-  "aif_version": "0.2.0",
+  "aif_version": "0.4.1",
   "profile": "anthropic",
   "set": "claude",
-  "set_version": "0.3.0",
-  "installed_at": "2026-08-06T11:54:30Z",
+  "set_version": "0.4.1",
+  "installed_at": "2026-08-13T09:44:00Z",
   "files": [
     {
       "path": ".aif/foundry.md",
@@ -12,11 +12,11 @@
     },
     {
       "path": ".claude/skills/aif-fix/SKILL.md",
-      "sha256": "d73024de8a9cbc82c5e2655704974cd6c630e37c029a3b24b7dccbb50abed09d"
+      "sha256": "c194c4fcc5d4724494c719df4f926336ec190ad9074c944aad09e6b6ab922930"
     },
     {
       "path": ".claude/skills/aif/SKILL.md",
-      "sha256": "bc571ca896a3b89a14e37a613c8072d36eb1488c3c6c2ca7c172f96c6c405b4c"
+      "sha256": "d698ed9a7e447b4baeb53bfd1c71a009b9f7efe262f8f5b9c92dced29386effa"
     },
     {
       "path": ".claude/skills/aif-ticket/SKILL.md",
@@ -24,11 +24,11 @@
     },
     {
       "path": ".claude/agents/aif-tests.md",
-      "sha256": "bd1c85c65dd070d30502134c5c5d33b1f1f28ae5f780f7b96d11c4da53813470"
+      "sha256": "270fc486edd508c5d1bec04c0908878e3ce7a38ec7c7bbbd9325da6eb423fe17"
     },
     {
       "path": ".claude/agents/aif-spec-judge.md",
-      "sha256": "515f0185de4ed1a44172fbabe7c5321fc7ce8f928f630945bebc1d70abb144cb"
+      "sha256": "4b85d980589e6f6b6a6824ff7723950fd9e4bcf585bb4d621f1784f3c86574e0"
     },
     {
       "path": ".claude/agents/aif-ticket-critic.md",
@@ -36,7 +36,7 @@
     },
     {
       "path": ".claude/agents/aif-plan.md",
-      "sha256": "1d9c1a040d6b61381ee0e3c515b74d4257fd0be265d8efac22d551bd088dfc59"
+      "sha256": "bb12cade4de96924e45a29490b0bc5aa5d5d321e66d525edf3d5700a41f68087"
     },
     {
       "path": ".claude/agents/aif-implement-careful.md",
@@ -48,11 +48,11 @@
     },
     {
       "path": ".claude/agents/aif-spec.md",
-      "sha256": "ccc973864cd167d6fa0451019602220ea3cab1790e8b295244d2c2c8ccea4ce0"
+      "sha256": "29196d8b74d1062a145b4661065a6d40e49fb1b0b091ee4d1f74363182f57ee8"
     },
     {
       "path": ".claude/agents/aif-plan-judge.md",
-      "sha256": "bbabe5660132d378060def7b1afe68e055897cafa3ef7a90658e94023508d843"
+      "sha256": "374c978ef03661792fdddd57a55e350447f32c784d31fcfa001c86f737bc0e53"
     },
     {
       "path": ".claude/commands/aif-fix.md",
@@ -68,31 +68,31 @@
     },
     {
       "path": ".aif/gates/spec-judge.sh",
-      "sha256": "26dc1fe798566d89e4493c398916518954a20a6400cdb9d4698d18ada45dd65e"
+      "sha256": "512f7f3d5be85b1e0bd5dd488c40d78279b0eae2af132268c8591547e1dfaf35"
     },
     {
       "path": ".aif/gates/spec-approve.sh",
-      "sha256": "869b68d26cc48a58a7e8e66f0cd0eaec846ae0f40ec71ff5ea0142bc1cd700d6"
+      "sha256": "23505a43e3afe333dad8f4542d8447fbc1919d013369d2f9d2454d133cc99e88"
     },
     {
       "path": ".aif/gates/_lib.sh",
-      "sha256": "abf78be22979c40224eb804c3407388df79d6fb11a7d0f1fdefd4b42eab468a6"
+      "sha256": "1866412a5dd81605654dd000fe46efab4f609fba93835c9bac430ecc1fba26d5"
     },
     {
       "path": ".aif/gates/scope.sh",
-      "sha256": "f7376ea66884bb5e7f22f119fb455c5ce60516a8b4e1062e3dfc43f6a69f442e"
+      "sha256": "0c0fc7bafd0adbb0203bd6e3367bebaa3fe1bb9f0ddce9488cba24789b617395"
     },
     {
       "path": ".aif/gates/plan-form.sh",
-      "sha256": "1a5101529bc14d64efc10ed5645085c7b06d9ced91fa9589096b4a1421cc9b0e"
+      "sha256": "b0ebcaf56cb32ad788a66fd3d8ac16c9212632af8ec682c320e9a3f1bd0e8a3a"
     },
     {
       "path": ".aif/gates/green.sh",
-      "sha256": "b3b4ea7cd9888158c6fdd651427d01a45b071c9426fc32563cd74038d1f3d8bf"
+      "sha256": "2adf4c252f8af54a0f9d6de7e06fd0c5140b5d68e45d296d94a37fdcb69f020f"
     },
     {
       "path": ".aif/gates/plan-judge.sh",
-      "sha256": "b55d6086f323d917d6b664326f8afc24aa06ac151e84b22f968e4bdf20ef8e63"
+      "sha256": "59675a1bad164f7ab3c03f8c0367a946515f818c47fbd318ef4f6aca3cf6f773"
     },
     {
       "path": ".aif/gates/junit.py",
@@ -100,11 +100,11 @@
     },
     {
       "path": ".aif/gates/verify-red.sh",
-      "sha256": "7732eec774eac4efaeb48e77328c960ab51cef1dfe42012d3bdb42de74fe186f"
+      "sha256": "d355d48f064163b53c0c4edace862f901df45bca349699d10bc9d076548dfd5f"
     },
     {
       "path": ".aif/gates/spec-form.sh",
-      "sha256": "9e244df9b7d17b6e6f6a4e1991219e77631aad3195c4ee8d809d032201568ede"
+      "sha256": "f514891199dde46845e784cca03093acb8a01920083cee933528a769f4d7ddf0"
     },
     {
       "path": ".aif/prices.json",
@@ -124,36 +124,6 @@
     }
   ],
   "edits": [
-    {
-      "path": ".claude/settings.json",
-      "kind": "json_merge",
-      "fragment": {
-        "hooks": {
-          "PreToolUse": [
-            {
-              "matcher": "Write|Edit|MultiEdit|NotebookEdit",
-              "hooks": [
-                {
-                  "type": "command",
-                  "command": "$CLAUDE_PROJECT_DIR/.aif/hooks/guard.sh"
-                }
-              ]
-            }
-          ],
-          "SubagentStop": [
-            {
-              "hooks": [
-                {
-                  "type": "command",
-                  "command": "$CLAUDE_PROJECT_DIR/.aif/hooks/meter.sh"
-                }
-              ]
-            }
-          ]
-        }
-      },
-      "pre_existed": false
-    },
     {
       "path": "CLAUDE.md",
       "kind": "marker_block_md"

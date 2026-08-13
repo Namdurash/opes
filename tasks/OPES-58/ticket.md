@@ -1,8 +1,8 @@
 <!-- aif:meta
-{ "schema": 1, "ticket": "OPES-49", "lang": "en", "risk": "high" }
+{ "schema": 1, "ticket": "OPES-58", "lang": "en", "risk": "high" }
 -->
 
-# OPES-49 — Migrate the Monobank token onto the encrypted secret store
+# OPES-58 — Migrate the Monobank token onto the encrypted secret store
 
 ## Why
 
@@ -42,6 +42,7 @@ every `MonobankTokenService` method is now async, and both read and write call s
 updated.
 
 Reads:
+
 - `useMonobankStore.loadSavedToken` becomes `async` returning `Promise<string | null>` (its
   signature in `src/features/monobank/types.ts` updated to match);
 - the `HomeScreen.tsx` startup effect calls it fire-and-forget with a `.catch` (its return
@@ -53,6 +54,7 @@ Reads:
   `monobankTokenService.get()` call.
 
 Writes:
+
 - `useMonobankStore.connect` awaits `monobankTokenService.save(...)` before it sets
   `status: 'connected'`. The connected state must never be announced ahead of the secret being
   persisted, and a failed save must surface as a connection failure (`status: 'error'`, an
