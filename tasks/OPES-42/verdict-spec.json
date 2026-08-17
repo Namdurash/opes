@@ -1,0 +1,8 @@
+{ "schema": 1,
+  "gate": "spec-judge",
+  "subject": "spec.md",
+  "subject_sha256": "15cd44a01d42c9cd5a2a54f8d452d32e3e5e5560cfdc5e9a949a51dfc8144e6e",
+  "judge_agent": "aif-spec-judge",
+  "at": "2026-08-07T12:00:00Z",
+  "pass": true,
+  "findings": [] }

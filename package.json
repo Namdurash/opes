@@ -26,6 +26,7 @@
     "react-native-config": "^1.6.1",
     "react-native-gesture-handler": "^2.31.0",
     "react-native-image-picker": "^8.2.1",
+    "react-native-keychain": "^10.0.0",
     "react-native-linear-gradient": "^2.8.3",
     "react-native-mmkv": "^4.3.1",
     "react-native-nitro-modules": "^0.35.0",
@@ -64,5 +65,8 @@
   },
   "engines": {
     "node": ">= 22.11.0"
+  },
+  "jest-junit": {
+    "addFileAttribute": "true"
   }
 }
