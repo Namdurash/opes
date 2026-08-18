@@ -173,6 +173,38 @@
       "seq": 11,
       "at": "2026-08-18T08:53:41Z",
       "prev": "454e7b0599b01d73b8df3b4907dd39e519325e52898a9451f467e24facf231b0"
+    },
+    {
+      "station": "plan-judge",
+      "attempt": 1,
+      "agent": "aif-plan-judge",
+      "agent_id": "adf66c3f575b26397",
+      "model": "claude-sonnet-5",
+      "usage": {
+        "input_tokens": 506,
+        "output_tokens": 2394,
+        "cache_read_input_tokens": 442178,
+        "cache_creation_input_tokens": 48551
+      },
+      "num_turns": 14,
+      "cost_usd": null,
+      "cost_source": "tokens-only",
+      "result": "ran",
+      "summary": "## Summary",
+      "seq": 12,
+      "at": "2026-08-18T08:57:22Z",
+      "prev": "eb63b90964e46442043e7ba2cc4e70e5cc68dfe54a73da134cadad780fee20f7"
+    },
+    {
+      "gate": "plan-judge",
+      "result": "pass",
+      "subject": "verdict-plan.json",
+      "subject_sha256": "64e31228600e7815ee3bc958a0614f3e40d5847d9a7f8776ecb3678d349c9fa0",
+      "gate_sha256": "59675a1bad164f7ab3c03f8c0367a946515f818c47fbd318ef4f6aca3cf6f773",
+      "reason": "plan-judge: nothing left to guess, manifest covers the work, 5 surface flag(s) adjudicated as intended",
+      "seq": 13,
+      "at": "2026-08-18T08:57:33Z",
+      "prev": "3112f017a59e4736943617fc583020ae087c663d142206ee6e97cdb8debbf984"
     }
   ],
   "accepted_at": null
