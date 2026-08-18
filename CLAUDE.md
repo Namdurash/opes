@@ -164,6 +164,34 @@ These rules apply across every `.ts` / `.tsx` file in the project.
 - **`Pick`, `Partial`, `Readonly`, etc.** over duplicating shapes.
 - **Discriminated unions over boolean flags** when state has mutually exclusive modes.
 
+## Testing
+
+Where a test lives and what it is called is **checked by the build**, not agreed by
+convention. What follows describes what the machine already enforces; it does not
+replace it.
+
+- **A test is a sibling of its source and carries its name.** `CreateCardScreen.tsx`
+  is tested by `CreateCardScreen.test.tsx` in the same folder — the same pairing
+  [src/features/CLAUDE.md](src/features/CLAUDE.md) already requires for
+  `*.styles.ts`.
+- **One allowed form: `.test.ts` / `.test.tsx`.** Not `.tests.`, not `.spec.`, not
+  `.test.js`. Enforced by `testMatch` in [jest.config.js](jest.config.js) — anything
+  else is not collected at all.
+- **Three allowed places:** anywhere under `src/`, anywhere under `scripts/`, and the
+  repository root itself (where `App.test.tsx` sits beside `App.tsx`).
+- **No underscored jest directories.** No `__tests__/`, no `__mocks__/`. Fixture data
+  that ordinary code imports lives in a plainly named folder next to its consumer.
+- **Shared harness lives in [test/](test/CLAUDE.md)** — factories, repository doubles,
+  the test-database helper, jest setup. It contains no tests. Product code importing
+  from it is a lint error.
+- **Repository tests run against a real database**, one throwaway instance per test
+  case, built from the product schema. Everything above the repository layer takes
+  injected doubles instead.
+
+Because a misnamed file is silently *not collected* rather than red, `npm run lint`
+also runs a guard that fails on a test outside the allowed form or place, and fails
+if it finds no tests at all.
+
 ## Definition of Done
 
 - `npx tsc --noEmit` passes (strict).
@@ -190,6 +218,7 @@ These rules apply across every `.ts` / `.tsx` file in the project.
 | Sync | [src/services/sync/CLAUDE.md](src/services/sync/CLAUDE.md) | TransactionSyncService behavior |
 | Categorization | [src/services/categorization/CLAUDE.md](src/services/categorization/CLAUDE.md) | Resolution precedence, batch API |
 | Design system | [src/shared/ui/CLAUDE.md](src/shared/ui/CLAUDE.md) | Screen, Header, Icon, UI state patterns |
+| Test harness | [test/CLAUDE.md](test/CLAUDE.md) | Shared factories, doubles, test database, jest setup |
 | Theme tokens | [src/shared/theme/CLAUDE.md](src/shared/theme/CLAUDE.md) | Token usage rules |
 | Validation | [src/shared/validation/CLAUDE.md](src/shared/validation/CLAUDE.md) | Yup schema location |
 | Global stores | [src/stores/CLAUDE.md](src/stores/CLAUDE.md) | Cross-feature Zustand stores |
