@@ -1,21 +1,16 @@
 import { transactionsToCsv, transactionsToJson } from './utils';
 import type { Transaction } from '../../domain/transactions';
+import { makeTransaction } from '../../../test/factories';
 
-const makeTx = (overrides: Partial<Transaction> = {}): Transaction => ({
-  id: 'tx-1',
-  title: 'Coffee',
-  amount: -55,
-  type: 'expense',
-  occurredAtIso: '2026-05-01T10:00:00.000Z',
-  cardId: 'card-1',
-  mcc: 5814,
-  currencyCode: 980,
-  currencySymbol: 'UAH',
-  balance: 1000,
-  hold: false,
-  comment: null,
-  ...overrides,
-});
+// Only what this suite asserts on differs from the shared default.
+const makeTx = (overrides: Partial<Transaction> = {}): Transaction =>
+  makeTransaction({
+    title: 'Coffee',
+    amount: -55,
+    mcc: 5814,
+    balance: 1000,
+    ...overrides,
+  });
 
 describe('transactionsToCsv', () => {
   it('writes a header row followed by one row per transaction', () => {

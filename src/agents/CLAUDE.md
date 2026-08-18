@@ -27,7 +27,7 @@ src/agents/subscriptionDetective/
   tools.ts              # get_transactions tool definition + executeTool dispatcher
   transactionSource.ts  # fetchInRange — the data source
   types.ts              # RawTransaction / NormalizedTransaction
-  __mocks__/            # mock dataset + ground-truth eval fixture
+  fixtures/             # mock dataset + ground-truth eval fixture
   index.ts              # barrel — public API of the agent
 ```
 
@@ -37,10 +37,12 @@ src/agents/subscriptionDetective/
   (`client.messages.create`) in a manual tool-use loop. Keep this call shape;
   don't hand-roll HTTP here.
 - **Data source is the MOCK dataset.** [transactionSource.ts](subscriptionDetective/transactionSource.ts)
-  reads `__mocks__/mock_transactions.json`. Do **not** import the app's
+  reads `fixtures/mock_transactions.json`. Do **not** import the app's
   WatermelonDB repositories or Monobank service from this layer — it must stay
   runnable on plain Node with no native modules. Connecting real data is a
-  deferred task.
+  deferred task. The folder is `fixtures/`, deliberately not `__mocks__/`: jest
+  registers anything under an `__mocks__/` directory as a manual mock, and these
+  are dev-harness data imported by ordinary code, not test doubles.
 - **No `any`.** Tool inputs arrive as `unknown`; narrow them before use (see
   `isGetTransactionsInput` in [tools.ts](subscriptionDetective/tools.ts)).
 - **Comments and logs in English.** The mock data and eval fixtures keep their

@@ -3,7 +3,7 @@
   "ticket_pattern": "^[A-Z]{2,10}-[0-9]+$",
   "test": {
     "roots": [
-      "__tests__"
+      "test"
     ],
     "command": "JEST_JUNIT_OUTPUT_FILE=.aif/tmp/report.xml npx jest --ci --reporters=default --reporters=jest-junit",
     "select": "JEST_JUNIT_OUTPUT_FILE=.aif/tmp/report.xml npx jest --ci --reporters=default --reporters=jest-junit {ids}",

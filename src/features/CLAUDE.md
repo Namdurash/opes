@@ -20,6 +20,7 @@ src/features/<feature>/
 ## Styling rules
 
 - **No `StyleSheet.create(...)` inline in a feature component.** Every component with styles has a sibling `*.styles.ts` matching the component name (`TransactionsScreen.tsx` ↔ `TransactionsScreen.styles.ts`).
+- **Tests follow the same pairing.** `TransactionsScreen.tsx` ↔ `TransactionsScreen.test.tsx`, in the same folder. See the Testing section in the root [CLAUDE.md](../../CLAUDE.md) — the naming and placement are enforced by `npm run lint`, not left to habit.
 - **No hardcoded colors, font sizes, spacing, or radii.** Use `theme.*` tokens via `useTheme()` or `makeStyles((theme) => ...)`. See [../shared/theme/CLAUDE.md](../shared/theme/CLAUDE.md).
 - **Use `shared/ui` primitives** (`Screen`, `AppText`, `Button`, `Input`/`FormInput`, `Header`, `Icon`) rather than raw RN components. See [../shared/ui/CLAUDE.md](../shared/ui/CLAUDE.md).
 

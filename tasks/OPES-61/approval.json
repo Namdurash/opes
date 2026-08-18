@@ -1,0 +1,27 @@
+{
+  "schema": 1,
+  "subject": "spec.md",
+  "subject_sha256": "a2085115ed5ca149591e50bf5bc25dd13a7de1b026dc09764b48da30052f0eb4",
+  "approver": "Namdurash",
+  "at": "2026-08-18T08:47:34Z",
+  "channel": "chat",
+  "confirmation": "Accept as-is — the 15 criteria are complete and all five assumptions (AS-001 exit-code-1 for every failure mode, AS-002 allowed-location = any depth under src/ or scripts/ or the repo root itself, AS-003 path-string matching over git-tracked files, AS-004 __tests__/__mocks__ at any depth, AS-005 violations to stdout) are accepted.",
+  "approved_assumptions": [
+    "AS-001",
+    "AS-002",
+    "AS-003",
+    "AS-004",
+    "AS-005"
+  ],
+  "acknowledged_gaps": [
+    "VG-001",
+    "VG-002",
+    "VG-003",
+    "VG-004",
+    "VG-005",
+    "VG-006",
+    "VG-007",
+    "VG-008"
+  ],
+  "gaps_confirmation": "Accept the gaps — I accept shipping with VG-001..VG-008 unverified by the foundry this cycle (suite list, no Haste/dup-mock warnings, self-exit without forceExit, RNTL migration equivalence, CardsRepository pilot + test-base helper, shared test/ root & lint rules & docs, LokiJS-vs-device adapter, git-untracked files); these are hand-verified at the manual commits."
+}

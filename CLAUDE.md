@@ -88,6 +88,15 @@ Co-Authored-By: Claude Opus 4.8 <noreply@anthropic.com>
 
 Run `/sdlc:commit` to commit the current phase — it resolves the ticket from `proposal.md`, runs the Definition of Done, stages the right files, and writes the message.
 
+## Trello board
+
+Work is tracked on the [Opes board](https://trello.com/b/OpgSv5wd/opes). Two rules bind here; the full card format lives in the `trello-card` skill, which loads when you actually need it.
+
+- **Every card follows the board's format** — `OPES-NN · kebab-slug`, labels on the area / size / priority axes, the standard description sections, and checklists ending in a `Tests` group. Invoke the `trello-card` skill before creating or updating a card; do not improvise a shape.
+- **Ticket numbers come from the board, never from `git log`.** The board runs ahead of the commit history because cards exist long before code does. Take the highest `OPES-NN` across *all* lists and add one — deriving it from `git log` collides with a card that already owns that number.
+
+Lists are workflow phase: **Todo → In Progress → Blocked → Review / QA → Done**.
+
 ## Commands
 
 ```sh
@@ -132,7 +141,10 @@ These rules apply across every `.ts` / `.tsx` file in the project.
 ### JavaScript / ES6+
 
 - **Arrow functions everywhere.** Never use the `function` keyword — not for components, helpers, store factories, or callbacks. Every callable is a `const` arrow.
-- **`const` and `let` only.** Never `var`.
+- **`const` and `let` only.** Never `var` — now enforced by `no-var`, not just
+  documented. One exception, scoped in [.eslintrc.js](.eslintrc.js): test files,
+  `test/` and `jest.config.js`, where a hoisted `jest.mock` factory may only close
+  over a `var` (`let`/`const` are still in their temporal dead zone at that point).
 - **`async`/`await` over `.then()` chains.** `.catch()` is allowed only as a terminal error sink on fire-and-forget calls.
 - **Destructuring by default** for function parameters and local variables.
 - **Template literals over string concatenation.**
@@ -151,6 +163,34 @@ These rules apply across every `.ts` / `.tsx` file in the project.
 - **Generics for reusable utilities** — bounded, not loose.
 - **`Pick`, `Partial`, `Readonly`, etc.** over duplicating shapes.
 - **Discriminated unions over boolean flags** when state has mutually exclusive modes.
+
+## Testing
+
+Where a test lives and what it is called is **checked by the build**, not agreed by
+convention. What follows describes what the machine already enforces; it does not
+replace it.
+
+- **A test is a sibling of its source and carries its name.** `CreateCardScreen.tsx`
+  is tested by `CreateCardScreen.test.tsx` in the same folder — the same pairing
+  [src/features/CLAUDE.md](src/features/CLAUDE.md) already requires for
+  `*.styles.ts`.
+- **One allowed form: `.test.ts` / `.test.tsx`.** Not `.tests.`, not `.spec.`, not
+  `.test.js`. Enforced by `testMatch` in [jest.config.js](jest.config.js) — anything
+  else is not collected at all.
+- **Three allowed places:** anywhere under `src/`, anywhere under `scripts/`, and the
+  repository root itself (where `App.test.tsx` sits beside `App.tsx`).
+- **No underscored jest directories.** No `__tests__/`, no `__mocks__/`. Fixture data
+  that ordinary code imports lives in a plainly named folder next to its consumer.
+- **Shared harness lives in [test/](test/CLAUDE.md)** — factories, repository doubles,
+  the test-database helper, jest setup. It contains no tests. Product code importing
+  from it is a lint error.
+- **Repository tests run against a real database**, one throwaway instance per test
+  case, built from the product schema. Everything above the repository layer takes
+  injected doubles instead.
+
+Because a misnamed file is silently *not collected* rather than red, `npm run lint`
+also runs a guard that fails on a test outside the allowed form or place, and fails
+if it finds no tests at all.
 
 ## Definition of Done
 
@@ -178,10 +218,12 @@ These rules apply across every `.ts` / `.tsx` file in the project.
 | Sync | [src/services/sync/CLAUDE.md](src/services/sync/CLAUDE.md) | TransactionSyncService behavior |
 | Categorization | [src/services/categorization/CLAUDE.md](src/services/categorization/CLAUDE.md) | Resolution precedence, batch API |
 | Design system | [src/shared/ui/CLAUDE.md](src/shared/ui/CLAUDE.md) | Screen, Header, Icon, UI state patterns |
+| Test harness | [test/CLAUDE.md](test/CLAUDE.md) | Shared factories, doubles, test database, jest setup |
 | Theme tokens | [src/shared/theme/CLAUDE.md](src/shared/theme/CLAUDE.md) | Token usage rules |
 | Validation | [src/shared/validation/CLAUDE.md](src/shared/validation/CLAUDE.md) | Yup schema location |
 | Global stores | [src/stores/CLAUDE.md](src/stores/CLAUDE.md) | Cross-feature Zustand stores |
 | AI SDLC / OpenSpec | [openspec/config.yaml](openspec/config.yaml) · `/sdlc:commit` | Spec-driven workflow, per-artifact rules, per-phase commit convention |
+| Trello board | [.claude/skills/trello-card/SKILL.md](.claude/skills/trello-card/SKILL.md) | Card name, labels, description sections, checklists, ticket numbering |
 
 <!-- aif:begin — managed by ai-foundry; edits inside are overwritten -->
 @.aif/foundry.md

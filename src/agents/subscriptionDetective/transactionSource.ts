@@ -1,5 +1,5 @@
 import type { NormalizedTransaction, RawTransaction } from './types';
-import Transactions from './__mocks__/mock_transactions.json';
+import Transactions from './fixtures/mock_transactions.json';
 
 /**
  * Returns expenses (outflows) from the MOCK dataset that fall within the given

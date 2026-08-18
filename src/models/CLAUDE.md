@@ -29,3 +29,22 @@ Canonical examples: [cards/CardsRepository.ts](cards/CardsRepository.ts), [trans
 - **IDs and timestamps are generated at creation time** by the repository, not by the database.
 - **Define a `CreateXxxInput` (or similar) type** for create methods rather than passing wide objects — see `CreateCardInput` in [cards/CardsRepository.ts](cards/CardsRepository.ts).
 - **Batch operations belong on the repository.** If a store action calls a repository in a loop, add a batch method instead (e.g. `upsertBatch`, `upsertMonobankCards`).
+
+## Testing
+
+Repositories are tested against a **real database**, not a mock: they are the layer
+whose whole job is talking to WatermelonDB, so a mocked database would leave nothing
+worth asserting. Use `createTestDatabase` from [../../test/db](../../test/CLAUDE.md) —
+one throwaway in-memory instance per test case, built from the product schema.
+
+The repository reaches the database through a module singleton, so a test points it at
+the throwaway instance by replacing `src/services/database/database` — not the barrel,
+which also re-exports the schema and model classes the helper needs. Canonical example:
+[cards/CardsRepository.test.ts](cards/CardsRepository.test.ts).
+
+Cover the happy path of every contract method plus the two cases that are easy to miss:
+an empty table, and a lookup that finds nothing. `findById` and
+`findByMonobankAccountId` resolve `null` when there is no match — they do not reject.
+
+Honest limit: these run on LokiJS, the adapter jest uses, not the SQLite adapter the
+app ships with. They prove repository logic, not production adapter behaviour.
