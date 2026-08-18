@@ -1,6 +1,5 @@
 import React from 'react';
-import TestRenderer, { act } from 'react-test-renderer';
-import type { ReactTestInstance } from 'react-test-renderer';
+import { render, screen, within } from '@testing-library/react-native';
 import type { Transaction } from '../../domain/transactions';
 
 // Test knob: the whole view-model is stubbed so the screen can be driven with
@@ -78,101 +77,72 @@ const baseVm = (): typeof mockVm => ({
   dismissMonthFilter: jest.fn(),
 });
 
-let renderer: TestRenderer.ReactTestRenderer;
-
-const render = (): ReactTestInstance => {
-  act(() => {
-    renderer = TestRenderer.create(
-      <ThemeProvider>
-        <TransactionsScreen />
-      </ThemeProvider>,
-    );
-  });
-  return renderer.root;
+const renderScreen = async (): Promise<void> => {
+  await render(
+    <ThemeProvider>
+      <TransactionsScreen />
+    </ThemeProvider>,
+  );
 };
-
-const stringChildren = (node: ReactTestInstance): string[] =>
-  node
-    .findAll(n => typeof n.props.children === 'string')
-    .map(n => n.props.children as string);
-
-const findByTestId = (
-  node: ReactTestInstance,
-  testID: string,
-): ReactTestInstance[] => node.findAll(n => n.props.testID === testID);
 
 beforeEach(() => {
   mockVm = baseVm();
 });
 
 describe('TransactionsScreen filter chips', () => {
-  it('renders the category name in the category chip', () => {
+  it('renders the category name in the category chip', async () => {
     // AC-006
     mockVm.categoryChipLabel = 'Groceries';
 
-    const root = render();
+    await renderScreen();
 
-    expect(stringChildren(root)).toContain('Groceries');
+    expect(screen.getByText('Groceries')).toBeTruthy();
   });
 
-  it('renders the four-digit year in the month chip', () => {
+  it('renders the four-digit year in the month chip', async () => {
     // AC-007
     mockVm.monthChipLabel = 'Aug 2026';
 
-    const root = render();
+    await renderScreen();
 
-    const chip = findByTestId(root, 'filter-chip-month')[0];
-    const texts = chip ? stringChildren(chip) : [];
-    expect(texts.some(t => t.includes('2026'))).toBe(true);
+    const chip = screen.getByTestId('filter-chip-month');
+    expect(within(chip).getByText(/2026/)).toBeTruthy();
   });
 
-  it('places the category chip first in the chip row', () => {
+  it('places the category chip first in the chip row', async () => {
     // AC-008
     mockVm.categoryChipLabel = 'Groceries';
     mockVm.monthChipLabel = 'Aug 2026';
 
-    const root = render();
+    await renderScreen();
 
-    const row = findByTestId(root, 'transactions-filter-chips')[0];
-    const order = row
-      ? row
-          .findAll(
-            n =>
-              typeof n.type === 'string' &&
-              typeof n.props.testID === 'string' &&
-              n.props.testID.startsWith('filter-chip-'),
-          )
-          .map(n => n.props.testID as string)
-      : [];
+    const row = screen.getByTestId('transactions-filter-chips');
+    const order = within(row)
+      .getAllByTestId(/^filter-chip-/)
+      .map(node => node.props.testID as string);
     expect(order.indexOf('filter-chip-category')).toBe(0);
   });
 });
 
 describe('TransactionsScreen filtered empty state', () => {
-  it('shows the filtered empty-state copy when a filter matches nothing', () => {
+  it('shows the filtered empty-state copy when a filter matches nothing', async () => {
     // AC-012
     mockVm.filteredTransactions = [];
     mockVm.categoryChipLabel = 'Groceries';
 
-    const root = render();
+    await renderScreen();
 
-    expect(
-      stringChildren(root).some(t =>
-        t.includes('No transactions match this'),
-      ),
-    ).toBe(true);
+    expect(screen.getByText(/No transactions match this/)).toBeTruthy();
   });
 
-  it('keeps the category chip visible while the filtered list is empty', () => {
+  it('keeps the category chip visible while the filtered list is empty', async () => {
     // AC-013
     mockVm.filteredTransactions = [];
     mockVm.categoryChipLabel = 'Groceries';
 
-    const root = render();
+    await renderScreen();
 
-    const row = findByTestId(root, 'transactions-filter-chips')[0];
-    const hasCategoryChip =
-      !!row && findByTestId(row, 'filter-chip-category').length > 0;
-    expect(hasCategoryChip).toBe(true);
+    const row = screen.getByTestId('transactions-filter-chips');
+    expect(within(row).getByTestId('filter-chip-category')).toBeTruthy();
   });
 });

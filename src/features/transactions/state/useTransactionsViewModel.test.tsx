@@ -1,5 +1,6 @@
-import React from 'react';
-import TestRenderer, { act } from 'react-test-renderer';
+import type React from 'react';
+import { act, renderHook } from '@testing-library/react-native';
+import type { RenderHookResult } from '@testing-library/react-native';
 import type { Transaction } from '../../../domain/transactions';
 import { makeTransaction } from '../../../../test/factories';
 
@@ -87,31 +88,22 @@ const makeTx = (id: string, over: Partial<Transaction> = {}): Transaction =>
     ...over,
   });
 
-const vmRef: { current: ViewModel | undefined } = { current: undefined };
-
-const Host = (): null => {
-  vmRef.current = useTransactionsViewModel() as ViewModel;
-  return null;
-};
-
-let renderer: TestRenderer.ReactTestRenderer;
+// The hook resolves categories asynchronously, so every render is flushed inside
+// `act` before a test reads the view-model back.
+let hook: RenderHookResult<ViewModel, void>;
 
 const renderVM = async (): Promise<void> => {
-  await act(async () => {
-    renderer = TestRenderer.create(<Host />);
-  });
+  hook = await renderHook(() => useTransactionsViewModel() as ViewModel);
 };
 
 const refocus = async (): Promise<void> => {
   mockEnv.focusTick += 1;
-  await act(async () => {
-    renderer.update(<Host />);
-  });
+  await hook.rerender(undefined);
 };
 
 const vm = (): ViewModel => {
-  if (!vmRef.current) throw new Error('view-model not rendered');
-  return vmRef.current;
+  if (!hook?.result.current) throw new Error('view-model not rendered');
+  return hook.result.current;
 };
 
 beforeEach(() => {
@@ -124,7 +116,6 @@ beforeEach(() => {
     syncFromMonobank: jest.fn(),
     setParams: jest.fn(),
   };
-  vmRef.current = undefined;
 });
 
 describe('useTransactionsViewModel filtering', () => {

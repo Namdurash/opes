@@ -3,7 +3,7 @@
  */
 
 import React from 'react';
-import ReactTestRenderer from 'react-test-renderer';
+import { act, render } from '@testing-library/react-native';
 import type { Database } from '@nozbe/watermelondb';
 import { createTestDatabase } from './test/db';
 
@@ -56,17 +56,12 @@ const waitForBootstrap = (): Promise<void> =>
   });
 
 test('renders correctly', async () => {
-  let tree!: ReturnType<typeof ReactTestRenderer.create>;
+  await render(<App />);
 
-  await ReactTestRenderer.act(async () => {
-    tree = ReactTestRenderer.create(<App />);
-  });
-
-  await ReactTestRenderer.act(async () => {
+  await act(async () => {
     await waitForBootstrap();
   });
 
-  await ReactTestRenderer.act(async () => {
-    tree.unmount();
-  });
+  // No explicit unmount: RNTL cleans up after every test, which is also what
+  // keeps the bootstrap's database work from running after teardown.
 });
