@@ -290,6 +290,38 @@
       "seq": 18,
       "at": "2026-08-18T11:45:44Z",
       "prev": "adad8bb0df0ab45959ecfa90bbba6ce931a0ba2ccbbe91d3c75fe2f75d930a6a"
+    },
+    {
+      "station": "plan-judge",
+      "attempt": 2,
+      "agent": "aif-plan-judge",
+      "agent_id": "ad879c3b9931f27a3",
+      "model": "claude-sonnet-5",
+      "usage": {
+        "input_tokens": 5857,
+        "output_tokens": 6970,
+        "cache_read_input_tokens": 579793,
+        "cache_creation_input_tokens": 91430
+      },
+      "num_turns": 14,
+      "cost_usd": null,
+      "cost_source": "tokens-only",
+      "result": "ran",
+      "summary": "## Verdict: PASS — empty guesses, empty missing_files, all 5 flagged criteria adjudicated `intended`",
+      "seq": 19,
+      "at": "2026-08-18T11:54:48Z",
+      "prev": "1d73d926243991b13caffeea60eb2a5a35f99812cbb0f5e5447164de1c2b1d0a"
+    },
+    {
+      "gate": "plan-judge",
+      "result": "pass",
+      "subject": "verdict-plan.json",
+      "subject_sha256": "89f1c2bcef4bc3db0381af69a83ae8c0c44d4219f16a4a4745b381ef271093b3",
+      "gate_sha256": "59675a1bad164f7ab3c03f8c0367a946515f818c47fbd318ef4f6aca3cf6f773",
+      "reason": "plan-judge: nothing left to guess, manifest covers the work, 5 surface flag(s) adjudicated as intended",
+      "seq": 20,
+      "at": "2026-08-18T11:55:03Z",
+      "prev": "43fbe17adcf97bc40c89dd95047977dcb27dc288ff9c5cb29926d40330af8b6d"
     }
   ],
   "accepted_at": null
