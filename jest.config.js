@@ -10,10 +10,6 @@ module.exports = {
   // in the Haste map. modulePathIgnorePatterns rather than testPathIgnorePatterns,
   // because two of the three symptoms came from module scanning, not test collection.
   modulePathIgnorePatterns: ['/\\.claude/'],
-  // Native shims (reanimated/worklets timers, watermelondb loki worker) leave open
-  // handles that keep jest from exiting; force exit once the suites finish so
-  // `npm test` (the Definition-of-Done gate) doesn't hang.
-  forceExit: true,
   // Stub static .svg asset imports. react-native-svg-transformer turns these
   // into components under Metro, but jest has no such transform.
   moduleNameMapper: {

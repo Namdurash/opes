@@ -10,6 +10,11 @@ import {
 import { databaseMigrations } from '../../src/services/database/migrations';
 import { databaseSchema } from '../../src/services/database/schema';
 
+/** The bit of the non-worker LokiJS adapter's innards teardown needs. */
+interface LokiDriver {
+  loki?: { close: (onDone: () => void) => void };
+}
+
 export interface TestDatabase {
   database: Database;
   teardown: () => Promise<void>;
@@ -62,10 +67,23 @@ export const createTestDatabase = (): TestDatabase => {
   });
 
   const teardown = async (): Promise<void> => {
-    // Drop every row and let the adapter release its Loki handles, so the run
-    // can exit on its own rather than being cut short by `forceExit`.
     await database.write(async () => {
       await database.unsafeResetDatabase();
+    });
+
+    // Dropping the rows is not enough to let the process exit. WatermelonDB
+    // starts Loki with `autosave: true, autosaveInterval: 500`, and that
+    // setInterval keeps the event loop alive for the rest of the run — it is the
+    // handle that made `forceExit: true` necessary in the first place.
+    // `loki.close()` disables autosave and drains the save queue; reaching it
+    // through `_driver` is the same route the adapter's own `testClone` takes.
+    const driver = (adapter as unknown as { _driver?: LokiDriver })._driver;
+    await new Promise<void>(resolve => {
+      if (!driver?.loki) {
+        resolve();
+        return;
+      }
+      driver.loki.close(() => resolve());
     });
   };
 

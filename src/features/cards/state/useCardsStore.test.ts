@@ -1,3 +1,16 @@
+// The store's module graph reaches the WatermelonDB singleton through the cards
+// repository, and merely importing it opens a real Loki database whose autosave
+// interval keeps the whole run alive. Every test here injects its own repository,
+// so the singleton is never used — only constructed. Refuse to hand it out, so a
+// test that starts depending on it says so loudly.
+jest.mock('../../../services/database/database', () => ({
+  get database(): never {
+    throw new Error(
+      'useCardsStore tests inject their repositories; the real database must not be used',
+    );
+  },
+}));
+
 import { createCardsStore } from './useCardsStore';
 import { createCreateCardStore } from './useCreateCardStore';
 import { Card } from '../../../domain/cards';
