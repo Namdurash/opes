@@ -6,7 +6,7 @@
   "files": {
     "create": ["scripts/testConventionGuard.ts", "scripts/checkTestConvention.ts"],
     "change": ["package.json"],
-    "tests":  ["scripts/testConventionGuard.test.ts", "scripts/checkTestConvention.test.ts", "__tests__/App.test.tsx", "App.test.tsx"] },
+    "tests":  ["scripts/testConventionGuard.test.ts", "scripts/checkTestConvention.test.ts"] },
   "decisions": [
     { "id": "D-001",
       "statement": "Place the pure guard in scripts/testConventionGuard.ts exporting findTestConventionViolations(paths: string[]): string[] and a predicate isTestFile(path: string): boolean.",
@@ -36,9 +36,9 @@
       "statement": "Change the package.json lint script to \"eslint . && tsx scripts/checkTestConvention.ts\" so the guard runs inside npm run lint via the existing tsx.",
       "because": "the spec requires the guard wired into lint with no new dependency" },
     { "id": "D-012",
-      "statement": "Relocate the sole pre-existing violation __tests__/App.test.tsx to repo-root App.test.tsx, rewriting imports ../App to ./App and ../src to ./src, and remove the now-empty __tests__ directory.",
-      "because": "the newly wired guard must produce a green lint on the current tree",
-      "rejected": "do not migrate this test off react-test-renderer here — that is the manual RNTL work" } ],
+      "statement": "Touch no file other than scripts/testConventionGuard.ts, scripts/checkTestConvention.ts and package.json; the tracked tree is already convention-clean, so move, rename or delete nothing.",
+      "because": "the manual half of OPES-61 is already committed on this branch — no __tests__/, no __mocks__/, no .spec./.test.js path is tracked",
+      "rejected": "do not relocate or delete any existing test file to make the newly wired lint pass" } ],
   "ac_coverage": {
     "AC-001": ["scripts/testConventionGuard.ts"],
     "AC-002": ["scripts/testConventionGuard.ts"],
@@ -60,9 +60,9 @@
     "test-convention guard function": ["scripts/testConventionGuard.ts"],
     "test-convention guard CLI": ["scripts/checkTestConvention.ts", "package.json"] },
   "external": [
-    { "name": "git", "ac": "AC-011" },
-    { "name": "node:child_process", "ac": "AC-011" },
-    { "name": "node:process", "ac": "AC-013" } ] }
+    { "name": "git", "check": "lint" },
+    { "name": "node:child_process", "check": "lint" },
+    { "name": "node:process", "check": "lint" } ] }
 -->
 
 # OPES-61 — plan
@@ -82,11 +82,14 @@ POSIX-шляхів і повертає перелік порушень, не т�
 функцію і завершує процес: код 1 за наявних порушень (кожен друкує у stdout),
 код 1 коли жодного тест-файлу немає (`isTestFile`), код 1 за недоступного git,
 інакше код 0. CLI підключається у `npm run lint`:
-`eslint . && tsx scripts/checkTestConvention.ts`.
+`eslint . && tsx scripts/checkTestConvention.ts` — і саме цей запуск (check
+`lint` на фазі green) звіряє звернення до git, `node:child_process` і кодів
+виходу з реальними, а не з підробкою.
 
-Щоб щойно підключений гард давав зелений lint на поточному дереві, єдине наявне
-порушення `__tests__/App.test.tsx` переноситься в корінь як `App.test.tsx` з
-виправленням відносних імпортів; порожня тека `__tests__` вилучається. Уся інша
-робота тікета (jest-ізоляція, корінь `test/`, міграція на RNTL, фабрики, дублери,
-тестова база, пілот `CardsRepository`) — поза машинним обсягом і зафіксована у
-verification_gaps специфікації.
+Ручна половина тікета вже закомічена на гілці `chore/opes-61-unit-testing-architecture`:
+теки `__tests__/` немає, `App.test.tsx` лежить у корені й переведений на RNTL,
+`__mocks__` агента перейменовано на `fixtures`. Тому дерево, яке побачить
+щойно підключений гард, уже чисте — переносити, перейменовувати чи видаляти
+нічого не треба (D-012). Решта роботи тікета (jest-ізоляція, корінь `test/`,
+фабрики, дублери, тестова база, пілот `CardsRepository`) — поза машинним
+обсягом і зафіксована у verification_gaps специфікації.
