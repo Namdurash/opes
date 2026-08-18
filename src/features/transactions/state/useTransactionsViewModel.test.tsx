@@ -1,6 +1,7 @@
 import React from 'react';
 import TestRenderer, { act } from 'react-test-renderer';
 import type { Transaction } from '../../../domain/transactions';
+import { makeTransaction } from '../../../../test/factories';
 
 // Test knobs. Held on a `var` (hoisted) so the hoisted jest.mock factories can
 // close over it; every factory only *reads* it at render time, by which point
@@ -75,21 +76,16 @@ type ViewModel = ReturnType<typeof useTransactionsViewModel> & {
   dismissMonthFilter: () => void;
 };
 
-const makeTx = (id: string, over: Partial<Transaction> = {}): Transaction => ({
-  id,
-  title: id,
-  amount: -100,
-  type: 'expense',
-  occurredAtIso: '2026-08-10T12:00:00+00:00',
-  cardId: 'card-1',
-  mcc: 5411,
-  currencyCode: 980,
-  currencySymbol: '₴',
-  balance: 0,
-  hold: false,
-  comment: null,
-  ...over,
-});
+// Only what this suite asserts on differs from the shared default; the title
+// doubles as the id so a filtered result can be read back by name.
+const makeTx = (id: string, over: Partial<Transaction> = {}): Transaction =>
+  makeTransaction({
+    id,
+    title: id,
+    occurredAtIso: '2026-08-10T12:00:00+00:00',
+    currencySymbol: '₴',
+    ...over,
+  });
 
 const vmRef: { current: ViewModel | undefined } = { current: undefined };
 

@@ -1,21 +1,10 @@
 import { computeDonationStats } from './utils';
 import type { Transaction } from '../../domain/transactions';
+import { makeTransaction } from '../../../test/factories';
 
-const makeTx = (overrides: Partial<Transaction> = {}): Transaction => ({
-  id: 'tx-1',
-  title: 'Донат ЗСУ',
-  amount: -100,
-  type: 'expense',
-  occurredAtIso: '2026-05-01T10:00:00.000Z',
-  cardId: 'card-1',
-  mcc: 4829,
-  currencyCode: 980,
-  currencySymbol: 'UAH',
-  balance: 0,
-  hold: false,
-  comment: null,
-  ...overrides,
-});
+// Only what this suite asserts on differs from the shared default.
+const makeTx = (overrides: Partial<Transaction> = {}): Transaction =>
+  makeTransaction({ title: 'Донат ЗСУ', mcc: 4829, ...overrides });
 
 describe('computeDonationStats', () => {
   it('returns zeroes for an empty list', () => {

@@ -3,7 +3,7 @@ module.exports = {
   // Resolve react-native-worklets to its non-native build under jest, so reanimated v4
   // (pulled in via @gorhom/bottom-sheet) doesn't crash on "Worklets native not initialized".
   resolver: '<rootDir>/node_modules/react-native-worklets/jest/resolver.js',
-  setupFiles: ['<rootDir>/jest.setup.js'],
+  setupFiles: ['<rootDir>/test/setup.js'],
   // Keep git-external trees out of jest entirely. `.claude/worktrees/` holds whole
   // checkouts that `.git/info/exclude` hides from git but jest happily scanned: their
   // suites ran beside the real ones, and their package.json / __mocks__ shadowed ours
