@@ -88,6 +88,15 @@ Co-Authored-By: Claude Opus 4.8 <noreply@anthropic.com>
 
 Run `/sdlc:commit` to commit the current phase — it resolves the ticket from `proposal.md`, runs the Definition of Done, stages the right files, and writes the message.
 
+## Trello board
+
+Work is tracked on the [Opes board](https://trello.com/b/OpgSv5wd/opes). Two rules bind here; the full card format lives in the `trello-card` skill, which loads when you actually need it.
+
+- **Every card follows the board's format** — `OPES-NN · kebab-slug`, labels on the area / size / priority axes, the standard description sections, and checklists ending in a `Tests` group. Invoke the `trello-card` skill before creating or updating a card; do not improvise a shape.
+- **Ticket numbers come from the board, never from `git log`.** The board runs ahead of the commit history because cards exist long before code does. Take the highest `OPES-NN` across *all* lists and add one — deriving it from `git log` collides with a card that already owns that number.
+
+Lists are workflow phase: **Todo → In Progress → Blocked → Review / QA → Done**.
+
 ## Commands
 
 ```sh
@@ -182,6 +191,7 @@ These rules apply across every `.ts` / `.tsx` file in the project.
 | Validation | [src/shared/validation/CLAUDE.md](src/shared/validation/CLAUDE.md) | Yup schema location |
 | Global stores | [src/stores/CLAUDE.md](src/stores/CLAUDE.md) | Cross-feature Zustand stores |
 | AI SDLC / OpenSpec | [openspec/config.yaml](openspec/config.yaml) · `/sdlc:commit` | Spec-driven workflow, per-artifact rules, per-phase commit convention |
+| Trello board | [.claude/skills/trello-card/SKILL.md](.claude/skills/trello-card/SKILL.md) | Card name, labels, description sections, checklists, ticket numbering |
 
 <!-- aif:begin — managed by ai-foundry; edits inside are overwritten -->
 @.aif/foundry.md
