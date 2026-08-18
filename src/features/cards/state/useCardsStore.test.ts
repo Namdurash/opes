@@ -13,41 +13,16 @@ jest.mock('../../../services/database/database', () => ({
 
 import { createCardsStore } from './useCardsStore';
 import { createCreateCardStore } from './useCreateCardStore';
-import { Card } from '../../../domain/cards';
-
-const makeCard = (overrides: Partial<Card> = {}): Card => ({
-  id: 'card-1',
-  userId: 'user-1',
-  title: 'Test',
-  moneyAmount: 100,
-  type: 'storage',
-  image: null,
-  createdAt: 1,
-  sortOrder: 0,
-  monobankAccountId: null,
-  currencyCode: null,
-  currencySymbol: null,
-  iban: null,
-  maskedPan: null,
-  creditLimit: null,
-  monobankBalance: null,
-  ...overrides,
-});
+import type { Card } from '../../../domain/cards';
+import { makeCard } from '../../../../test/factories';
+import { makeCardsRepositoryStub } from '../../../../test/doubles';
 
 describe('createCardsStore', () => {
   it('loads cards for a user', async () => {
     const cards: Card[] = [makeCard({ id: 'card-1', title: 'Credit', type: 'credit', image: 'file:///tmp/card.png' })];
-    const repository = {
+    const repository = makeCardsRepositoryStub({
       getCardsByUser: jest.fn().mockResolvedValue(cards),
-      createCard: jest.fn(),
-      reorderCards: jest.fn(),
-      findByMonobankAccountId: jest.fn(),
-      upsertMonobankCards: jest.fn(),
-      getMonobankCards: jest.fn(),
-      findById: jest.fn(),
-      updateCard: jest.fn(),
-      deleteCard: jest.fn(),
-    };
+    });
     const store = createCardsStore({ cardsRepository: repository });
 
     await store.getState().loadCardsByUser('user-1');
@@ -58,17 +33,9 @@ describe('createCardsStore', () => {
 
   it('appends a card to the list', () => {
     const existing = makeCard({ id: 'existing', title: 'Savings', moneyAmount: 300, sortOrder: 0 });
-    const repository = {
+    const repository = makeCardsRepositoryStub({
       getCardsByUser: jest.fn().mockResolvedValue([existing]),
-      createCard: jest.fn(),
-      reorderCards: jest.fn(),
-      findByMonobankAccountId: jest.fn(),
-      upsertMonobankCards: jest.fn(),
-      getMonobankCards: jest.fn(),
-      findById: jest.fn(),
-      updateCard: jest.fn(),
-      deleteCard: jest.fn(),
-    };
+    });
     const store = createCardsStore({ cardsRepository: repository });
     store.setState({ cards: [existing] });
 
@@ -83,17 +50,9 @@ describe('createCardsStore', () => {
       makeCard({ id: 'a', sortOrder: 0 }),
       makeCard({ id: 'b', sortOrder: 1 }),
     ];
-    const repository = {
-      getCardsByUser: jest.fn(),
-      createCard: jest.fn(),
+    const repository = makeCardsRepositoryStub({
       reorderCards: jest.fn().mockRejectedValue(new Error('DB error')),
-      findByMonobankAccountId: jest.fn(),
-      upsertMonobankCards: jest.fn(),
-      getMonobankCards: jest.fn(),
-      findById: jest.fn(),
-      updateCard: jest.fn(),
-      deleteCard: jest.fn(),
-    };
+    });
     const store = createCardsStore({ cardsRepository: repository });
     store.setState({ cards });
 
@@ -106,17 +65,9 @@ describe('createCardsStore', () => {
   it('optimistically updates a card and reconciles with the repository result', async () => {
     const original = makeCard({ id: 'a', title: 'Old', moneyAmount: 100 });
     const persisted = makeCard({ id: 'a', title: 'New', moneyAmount: 250 });
-    const repository = {
-      getCardsByUser: jest.fn(),
-      createCard: jest.fn(),
-      reorderCards: jest.fn(),
-      findByMonobankAccountId: jest.fn(),
-      upsertMonobankCards: jest.fn(),
-      getMonobankCards: jest.fn(),
-      findById: jest.fn(),
+    const repository = makeCardsRepositoryStub({
       updateCard: jest.fn().mockResolvedValue(persisted),
-      deleteCard: jest.fn(),
-    };
+    });
     const store = createCardsStore({ cardsRepository: repository });
     store.setState({ cards: [original] });
 
@@ -129,17 +80,9 @@ describe('createCardsStore', () => {
 
   it('rolls back the card on updateCard failure', async () => {
     const original = makeCard({ id: 'a', title: 'Old', moneyAmount: 100 });
-    const repository = {
-      getCardsByUser: jest.fn(),
-      createCard: jest.fn(),
-      reorderCards: jest.fn(),
-      findByMonobankAccountId: jest.fn(),
-      upsertMonobankCards: jest.fn(),
-      getMonobankCards: jest.fn(),
-      findById: jest.fn(),
+    const repository = makeCardsRepositoryStub({
       updateCard: jest.fn().mockRejectedValue(new Error('DB error')),
-      deleteCard: jest.fn(),
-    };
+    });
     const store = createCardsStore({ cardsRepository: repository });
     store.setState({ cards: [original] });
 
@@ -152,17 +95,9 @@ describe('createCardsStore', () => {
 
   it('optimistically removes a card on deleteCard', async () => {
     const cards = [makeCard({ id: 'a' }), makeCard({ id: 'b' })];
-    const repository = {
-      getCardsByUser: jest.fn(),
-      createCard: jest.fn(),
-      reorderCards: jest.fn(),
-      findByMonobankAccountId: jest.fn(),
-      upsertMonobankCards: jest.fn(),
-      getMonobankCards: jest.fn(),
-      findById: jest.fn(),
-      updateCard: jest.fn(),
+    const repository = makeCardsRepositoryStub({
       deleteCard: jest.fn().mockResolvedValue(undefined),
-    };
+    });
     const store = createCardsStore({ cardsRepository: repository });
     store.setState({ cards });
 
@@ -174,17 +109,9 @@ describe('createCardsStore', () => {
 
   it('rolls back the removed card on deleteCard failure', async () => {
     const cards = [makeCard({ id: 'a' }), makeCard({ id: 'b' })];
-    const repository = {
-      getCardsByUser: jest.fn(),
-      createCard: jest.fn(),
-      reorderCards: jest.fn(),
-      findByMonobankAccountId: jest.fn(),
-      upsertMonobankCards: jest.fn(),
-      getMonobankCards: jest.fn(),
-      findById: jest.fn(),
-      updateCard: jest.fn(),
+    const repository = makeCardsRepositoryStub({
       deleteCard: jest.fn().mockRejectedValue(new Error('DB error')),
-    };
+    });
     const store = createCardsStore({ cardsRepository: repository });
     store.setState({ cards });
 
@@ -198,17 +125,9 @@ describe('createCardsStore', () => {
 describe('createCreateCardStore', () => {
   it('creates a card with form values and resets the store', async () => {
     const createdCard = makeCard({ id: 'new-card', title: 'Salary', type: 'salary', moneyAmount: 1200, sortOrder: 0 });
-    const repository = {
-      getCardsByUser: jest.fn(),
+    const repository = makeCardsRepositoryStub({
       createCard: jest.fn().mockResolvedValue(createdCard),
-      reorderCards: jest.fn(),
-      findByMonobankAccountId: jest.fn(),
-      upsertMonobankCards: jest.fn(),
-      getMonobankCards: jest.fn(),
-      findById: jest.fn(),
-      updateCard: jest.fn(),
-      deleteCard: jest.fn(),
-    };
+    });
     const store = createCreateCardStore({ cardsRepository: repository });
 
     store.getState().setType('salary');
@@ -228,17 +147,9 @@ describe('createCreateCardStore', () => {
 
   it('passes the selected image URI to card creation', async () => {
     const createdCard = makeCard({ id: 'new-card', title: 'Main', moneyAmount: 500, image: 'content://media/external/images/media/1' });
-    const repository = {
-      getCardsByUser: jest.fn(),
+    const repository = makeCardsRepositoryStub({
       createCard: jest.fn().mockResolvedValue(createdCard),
-      reorderCards: jest.fn(),
-      findByMonobankAccountId: jest.fn(),
-      upsertMonobankCards: jest.fn(),
-      getMonobankCards: jest.fn(),
-      findById: jest.fn(),
-      updateCard: jest.fn(),
-      deleteCard: jest.fn(),
-    };
+    });
     const store = createCreateCardStore({ cardsRepository: repository });
 
     store.getState().setImage('content://media/external/images/media/1');
@@ -255,17 +166,9 @@ describe('createCreateCardStore', () => {
   });
 
   it('returns null and sets error on repository failure', async () => {
-    const repository = {
-      getCardsByUser: jest.fn(),
+    const repository = makeCardsRepositoryStub({
       createCard: jest.fn().mockRejectedValue(new Error('DB error')),
-      reorderCards: jest.fn(),
-      findByMonobankAccountId: jest.fn(),
-      upsertMonobankCards: jest.fn(),
-      getMonobankCards: jest.fn(),
-      findById: jest.fn(),
-      updateCard: jest.fn(),
-      deleteCard: jest.fn(),
-    };
+    });
     const store = createCreateCardStore({ cardsRepository: repository });
 
     const created = await store.getState().createCard('user-1', { title: 'Test', moneyAmount: '100' });
