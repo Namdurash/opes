@@ -274,6 +274,59 @@
       "seq": 17,
       "at": "2026-08-18T15:03:19Z",
       "prev": "9c38fb6f6468fb8a1f705e16b09d23130749f0d26a3c05b03e4d40bcc5896853"
+    },
+    {
+      "station": "plan-judge",
+      "attempt": 1,
+      "agent": "aif-plan-judge",
+      "agent_id": "aaf3966986885bebd",
+      "model": "claude-sonnet-5",
+      "usage": {
+        "input_tokens": 90,
+        "output_tokens": 8914,
+        "cache_read_input_tokens": 4352984,
+        "cache_creation_input_tokens": 174578
+      },
+      "num_turns": 45,
+      "cost_usd": null,
+      "cost_source": "tokens-only",
+      "result": "ran",
+      "summary": "## Summary",
+      "seq": 18,
+      "at": "2026-08-18T15:19:00Z",
+      "prev": "400e1f03d24609ddf0c2c6db909e25e36d7428112c292b0e633a4528de7e7e57"
+    },
+    {
+      "gate": "plan-judge",
+      "result": "fail",
+      "subject": "verdict-plan.json",
+      "subject_sha256": "0dc61e5dd7e6792a13291a6f9c55a78296a34b9ad607e36bbef88568096c697f",
+      "gate_sha256": "59675a1bad164f7ab3c03f8c0367a946515f818c47fbd318ef4f6aca3cf6f773",
+      "reason": "REJECT plan.md: the implementer would have to guess in 1 place(s)",
+      "seq": 19,
+      "at": "2026-08-18T15:19:08Z",
+      "prev": "9bd766ae780fb30ae7b9a5670d25585e7d4a87de91896ced9a5cb9234042f178"
+    },
+    {
+      "station": "plan",
+      "attempt": 2,
+      "agent": "aif-plan",
+      "agent_id": "a2a8b3a0f43625437",
+      "model": "claude-opus-5",
+      "usage": {
+        "input_tokens": 14,
+        "output_tokens": 23,
+        "cache_read_input_tokens": 196350,
+        "cache_creation_input_tokens": 43785
+      },
+      "num_turns": 7,
+      "cost_usd": null,
+      "cost_source": "tokens-only",
+      "result": "ran",
+      "summary": "Fixed with resolution (b) — removed the flag rather than inventing an unasserted busy state.",
+      "seq": 20,
+      "at": "2026-08-18T15:22:09Z",
+      "prev": "96cd9f425fb8f7f143e440a36c843a0a9ca8a6e6777a259f4bf62344e7f49e1b"
     }
   ],
   "accepted_at": null
