@@ -135,3 +135,8 @@ VG-002 bundles three different things:
 Point 2 is precisely where the cost of error is irreversible, and it needs no device. The reason the hole exists is that database.ts takes the LokiJS branch under jest, so the SQLite branch never executes in tests at all. Extract the adapter's option-building into a pure function and an in-process test pins that dbName comes from resolveDatabaseName() — which collapses VG-002 down to point 3 alone, i.e. to somebody else's contract.
 
 Add one more criterion on the adapter options: for a non-sandbox build, dbName in the options equals opes. Then restate VG-002 so it honestly covers only "SQLite on a device honours dbName", and that remainder is accepted without discomfort.
+- Assumptions accepted, including AS-019 and the ceiling trade. All twelve verification gaps accepted.
+
+One change requested: reseed AC-012 so it establishes that a reset wipes users, since without it a reset that leaves the onboarding flag intact passes the entire suite while dumping the user on Home. That is a rewrite, not an addition, so the ceiling holds; if it does turn into a sixteenth criterion, drop AC-014 as subsumed by AC-011.
+
+Carried forward into the plan: VG-003's boundedness is a constraint on the device branch.
