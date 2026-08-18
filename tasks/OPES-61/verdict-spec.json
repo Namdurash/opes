@@ -1,0 +1,18 @@
+{ "schema": 1,
+  "gate": "spec-judge",
+  "subject": "spec.md",
+  "subject_sha256": "a2085115ed5ca149591e50bf5bc25dd13a7de1b026dc09764b48da30052f0eb4",
+  "judge_agent": "aif-spec-judge",
+  "at": "2026-08-18T12:00:00Z",
+  "pass": true,
+  "checked": [
+    "AC-001..AC-003 and AC-010 against the spec's allowed-form rule (.test.ts(x) under src/, scripts/, or repo root) — each returns 0 violations, single numeric assertion",
+    "AC-004 (money.spec.ts + money.tests.ts -> length 2) — single assertion, correctly attributable",
+    "AC-005..AC-008 (.test.js, .test.jsx, __tests__/, __mocks__/) against the 'Що є порушенням' list — each 'contains that path', exact-string expect",
+    "AC-009 (e2e/flow.test.ts a violation while scripts/ and root valid) against 'test poza dozvolenym miscem' rule",
+    "AC-011..AC-015 CLI exit-code and stdout criteria against 'Вивід'/'Форма' sections and AS-001 (exit 1 for every failure mode incl. empty tree and missing git)",
+    "assumptions AS-001..AS-005 tested for the verification-limit trap — all describe system behavior, none say 'not exercised/proven here'",
+    "verification_gaps VG-001..VG-008 confirmed to hold the verification-limit statements, incl. AS-003's git-tracked behavior vs VG-008's git-ignored limit, and VG-007 LokiJS-vs-device-adapter",
+    "ticket surfaces vs coverage: guard function+CLI covered by ACs; every other ticket surface recorded in verification_gaps or non_goals, and the machine-scope narrowing recorded in 'Обмеження виконання'"
+  ],
+  "findings": [] }

@@ -65,6 +65,49 @@
       "seq": 4,
       "at": "2026-08-18T08:42:51Z",
       "prev": "ac00dd2ff5dc2ec87d42173bf39d83ab7c1f4915d53910439e0a5ff076d9faf1"
+    },
+    {
+      "station": "spec-judge",
+      "attempt": 1,
+      "agent": "aif-spec-judge",
+      "agent_id": "a192918d506dc360e",
+      "model": "claude-opus-4-8",
+      "usage": {
+        "input_tokens": 6,
+        "output_tokens": 821,
+        "cache_read_input_tokens": 35839,
+        "cache_creation_input_tokens": 22841
+      },
+      "num_turns": 3,
+      "cost_usd": null,
+      "cost_source": "tokens-only",
+      "result": "ran",
+      "summary": "Verdict: **PASS** — no blockers.",
+      "seq": 5,
+      "at": "2026-08-18T08:44:23Z",
+      "prev": "e9f311abcbea95d780afd41ef8399a4c3fbd94a28533df479b291bac819ad8ea"
+    },
+    {
+      "gate": "spec-judge",
+      "result": "fail",
+      "subject": "verdict-spec.json",
+      "subject_sha256": "df81aac3a67636a18e4fcb00bc247cfb564158e08471d4898bc5224d20809686",
+      "gate_sha256": "512f7f3d5be85b1e0bd5dd488c40d78279b0eae2af132268c8591547e1dfaf35",
+      "reason": "REJECT verdict is for a different spec — it changed since it was judged; re-run the judge",
+      "seq": 6,
+      "at": "2026-08-18T08:44:31Z",
+      "prev": "f2d15c32dd3c56cd7c46fb7ee8350b1eb1537c51b6b7e7c0d5ca6ccf039caf77"
+    },
+    {
+      "gate": "spec-judge",
+      "result": "pass",
+      "subject": "verdict-spec.json",
+      "subject_sha256": "4d7ad2b62628207dfcea2f182fa832cdc4f0c51ec29ea79f9dd9221ec2f60d02",
+      "gate_sha256": "512f7f3d5be85b1e0bd5dd488c40d78279b0eae2af132268c8591547e1dfaf35",
+      "reason": "spec-judge: passed, no blockers",
+      "seq": 7,
+      "at": "2026-08-18T08:45:29Z",
+      "prev": "802198c2f990fd85d1f97abd3eb7109c48d737ffa5324e25daddc798d60c5ca6"
     }
   ],
   "accepted_at": null
