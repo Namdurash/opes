@@ -1,0 +1,44 @@
+{
+  "schema": 1,
+  "plan_sha256": "e47bb4b2ba76acfe71a579991193d07a5aaa455cce71b384019461047b4d91d7",
+  "mode": "per-test",
+  "at": "2026-08-18T12:51:05Z",
+  "tests": {
+    "scripts/checkTestConvention.test.ts": "5e6e7e16317a77db9ee45f46b6312e561a106fee44cf879c0656301783362627",
+    "scripts/testConventionGuard.test.ts": "2c3b1757fbd304b37a17acddc733eb96f06317c0def5d8deb85c914e1d0cf146",
+    "test/CLAUDE.md": "2239846ae20caf9ce773446592c28676be11ebb10a3eca37e1359bf3827d7b42",
+    "test/db/createTestDatabase.ts": "3980e511bdfadbf7191d2f9aacefe87acf2a1f72664bcf87b0c85c3472f256b9",
+    "test/db/index.ts": "72fd8c0649ae1635bd9d334f06bea079c466e7b34c554b3d6d02f74ce2790005",
+    "test/doubles/cardsRepository.ts": "951c699b99c1ebbf1c1ce804b9bca35352ef2e4273d849bcc324b051d2774195",
+    "test/doubles/index.ts": "2600505446129e2b078a94ebc0011386062c6c29dea8e09d805777baf8baab5a",
+    "test/factories/card.ts": "848ef38faae77d256265132657369a0398784c0bf9ba332de1d52bf2e070a511",
+    "test/factories/index.ts": "bdbfee3add31c224b058f925dd235b65b91ad6989097b9e9e46086e53115cf50",
+    "test/factories/transaction.ts": "8aaa65083d628bd14f5b3711ab860fc131a8d9142a419220b27beb2b93d3eca6",
+    "test/index.ts": "e6cabbb61f2984dcc29c2f16e3b86fef67c01ffb58767c10f063c69a405d43c4",
+    "test/setup.js": "d816ef0a8996f218d7cd0c8830d995613f8f6149eaf61b19bb2eb672e7a6f70e"
+  },
+  "covering": [
+    "checkTestConvention CLI exits 0 when every tracked test is in the allowed form (AC-011)::checkTestConvention CLI exits 0 when every tracked test is in the allowed form (AC-011)",
+    "checkTestConvention CLI exits 1 when a tracked test breaks the convention (AC-012)::checkTestConvention CLI exits 1 when a tracked test breaks the convention (AC-012)",
+    "checkTestConvention CLI prints every violating path, not only the first (AC-013)::checkTestConvention CLI prints every violating path, not only the first (AC-013)",
+    "checkTestConvention CLI exits 1 when the tree holds no test file at all (AC-014)::checkTestConvention CLI exits 1 when the tree holds no test file at all (AC-014)",
+    "checkTestConvention CLI exits 1 when git is unavailable (AC-015)::checkTestConvention CLI exits 1 when git is unavailable (AC-015)",
+    "findTestConventionViolations — the allowed form accepts a .test.ts nested under src/ (AC-001)::findTestConventionViolations — the allowed form accepts a .test.ts nested under src/ (AC-001)",
+    "findTestConventionViolations — the allowed form accepts App.test.tsx at the repository root (AC-002)::findTestConventionViolations — the allowed form accepts App.test.tsx at the repository root (AC-002)",
+    "findTestConventionViolations — the allowed form accepts a .test.ts nested under scripts/ (AC-003)::findTestConventionViolations — the allowed form accepts a .test.ts nested under scripts/ (AC-003)",
+    "findTestConventionViolations — the allowed form ignores a non-test source file (AC-010)::findTestConventionViolations — the allowed form ignores a non-test source file (AC-010)",
+    "findTestConventionViolations — the violating forms flags both .spec. and .tests. infixes (AC-004)::findTestConventionViolations — the violating forms flags both .spec. and .tests. infixes (AC-004)",
+    "findTestConventionViolations — the violating forms flags a .test.js (AC-005)::findTestConventionViolations — the violating forms flags a .test.js (AC-005)",
+    "findTestConventionViolations — the violating forms flags a .test.jsx (AC-006)::findTestConventionViolations — the violating forms flags a .test.jsx (AC-006)",
+    "findTestConventionViolations — the violating forms flags a correctly named test inside a __tests__ directory (AC-007)::findTestConventionViolations — the violating forms flags a correctly named test inside a __tests__ directory (AC-007)",
+    "findTestConventionViolations — the violating forms flags any file inside a __mocks__ directory (AC-008)::findTestConventionViolations — the violating forms flags any file inside a __mocks__ directory (AC-008)",
+    "findTestConventionViolations — the violating forms flags an allowed-name test outside every allowed location (AC-009)::findTestConventionViolations — the violating forms flags an allowed-name test outside every allowed location (AC-009)"
+  ],
+  "impl_frozen": {
+    "package.json": "7543e8c720002b9cef44ab6c2fabd9d2516ccb5965f38b6d92b9fc1fcc9780d6"
+  },
+  "impl_created": [
+    "scripts/testConventionGuard.ts",
+    "scripts/checkTestConvention.ts"
+  ]
+}
