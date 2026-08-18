@@ -141,7 +141,10 @@ These rules apply across every `.ts` / `.tsx` file in the project.
 ### JavaScript / ES6+
 
 - **Arrow functions everywhere.** Never use the `function` keyword — not for components, helpers, store factories, or callbacks. Every callable is a `const` arrow.
-- **`const` and `let` only.** Never `var`.
+- **`const` and `let` only.** Never `var` — now enforced by `no-var`, not just
+  documented. One exception, scoped in [.eslintrc.js](.eslintrc.js): test files,
+  `test/` and `jest.config.js`, where a hoisted `jest.mock` factory may only close
+  over a `var` (`let`/`const` are still in their temporal dead zone at that point).
 - **`async`/`await` over `.then()` chains.** `.catch()` is allowed only as a terminal error sink on fire-and-forget calls.
 - **Destructuring by default** for function parameters and local variables.
 - **Template literals over string concatenation.**
