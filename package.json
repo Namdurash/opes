@@ -5,7 +5,7 @@
   "scripts": {
     "android": "react-native run-android",
     "ios": "react-native run-ios",
-    "lint": "eslint .",
+    "lint": "eslint . && tsx scripts/checkTestConvention.ts",
     "format": "prettier --write .",
     "format:check": "prettier --check .",
     "start": "react-native start",
