@@ -2,10 +2,10 @@
   "schema": 1,
   "plan_sha256": "4d9667f6722d76fd998e7ee795bc4ae15e339019cc443a58b32cc670408d738d",
   "mode": "per-test",
-  "at": "2026-08-18T15:55:50Z",
+  "at": "2026-08-18T16:24:43Z",
   "tests": {
     "src/features/monobank/state/useMonobankStore.test.ts": "6e664eb5fe1688ada484cf5173ccc5c084d11e41928451f48bace8d0557b5c20",
-    "src/features/settings/SettingsScreen.test.tsx": "4c4cc943234e3af02d9e9b1975d235b2a2d11c422d12eac5439c936441508a01",
+    "src/features/settings/SettingsScreen.test.tsx": "07872cd4c887b8e6031a777a253aeee2a0576bd12ba38b26c1ff2c5e96a1108c",
     "src/features/transactions/state/useTransactionsStore.test.ts": "7bbe2cd226c843a5ab28333a3b982b19e80d455dcf7427150ef0fcdccd43f31f",
     "src/services/database/createSqliteAdapter.test.ts": "d6949f172957449097d6f10aa8a42c9c8e9e94b68146e5ab6b8f2993e2701d14",
     "src/services/sandbox/resetSandboxEnvironment.test.ts": "1299923188dd5f5c271084c2e1553dd62a733d429e12e4247f428c3002d46b07",
