@@ -327,6 +327,38 @@
       "seq": 20,
       "at": "2026-08-18T15:22:09Z",
       "prev": "96cd9f425fb8f7f143e440a36c843a0a9ca8a6e6777a259f4bf62344e7f49e1b"
+    },
+    {
+      "station": "plan-judge",
+      "attempt": 2,
+      "agent": "aif-plan-judge",
+      "agent_id": "a1ce39466a9eea757",
+      "model": "claude-sonnet-5",
+      "usage": {
+        "input_tokens": 34,
+        "output_tokens": 240,
+        "cache_read_input_tokens": 1129333,
+        "cache_creation_input_tokens": 97482
+      },
+      "num_turns": 17,
+      "cost_usd": null,
+      "cost_source": "tokens-only",
+      "result": "ran",
+      "summary": "## Summary",
+      "seq": 21,
+      "at": "2026-08-18T15:30:13Z",
+      "prev": "80017a2430c98698f3ebaf1296a85ba6d09ff4dcabe8d57cbcc8a5a6b2341dee"
+    },
+    {
+      "gate": "plan-judge",
+      "result": "pass",
+      "subject": "verdict-plan.json",
+      "subject_sha256": "bd061c87d5dd364e54c464595a4da0269e3421811984ae63883a3561d740e003",
+      "gate_sha256": "59675a1bad164f7ab3c03f8c0367a946515f818c47fbd318ef4f6aca3cf6f773",
+      "reason": "plan-judge: nothing left to guess, manifest covers the work",
+      "seq": 22,
+      "at": "2026-08-18T15:30:20Z",
+      "prev": "9708a2beaba62c3fd8e799672e0e23ba9cf5936d4e92533986dd508b78d45082"
     }
   ],
   "accepted_at": null
