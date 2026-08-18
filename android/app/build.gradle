@@ -1,6 +1,9 @@
 apply plugin: "com.android.application"
 apply plugin: "org.jetbrains.kotlin.android"
 apply plugin: "com.facebook.react"
+// Must be set BEFORE dotenv.gradle is applied: it calls loadDotEnv() at apply time and
+// reads this property then. Maps each product flavor to the env file it is built from.
+project.ext.envConfigFiles = [standard: ".env", sandbox: ".env.sandbox"]
 apply from: project(':react-native-config').projectDir.getPath() + "/dotenv.gradle"
 
 /**
@@ -22,7 +25,9 @@ react {
     //   The list of variants to that are debuggable. For those we're going to
     //   skip the bundling of the JS bundle and the assets. Default is "debug", "debugOptimized".
     //   If you add flavors like lite, prod, etc. you'll have to list your debuggableVariants.
-    // debuggableVariants = ["liteDebug", "liteDebugOptimized", "prodDebug", "prodDebugOptimized"]
+    //   The default is ["debug", "debugOptimized"], and the env flavor dimension means no
+    //   variant is called that any more — so every flavoured debug variant is listed here.
+    debuggableVariants = ["standardDebug", "sandboxDebug", "standardDebugOptimized", "sandboxDebugOptimized"]
 
     /* Bundling */
     //   A list containing the node command and its flags. Default is just 'node'.
@@ -85,6 +90,19 @@ android {
         targetSdkVersion rootProject.ext.targetSdkVersion
         versionCode 1
         versionName "1.0"
+    }
+    // One configuration carries BOTH the sandbox flag and a separate applicationId, so no
+    // build can end up with the flag while still writing to the normal app's data.
+    flavorDimensions "env"
+    productFlavors {
+        standard {
+            dimension "env"
+        }
+        sandbox {
+            dimension "env"
+            applicationIdSuffix ".sandbox"
+            resValue "string", "app_name", "Opes Sandbox"
+        }
     }
     signingConfigs {
         debug {

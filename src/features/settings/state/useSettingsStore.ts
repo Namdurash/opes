@@ -1,7 +1,11 @@
 import { create } from 'zustand';
 import { Share } from 'react-native';
 import { TransactionsRepository } from '../../../models/transactions';
+import { resetSandboxEnvironment } from '../../../services/sandbox';
 import { showBottomSheet, showErrorBottomSheet } from '../../../shared/ui/bottom-sheet';
+// Deep, not through the monobank barrel: that barrel exports ConnectMonobankScreen and
+// would close an import cycle back through app/navigation.
+import { useMonobankStore } from '../../monobank/state/useMonobankStore';
 import type { ExportFormat } from '../utils';
 import { transactionsToCsv, transactionsToJson } from '../utils';
 
@@ -10,6 +14,7 @@ const transactionsRepository = new TransactionsRepository();
 interface SettingsState {
   isExporting: boolean;
   exportTransactions: (format: ExportFormat) => Promise<void>;
+  resetSandbox: () => Promise<void>;
 }
 
 export const useSettingsStore = create<SettingsState>(set => ({
@@ -46,6 +51,24 @@ export const useSettingsStore = create<SettingsState>(set => ({
       });
     } finally {
       set({ isExporting: false });
+    }
+  },
+
+  // No busy flag on purpose: the reset is not atomic and running it twice is the
+  // recovery path, so the row has nothing to disable itself against.
+  resetSandbox: async () => {
+    try {
+      await resetSandboxEnvironment();
+      // Returns the monobank and transactions stores to their defaults, so the
+      // in-memory state matches the database the reset just emptied.
+      useMonobankStore.getState().disconnect();
+    } catch {
+      showErrorBottomSheet({
+        title: 'Reset Failed',
+        message: 'Failed to reset the sandbox environment.',
+        buttonTitle: 'OK',
+        onPress: () => {},
+      });
     }
   },
 }));
