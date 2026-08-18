@@ -10,6 +10,13 @@ module.exports = {
   // in the Haste map. modulePathIgnorePatterns rather than testPathIgnorePatterns,
   // because two of the three symptoms came from module scanning, not test collection.
   modulePathIgnorePatterns: ['/\\.claude/'],
+  // One allowed form for a test file, and only one: `<Source>.test.ts(x)`,
+  // sitting beside the source it exercises. This constrains the NAME, not the
+  // place — the root-level App.test.tsx and the tooling tests under scripts/ are
+  // still collected — because a location-bearing pattern would silently stop
+  // collecting a suite that moved. Where a test may live is the guard's job, and
+  // the guard fails loudly instead.
+  testMatch: ['**/*.test.ts?(x)'],
   // Stub static .svg asset imports. react-native-svg-transformer turns these
   // into components under Metro, but jest has no such transform.
   moduleNameMapper: {
