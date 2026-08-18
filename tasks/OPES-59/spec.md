@@ -5,7 +5,7 @@
   "risk": "high",
   "surfaces": [
     "src/shared/env — isSandboxBuild()",
-    "src/services/database — resolveDatabaseName()",
+    "src/services/database — createSqliteAdapter()",
     "src/features/monobank — useMonobankStore.connect()",
     "src/features/transactions — useTransactionsStore.syncFromMonobank()",
     "src/services/sandbox — resetSandboxEnvironment()",
@@ -14,51 +14,51 @@
   "acceptance": [
     { "id": "AC-001",
       "surface": "src/shared/env — isSandboxBuild()",
-      "given": "react-native-config exposes OPES_ENV with the value sandbox",
-      "when": "isSandboxBuild() is called",
-      "then": "returns true",
-      "expect": true },
-    { "id": "AC-002",
-      "surface": "src/shared/env — isSandboxBuild()",
       "given": "react-native-config exposes no OPES_ENV key",
       "when": "isSandboxBuild() is called",
       "then": "returns false",
       "expect": false },
-    { "id": "AC-003",
-      "surface": "src/services/database — resolveDatabaseName()",
-      "given": "isSandboxBuild() returns false",
-      "when": "resolveDatabaseName() is called",
-      "then": "returns the database file name",
+    { "id": "AC-002",
+      "surface": "src/services/database — createSqliteAdapter()",
+      "given": "a non-sandbox build and a recording constructor standing in for the SQLite adapter",
+      "when": "createSqliteAdapter(recordingConstructor) is called",
+      "then": "the dbName in the options the constructor received equals opes",
       "expect": "opes" },
-    { "id": "AC-004",
-      "surface": "src/services/database — resolveDatabaseName()",
-      "given": "isSandboxBuild() returns true",
-      "when": "resolveDatabaseName() is called",
-      "then": "returns the database file name",
+    { "id": "AC-003",
+      "surface": "src/services/database — createSqliteAdapter()",
+      "given": "a sandbox build and a recording constructor standing in for the SQLite adapter",
+      "when": "createSqliteAdapter(recordingConstructor) is called",
+      "then": "the dbName in the options the constructor received equals opes_sandbox",
       "expect": "opes_sandbox" },
-    { "id": "AC-005",
+    { "id": "AC-004",
       "surface": "src/features/monobank — useMonobankStore.connect()",
       "given": "a sandbox build with global.fetch replaced by a spy",
       "when": "connect(userId, token) runs with a non-empty token",
       "then": "the fetch spy call count equals zero",
       "expect": 0 },
-    { "id": "AC-006",
+    { "id": "AC-005",
       "surface": "src/features/transactions — useTransactionsStore.syncFromMonobank()",
       "given": "a sandbox build, a token already written to the token storage, global.fetch replaced by a spy",
       "when": "syncFromMonobank(userId) runs",
       "then": "the fetch spy call count equals zero",
       "expect": 0 },
-    { "id": "AC-007",
+    { "id": "AC-006",
       "surface": "src/features/monobank — useMonobankStore.connect()",
       "given": "a non-sandbox build with global.fetch replaced by a spy that resolves a client-info payload",
       "when": "connect(userId, token) runs with a non-empty token",
       "then": "the first URL passed to the fetch spy contains the Monobank host",
       "expect": "api.monobank.ua" },
-    { "id": "AC-008",
+    { "id": "AC-007",
       "surface": "src/services/sandbox — resetSandboxEnvironment()",
       "given": "a sandbox build whose database holds one transaction row",
       "when": "resetSandboxEnvironment() completes",
       "then": "the transaction row count equals zero",
+      "expect": 0 },
+    { "id": "AC-008",
+      "surface": "src/services/sandbox — resetSandboxEnvironment()",
+      "given": "a sandbox build whose database holds one card row created through the ordinary card-creation path",
+      "when": "resetSandboxEnvironment() completes",
+      "then": "the card row count equals zero",
       "expect": 0 },
     { "id": "AC-009",
       "surface": "src/services/sandbox — resetSandboxEnvironment()",
@@ -135,33 +135,39 @@
     { "id": "AS-015",
       "text": "The reset clears the Monobank token, the client name, and the account selection from key-value storage, and clears the onboarding flag together with the database, because users.checked_in is a database column. The persisted theme mode survives the reset: it is a display preference, not part of any flow under test." },
     { "id": "AS-016",
-      "text": "Transaction list filters live in route params and component state today, so clearing \"saved filters\" means resetting the in-memory store state; nothing filter-related is persisted outside the database." },
+      "text": "Clearing \"збережені фільтри\" means the in-memory transactions store state returns to its defaults. The reset clears no key-value entry for filters: transaction list filters live in route params and component state, and navigation.reset discards the stack that holds them." },
     { "id": "AS-017",
       "text": "The database-wide wipe is exposed through the repository layer, the only layer permitted to write the database; resetSandboxEnvironment() composes it with the key-value clears and owns no SQL of its own." },
     { "id": "AS-018",
-      "text": "MMKV is not namespaced per build in code. The two installed apps are kept apart by the operating system because their identifiers differ." }
+      "text": "MMKV is not namespaced per build in code. The two installed apps are kept apart by the operating system because their identifiers differ." },
+    { "id": "AS-019",
+      "text": "The SQLite adapter is built by createSqliteAdapter(Adapter), which takes the adapter constructor as its argument, builds the options object itself, and reads dbName from a single build-flag-aware name resolver. The database file name therefore appears as a literal in exactly one place, and a test supplies a recording constructor in place of the real SQLite one. database.ts keeps only the jest-versus-device branch that decides which constructor is handed in." }
   ],
   "verification_gaps": [
     { "id": "VG-001",
       "text": "This cycle produces no build and installs nothing. The separate applicationId and bundle identifier, the Android flavor, the iOS scheme, and the home-screen label are not exercised by the suite." },
     { "id": "VG-002",
-      "text": "The suite runs the LokiJS adapter. Nothing here establishes that the SQLite adapter on a device opens a file named opes_sandbox, nor that the normal build still opens opes." },
+      "text": "That SQLite, handed dbName opes, opens the file named opes on a device is WatermelonDB's contract and is not exercised here. AC-002 and AC-003 establish the value our code produces; nothing establishes what the adapter does with it." },
     { "id": "VG-003",
-      "text": "A green suite would not prove that a device carrying both apps keeps their database files and MMKV stores apart. That separation is a property of two operating-system sandboxes, not of this code." },
+      "text": "The suite never takes the SQLite path. database.ts selects the LokiJS adapter under jest, so the one branch that requires the real SQLite adapter module and passes it to createSqliteAdapter is not executed by any test here." },
     { "id": "VG-004",
-      "text": "react-native-config inlines the value at build time. The suite injects OPES_ENV through the jest mock, so the .env file, dotenv.gradle, and the iOS Config codegen build phase are not exercised." },
+      "text": "A green suite would not prove that a device carrying both apps keeps their database files and MMKV stores apart. That separation is a property of two operating-system sandboxes, not of this code." },
     { "id": "VG-005",
-      "text": "Persistence across app restarts is not exercised. Jest runs in one process, so \"created in one session, still there in the next\" is not established." },
+      "text": "react-native-config inlines the value at build time. The suite injects OPES_ENV through the jest mock, so the .env file, dotenv.gradle, and the iOS Config codegen build phase are not exercised." },
     { "id": "VG-006",
-      "text": "Opening a sandbox database file written by an older schema version is not exercised; the test harness does not replay the migration chain, and no historical snapshot exists in the repository." },
+      "text": "Persistence across app restarts is not exercised. Jest runs in one process, so \"created in one session, still there in the next\" is not established." },
     { "id": "VG-007",
-      "text": "The individual sync triggers are not each exercised. Only the shared choke point is: pull-to-refresh on Home, pull-to-refresh on Transactions, the post-connect autosync, the on-open autosync, and the silent foreground sync go unasserted one by one." },
+      "text": "Opening a sandbox database file written by an older schema version is not exercised; the test harness does not replay the migration chain, and no historical snapshot exists in the repository." },
     { "id": "VG-008",
-      "text": "Nothing establishes that sandbox-only code is absent from the normal build's JavaScript bundle — only that it does nothing while the flag is off." },
+      "text": "The individual sync triggers are not each exercised. Only the shared choke point is: pull-to-refresh on Home, pull-to-refresh on Transactions, the post-connect autosync, the on-open autosync, and the silent foreground sync go unasserted one by one." },
     { "id": "VG-009",
-      "text": "Nothing here runs against api.monobank.ua in either build. AC-007 asserts against a stubbed fetch, so the normal build's real network path stays unverified by this cycle." },
+      "text": "Nothing establishes that sandbox-only code is absent from the normal build's JavaScript bundle — only that it does nothing while the flag is off." },
     { "id": "VG-010",
-      "text": "A reset that fails part-way (database wiped, key-value clear throws) is not exercised; only a clean run and a clean second run are." }
+      "text": "Nothing here runs against api.monobank.ua in either build. AC-006 asserts against a stubbed fetch, so the normal build's real network path stays unverified by this cycle." },
+    { "id": "VG-011",
+      "text": "A reset that fails part-way (database wiped, key-value clear throws) is not exercised; only a clean run and a clean second run are." },
+    { "id": "VG-012",
+      "text": "Nothing here establishes that no filter state is persisted outside the database. AS-016 rests on a reading of today's code, not on an assertion: were a filter ever written to key-value storage, the reset would leave it in place and no test in this suite would go red." }
   ],
   "non_goals": [
     "A fake Monobank service, sandbox tokens, or fixtures — those are OPES-60",
@@ -179,14 +185,34 @@
 `OPES_ENV=sandbox`, окремий файл бази `opes_sandbox` при незмінному `opes` для
 звичайної збірки, фізичну відсутність викликів до Monobank і повне скидання в
 налаштуваннях, після якого застосунок сам повертається на екран онбордингу.
-Перевіряється лише те, що видно з jest: імена, які повертають резолвери, нульова
+Перевіряється лише те, що видно з jest: ім'я бази в опціях адаптера, нульова
 кількість викликів `fetch`, стан бази й сховища після скидання, наявність пункту
 скидання в тестовій збірці та його відсутність у звичайній.
 
-Усе, що живе в нативній конфігурації — окремий bundle id, флейвор, схема, підпис на
-домашньому екрані, розділення пісочниць операційною системою, збереження даних між
-запусками — цим циклом не встановлюється й винесене у `verification_gaps` як ручний
-чекліст. Уся номенклатура, механізм ізоляції (рантайм-прапорець, не виключення з
-бандла), точка спостереження мережевого виклику, поведінка при старій схемі тестової
-бази та відмова від підтвердження перед скиданням — це мої рішення, не рішення
-тікета; вони зібрані в `assumptions` і потребують вашого підтвердження.
+Три зміни за вашим зауваженням. **Картки** тепер має власний критерій: AC-008
+стверджує, що після `resetSandboxEnvironment()` кількість рядків у `cards`
+дорівнює нулю — саме те, що в OPES-59 можна створити руками. **AS-016** втратила
+недоведену половину: твердження «нічого фільтрового не зберігається поза базою»
+винесене окремим розривом VG-012, у самій AS-016 лишилось тільки рішення про
+поведінку. **Ім'я файлу бази** тепер стверджується не на резолвері, а в точці,
+де воно доходить до адаптера: `createSqliteAdapter()` приймає конструктор
+адаптера аргументом, а тест підставляє записувальний конструктор і читає з нього
+`dbName` — AC-002 для звичайної збірки (`opes`), AC-003 для тестової
+(`opes_sandbox`). VG-002 після цього покриває лише чужий контракт («SQLite на
+пристрої шанує `dbName`»), а те, що під jest гілка SQLite взагалі не виконується,
+названо окремо в VG-003.
+
+**Компроміс, який довелось зробити.** Стеля `spec_ac_max` — 15, попередня
+специфікація вибрала всі 15. Щоб додати два критерії, я: (1) прибрав колишній
+AC-001 (`OPES_ENV=sandbox` → `isSandboxBuild()` повертає `true`) — «вимкнений»
+напрямок лишився як AC-001, бо він захищає від необоротної помилки, а
+«увімкнений» перевіряється передумовою кожного sandbox-критерію: якщо прапорець
+не вмикається, червоними стають AC-003, AC-004, AC-005, AC-014; (2) згорнув
+колишні AC-003/AC-004 на `resolveDatabaseName()` у нову пару на опціях адаптера
+— вона строго сильніша, бо ловить ще й зашите повз резолвер ім'я. Решта
+`assumptions` — без змін, як ви їх прийняли.
+
+Усе, що живе в нативній конфігурації — окремий bundle id, флейвор, схема, підпис
+на домашньому екрані, розділення пісочниць операційною системою, збереження
+даних між запусками — цим циклом не встановлюється й винесене у
+`verification_gaps` як ручний чекліст.
