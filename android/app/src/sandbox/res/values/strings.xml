@@ -1,0 +1,5 @@
+<resources>
+    <!-- Overrides main/ for the sandbox flavor only, so the two installed apps are told
+         apart on the home screen. The icon deliberately stays the same. -->
+    <string name="app_name">Opes Sandbox</string>
+</resources>

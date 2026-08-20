@@ -3,8 +3,10 @@
   "version": "0.0.1",
   "private": true,
   "scripts": {
-    "android": "react-native run-android",
+    "android": "react-native run-android --mode standardDebug",
+    "android:sandbox": "react-native run-android --mode sandboxDebug --appIdSuffix sandbox",
     "ios": "react-native run-ios",
+    "ios:sandbox": "react-native run-ios --scheme OpesSandbox --mode Debug-Sandbox",
     "lint": "eslint . && tsx scripts/checkTestConvention.ts",
     "format": "prettier --write .",
     "format:check": "prettier --check .",

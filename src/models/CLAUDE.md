@@ -20,6 +20,13 @@ Inside `<Entity>Repository.ts`:
 
 Canonical examples: [cards/CardsRepository.ts](cards/CardsRepository.ts), [transactions/TransactionsRepository.ts](transactions/TransactionsRepository.ts).
 
+**`maintenance/` is the one folder that is not an entity.**
+[maintenance/DatabaseMaintenanceRepository.ts](maintenance/DatabaseMaintenanceRepository.ts)
+wipes every table at once. It exists because the rule below — only `src/models/**` writes
+the database — applies to deleting everything just as much as to writing one row, so the
+sandbox reset composes this repository rather than owning SQL of its own. It has no
+`toDomain` and returns nothing; it is a repository by *permission*, not by shape.
+
 ## Rules
 
 - **Repositories return domain types, never WatermelonDB models.** A `*Model` must not leak out of this layer.

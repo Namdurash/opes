@@ -7,6 +7,8 @@ import {
   UserModel,
   UserOverrideModel,
 } from './models';
+import { createSqliteAdapter } from './createSqliteAdapter';
+import type { SqliteAdapterConstructor } from './createSqliteAdapter';
 import { databaseMigrations } from './migrations';
 import { databaseSchema } from './schema';
 
@@ -26,20 +28,14 @@ const createAdapter = (): DatabaseAdapter => {
     });
   }
 
-  const SQLiteAdapter = require('@nozbe/watermelondb/adapters/sqlite').default as new (
-    options: Record<string, unknown>,
-  ) => DatabaseAdapter;
+  // No test ever takes this branch — jest picks LokiJS above — so it holds nothing but
+  // the module resolution that cannot run in-process. Every option, including the
+  // database file name, lives in createSqliteAdapter.ts, where it is asserted on.
+  const SQLiteAdapter = require('@nozbe/watermelondb/adapters/sqlite')
+    .default as SqliteAdapterConstructor<DatabaseAdapter>;
 
-  return new SQLiteAdapter({
-    schema: databaseSchema,
-    migrations: databaseMigrations,
-    jsi: true,
-    dbName: 'opes',
-    onSetUpError: (error: unknown) => {
-      throw error;
-    },
-  });
-}
+  return createSqliteAdapter(SQLiteAdapter);
+};
 
 export const database = new Database({
   adapter: createAdapter(),

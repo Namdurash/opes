@@ -1,0 +1,22 @@
+{ "schema": 1,
+  "gate": "spec-judge",
+  "subject": "spec.md",
+  "subject_sha256": "e8f47282c669510e9555fa6701d004d02e41975655f9b8e94be206979fd90851",
+  "judge_agent": "aif-spec-judge",
+  "at": "2026-08-18T09:41:07Z",
+  "pass": true,
+  "checked": [
+    "AC-012's reseeded given/when/then against the second 'Rework requested at approve' section of ticket.md — the given now writes a user row carrying the onboarding flag after the first reset, which is the seeding the human asked for",
+    "AC-012 atomicity: the 'then' holds one measurable quantity (users row count), the first reset sits in the given as arrange, not as a second asserted outcome — a failure attributes to one thing, the second run leaving users non-empty",
+    "AC-012 falsifiability in both directions: red if reset does not wipe users, red if the second call becomes a no-op or throws; the station's argument that a standalone second-run criterion over an empty database would be trivially green holds, since count-equals-zero on a never-populated table is satisfied by an empty function",
+    "Criterion count is 15 and AC-014 is still present at line 93-98, so the fallback trade (drop AC-014 as subsumed by AC-011) was not taken and the spec_ac_max ceiling is intact",
+    "AC-001 through AC-015 each read for a single assertable expect: booleans (AC-001), string values read off a recording constructor (AC-002, AC-003), call counts (AC-004, AC-005), a URL substring (AC-006), row counts (AC-007, AC-008, AC-012), null returns from named services (AC-009, AC-010), a route name off a stubbed navigation.reset (AC-011), a named error (AC-013), presence and absence of a testID (AC-014, AC-015)",
+    "The six surfaces in the meta block mapped to criteria: env/AC-001, createSqliteAdapter/AC-002+AC-003, connect/AC-004+AC-006, syncFromMonobank/AC-005, resetSandboxEnvironment/AC-007..AC-010+AC-012+AC-013, SettingsScreen/AC-011+AC-014+AC-015 — no surface uncovered",
+    "Ticket sections 'Monobank у тестовій збірці', 'Де живуть тестові дані', 'Скидання', 'Що видно у звичайній збірці' against the criteria that carry them; no criterion contradicts the ticket, and the ticket's 'повторний запуск скидання має приводити застосунок у коректний стан' supports AC-012's when",
+    "assumptions AS-001..AS-019 counted (19, matching the set the human accepted) and each read for verification-limit content misfiled as behavior — AS-008, AS-011, AS-016, AS-018 and AS-019 all state decisions about how the system behaves, and their unverified halves sit in VG-009, VG-007, VG-012, VG-004 and VG-003 respectively",
+    "verification_gaps VG-001..VG-012 counted (12, matching the accepted set) and each read as a limit of this cycle's verification, phrased as 'not exercised' / 'nothing establishes' / 'a green suite would not prove'",
+    "The AS-016 / VG-012 split demanded by the first round's rework item 2 is still in place: AS-016 keeps only the behavior decision, VG-012 carries the unasserted claim",
+    "AC-002 and AC-003 against the first round's rework item 3: the assertion is on the dbName inside the options the adapter constructor received, and VG-002 now claims only WatermelonDB's own contract, with the jest branch hole named separately in VG-003",
+    "Every criterion id referenced in the Ukrainian prose body (AC-001, AC-002, AC-003, AC-004, AC-005, AC-007, AC-008, AC-012, AC-014) resolves to the criterion the prose describes — evidence that nothing was renumbered or displaced alongside the AC-012 rewrite; I hold only this revision of spec.md, so 'nothing else moved' is established by ids, counts and cross-references, not by a diff against the prior file"
+  ],
+  "findings": [] }

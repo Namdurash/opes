@@ -5,6 +5,10 @@ require Pod::Executable.execute_command('node', ['-p',
     {paths: [process.argv[1]]},
   )', __dir__]).strip
 
+# The sandbox configurations are copies of Debug/Release, so CocoaPods is told which
+# one each inherits from — without this the pods' xcconfig is not applied to them.
+project 'opes', 'Debug-Sandbox' => :debug, 'Release-Sandbox' => :release
+
 platform :ios, min_ios_version_supported
 prepare_react_native_project!
 
@@ -34,5 +38,18 @@ target 'opes' do
       :mac_catalyst_enabled => false,
       # :ccache_enabled => true
     )
+
+    # react-native-config bakes the env file in from a "Config codegen" script phase that
+    # runs on ITS OWN pod target, so an ENVFILE set on the app target never reaches it —
+    # the codegen silently falls back to `.env`. Setting it here, per configuration, is
+    # what actually makes the sandbox build read `.env.sandbox`, and it lives in the
+    # Podfile so `pod install` cannot drop it.
+    installer.pods_project.targets.each do |pod_target|
+      next unless pod_target.name == 'react-native-config'
+      pod_target.build_configurations.each do |pod_config|
+        pod_config.build_settings['ENVFILE'] =
+          pod_config.name.end_with?('-Sandbox') ? '.env.sandbox' : '.env'
+      end
+    end
   end
 end

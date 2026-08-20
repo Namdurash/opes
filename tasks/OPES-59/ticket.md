@@ -108,3 +108,35 @@
   проганяти звичайні міграції чи дозволено видалити файл і почати заново.
 - Чи потрібне підтвердження перед скиданням і наскільки скидання має бути атомарним.
   Мінімум — повторний запуск скидання має приводити застосунок у коректний стан.
+
+## Rework requested at approve
+
+- Assumptions accepted, but one acceptance criterion is missing, and the verification gaps are not accepted as they stand.
+
+1. Missing criterion — cards.
+
+The reset is asserted against transactions (AC-008) and against users (AC-012). Cards are asserted nowhere. Yet in OPES-59 a card is the only thing you can create by hand: there is no fake service and no fixtures yet, and the ticket says so directly — "наповнити її можна лише руками — звичайний екран створення картки". So AC-008 verifies the wiping of something this build can barely contain, while the thing the ticket calls "включно з тим, що я створив руками" goes unverified.
+
+Add one more criterion: after resetSandboxEnvironment(), the row count in cards equals zero.
+
+2. AS-016 is neither asserted nor filed as a gap.
+
+AS-016 claims nothing filter-related is persisted outside the database, and from that infers there are no "saved filters" to clear. The claim is plausible but is neither asserted nor filed as a gap. It should be one or the other.
+
+3. VG-002 is half reducible, and it is the half that hurts.
+
+VG-001 (native configuration) is irreducible — accept. A Gradle flavor, an Xcode scheme and a home-screen label cannot be exercised from jest at all. A manual checklist is the only instrument that exists.
+
+VG-002 bundles three different things:
+  - resolveDatabaseName() returns opes with the flag off — verified, AC-003.
+  - That value actually reaches the SQLite adapter's options — not verified, and this is a hole in our own code.
+  - SQLite, given dbName: 'opes', opens the file opes on a device — not verified, but that is WatermelonDB's contract, not ours.
+
+Point 2 is precisely where the cost of error is irreversible, and it needs no device. The reason the hole exists is that database.ts takes the LokiJS branch under jest, so the SQLite branch never executes in tests at all. Extract the adapter's option-building into a pure function and an in-process test pins that dbName comes from resolveDatabaseName() — which collapses VG-002 down to point 3 alone, i.e. to somebody else's contract.
+
+Add one more criterion on the adapter options: for a non-sandbox build, dbName in the options equals opes. Then restate VG-002 so it honestly covers only "SQLite on a device honours dbName", and that remainder is accepted without discomfort.
+- Assumptions accepted, including AS-019 and the ceiling trade. All twelve verification gaps accepted.
+
+One change requested: reseed AC-012 so it establishes that a reset wipes users, since without it a reset that leaves the onboarding flag intact passes the entire suite while dumping the user on Home. That is a rewrite, not an addition, so the ceiling holds; if it does turn into a sixteenth criterion, drop AC-014 as subsumed by AC-011.
+
+Carried forward into the plan: VG-003's boundedness is a constraint on the device branch.

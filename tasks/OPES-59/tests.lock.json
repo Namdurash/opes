@@ -1,0 +1,57 @@
+{
+  "schema": 1,
+  "plan_sha256": "4d9667f6722d76fd998e7ee795bc4ae15e339019cc443a58b32cc670408d738d",
+  "mode": "per-test",
+  "at": "2026-08-18T16:24:43Z",
+  "tests": {
+    "src/features/monobank/state/useMonobankStore.test.ts": "6e664eb5fe1688ada484cf5173ccc5c084d11e41928451f48bace8d0557b5c20",
+    "src/features/settings/SettingsScreen.test.tsx": "07872cd4c887b8e6031a777a253aeee2a0576bd12ba38b26c1ff2c5e96a1108c",
+    "src/features/transactions/state/useTransactionsStore.test.ts": "7bbe2cd226c843a5ab28333a3b982b19e80d455dcf7427150ef0fcdccd43f31f",
+    "src/services/database/createSqliteAdapter.test.ts": "d6949f172957449097d6f10aa8a42c9c8e9e94b68146e5ab6b8f2993e2701d14",
+    "src/services/sandbox/resetSandboxEnvironment.test.ts": "1299923188dd5f5c271084c2e1553dd62a733d429e12e4247f428c3002d46b07",
+    "src/shared/env/env.test.ts": "01946461a2eaa30ac6c3d521a6e07920aaa9d924e679484f2d93a3db618f3732",
+    "test/CLAUDE.md": "2239846ae20caf9ce773446592c28676be11ebb10a3eca37e1359bf3827d7b42",
+    "test/db/createTestDatabase.ts": "3980e511bdfadbf7191d2f9aacefe87acf2a1f72664bcf87b0c85c3472f256b9",
+    "test/db/index.ts": "72fd8c0649ae1635bd9d334f06bea079c466e7b34c554b3d6d02f74ce2790005",
+    "test/doubles/cardsRepository.ts": "951c699b99c1ebbf1c1ce804b9bca35352ef2e4273d849bcc324b051d2774195",
+    "test/doubles/index.ts": "2600505446129e2b078a94ebc0011386062c6c29dea8e09d805777baf8baab5a",
+    "test/factories/card.ts": "848ef38faae77d256265132657369a0398784c0bf9ba332de1d52bf2e070a511",
+    "test/factories/index.ts": "bdbfee3add31c224b058f925dd235b65b91ad6989097b9e9e46086e53115cf50",
+    "test/factories/transaction.ts": "8aaa65083d628bd14f5b3711ab860fc131a8d9142a419220b27beb2b93d3eca6",
+    "test/index.ts": "e6cabbb61f2984dcc29c2f16e3b86fef67c01ffb58767c10f063c69a405d43c4",
+    "test/setup.js": "d816ef0a8996f218d7cd0c8830d995613f8f6149eaf61b19bb2eb672e7a6f70e"
+  },
+  "covering": [
+    "isSandboxBuild AC-001 — reports a normal build when react-native-config exposes no OPES_ENV key::isSandboxBuild AC-001 — reports a normal build when react-native-config exposes no OPES_ENV key",
+    "createSqliteAdapter AC-002 — hands the adapter constructor the database name opes in a normal build::createSqliteAdapter AC-002 — hands the adapter constructor the database name opes in a normal build",
+    "createSqliteAdapter AC-003 — hands the adapter constructor the database name opes_sandbox in a sandbox build::createSqliteAdapter AC-003 — hands the adapter constructor the database name opes_sandbox in a sandbox build",
+    "useMonobankStore.connect AC-004 — makes no fetch call at all in a sandbox build::useMonobankStore.connect AC-004 — makes no fetch call at all in a sandbox build",
+    "useMonobankStore.connect AC-006 — reaches the Monobank host in a normal build::useMonobankStore.connect AC-006 — reaches the Monobank host in a normal build",
+    "useTransactionsStore.syncFromMonobank AC-005 — makes no fetch call at all in a sandbox build::useTransactionsStore.syncFromMonobank AC-005 — makes no fetch call at all in a sandbox build",
+    "resetSandboxEnvironment wipes the database AC-007 — leaves no transaction row behind::resetSandboxEnvironment wipes the database AC-007 — leaves no transaction row behind",
+    "resetSandboxEnvironment wipes the database AC-008 — leaves no card row behind::resetSandboxEnvironment wipes the database AC-008 — leaves no card row behind",
+    "resetSandboxEnvironment clears the key-value storage AC-009 — leaves no Monobank token behind::resetSandboxEnvironment clears the key-value storage AC-009 — leaves no Monobank token behind",
+    "resetSandboxEnvironment clears the key-value storage AC-010 — leaves no account selection behind::resetSandboxEnvironment clears the key-value storage AC-010 — leaves no account selection behind",
+    "resetSandboxEnvironment run twice AC-012 — leaves no user row behind on a second run::resetSandboxEnvironment run twice AC-012 — leaves no user row behind on a second run",
+    "resetSandboxEnvironment outside a sandbox build AC-013 — raises SandboxOnlyError in a normal build::resetSandboxEnvironment outside a sandbox build AC-013 — raises SandboxOnlyError in a normal build",
+    "SettingsScreen sandbox reset row AC-014 — renders the reset item in a sandbox build::SettingsScreen sandbox reset row AC-014 — renders the reset item in a sandbox build",
+    "SettingsScreen sandbox reset row AC-015 — renders no reset item in a normal build::SettingsScreen sandbox reset row AC-015 — renders no reset item in a normal build",
+    "SettingsScreen sandbox reset navigation AC-011 — sends the app back to Welcome once the reset item is pressed::SettingsScreen sandbox reset navigation AC-011 — sends the app back to Welcome once the reset item is pressed"
+  ],
+  "impl_frozen": {
+    "src/shared/env/env.ts": "dfdcba795eae0051010e85f6924b171f864156c5d3b0341c702a853a34e2c07b",
+    "src/services/database/database.ts": "8c0ffca88fbea21bdae878e26881a660c994bbc2ee8030824b01b4d0c819b481",
+    "src/services/monobank/serviceInstance.ts": "a5bc88aa7e87cd65cdfb2abfeba5e97e09caa733888540bb74ca8bcc1e32f578",
+    "src/features/settings/state/useSettingsStore.ts": "63db0465b5a5c5e6abf4a4cb733a6d8161b87d3ed17d4e890ef8fc6f90acfae7",
+    "src/features/settings/SettingsScreen.tsx": "977a343ac53ee5222fe21e82d83b7806f6c396f28523410c202e2393299e50b7",
+    "android/app/build.gradle": "8edbab79ac4433460c4b0b6668d55621daaea0620f94674a100adee9fa21755d",
+    "package.json": "2fa00247e113928f99e694c00a26b3d68692417f23d0dcb711a6ba8bdaaaa8be"
+  },
+  "impl_created": [
+    "src/services/database/createSqliteAdapter.ts",
+    "src/models/maintenance/DatabaseMaintenanceRepository.ts",
+    "src/models/maintenance/index.ts",
+    "src/services/sandbox/resetSandboxEnvironment.ts",
+    "src/services/sandbox/index.ts"
+  ]
+}

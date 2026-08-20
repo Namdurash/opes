@@ -7,9 +7,35 @@ Singleton database wired up here. Schema is versioned; column changes require a 
 [database.ts](database.ts) chooses the adapter at module load:
 
 - **Jest:** LokiJS adapter (pure JS, no native module). This is why the test suite runs without iOS/Android linkage.
-- **Device:** SQLite (JSI) adapter.
+- **Device:** SQLite (JSI) adapter, built by [createSqliteAdapter.ts](createSqliteAdapter.ts).
 
 Apply the same Jest-vs-device branch pattern when adding any native-backed storage (see [../monobank/MonobankTokenService.ts](../monobank/MonobankTokenService.ts) for the in-memory-vs-MMKV variant). Tests must not require native modules.
+
+**The device branch holds nothing but module resolution — keep it that way.** No test
+ever takes it (jest picks LokiJS above), so anything that lives there is unverifiable by
+construction. Every adapter option, the database file name included, belongs in
+`createSqliteAdapter.ts`, which takes the adapter constructor as an argument precisely so
+a test can hand in a recording stand-in and assert the options it received.
+
+## Database file name
+
+The name is decided by one private resolver in
+[createSqliteAdapter.ts](createSqliteAdapter.ts) and both literals exist only there:
+
+| Build | File |
+|---|---|
+| Normal | `opes` |
+| Sandbox (`OPES_ENV=sandbox`) | `opes_sandbox` |
+
+`opes` is an installed app's live database and its only copy. **Renaming it, or letting
+the sandbox build open it, destroys user data that cannot be recovered** — which is why
+the name is not spelled anywhere else and why the resolver is not exported. The build
+flag comes from `isSandboxBuild()` in [../../shared/env](../../shared/env/CLAUDE.md).
+
+Note what this does *not* buy: that SQLite on a device actually opens a file by that
+name is WatermelonDB's contract and is exercised by no test here. The separation of the
+two installed apps rests on their differing bundle identifiers — the operating system,
+not this code.
 
 ## Schema & migrations
 

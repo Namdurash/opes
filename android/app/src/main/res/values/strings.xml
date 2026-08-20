@@ -1,3 +1,16 @@
 <resources>
     <string name="app_name">opes</string>
+
+    <!--
+      react-native-config finds BuildConfig by RUNTIME package name, i.e. the applicationId
+      (RNCConfigModuleImpl: Class.forName(getPackageName() + ".BuildConfig")). The sandbox
+      flavor carries applicationIdSuffix ".sandbox", so that lookup asks for
+      com.opes.sandbox.BuildConfig — which does not exist, because BuildConfig is generated
+      into the NAMESPACE, com.opes, and a suffix does not move it.
+
+      Without this override the lookup throws, every Config value comes back empty, OPES_ENV
+      never reaches JS, and the sandbox build silently opens the real database name.
+      This string is the module's documented escape hatch: point it at the namespace.
+    -->
+    <string name="build_config_package">com.opes</string>
 </resources>
