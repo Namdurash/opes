@@ -1,37 +1,17 @@
-import type { Card } from '../../../domain/cards';
-import type { Transaction } from '../../../domain/transactions';
+import type { Database } from '@nozbe/watermelondb';
+import { createTestDatabase } from '../../../../test/db';
 
-// Test knobs. The store news up both repositories at module scope, so those modules
-// are the only seam this case has. Held on hoisted `var`s so the hoisted jest.mock
-// factories can read them at call time.
-var mockGetMonobankCards: jest.Mock;
-var mockGetAll: jest.Mock;
-var mockGetLatestOccurredAt: jest.Mock;
-var mockUpsertBatch: jest.Mock;
+// The repositories reach WatermelonDB through a module singleton rather than an
+// injected handle, so the only way to point them at a throwaway database is to
+// replace that module. The barrel is left alone — it also re-exports the schema and
+// model classes the test helper itself needs.
+//
+// `var`, not `let`: the jest.mock factory is hoisted above this declaration.
+var mockDatabase: Database;
 
-// The methods forward rather than the constructors returning the doubles: the store's
-// repositories are constructed at import time, long before beforeEach assigns
-// anything. TransactionSyncService itself is left real — it is the code that would
-// reach for a statement, and the criterion is that it never gets there.
-jest.mock('../../../models/cards', () => ({
-  CardsRepository: class {
-    getMonobankCards(userId: string): Promise<Card[]> {
-      return mockGetMonobankCards(userId);
-    }
-  },
-}));
-
-jest.mock('../../../models/transactions', () => ({
-  TransactionsRepository: class {
-    getAll(): Promise<Transaction[]> {
-      return mockGetAll();
-    }
-    getLatestOccurredAt(cardId: string): Promise<string | null> {
-      return mockGetLatestOccurredAt(cardId);
-    }
-    upsertBatch(transactions: Transaction[]): Promise<void> {
-      return mockUpsertBatch(transactions);
-    }
+jest.mock('../../../services/database/database', () => ({
+  get database() {
+    return mockDatabase;
   },
 }));
 
@@ -40,68 +20,102 @@ jest.mock('../../../shared/ui/bottom-sheet', () => ({
   showErrorBottomSheet: jest.fn(),
 }));
 
-// Nothing here should reach WatermelonDB, and merely importing the singleton opens a
-// real Loki instance whose autosave interval outlives the run. Refuse to hand it out,
-// so a case that starts depending on it says so loudly.
-jest.mock('../../../services/database/database', () => ({
-  get database(): never {
-    throw new Error(
-      'useTransactionsStore tests stub their repositories; the real database must not be used',
-    );
-  },
-}));
-
 import Config from 'react-native-config';
+import { TransactionsRepository } from '../../../models/transactions';
 import { clearMonobankService } from '../../../services/monobank/serviceInstance';
 import { monobankTokenService } from '../../../services/monobank/MonobankTokenService';
 import { monobankAccountSelectionService } from '../../../services/monobank/MonobankAccountSelectionService';
-import { makeCard } from '../../../../test/factories';
+import { useMonobankStore } from '../../monobank/state/useMonobankStore';
 import { useTransactionsStore } from './useTransactionsStore';
 
 const config = Config as Record<string, string | undefined>;
 
+const USER_ID = 'user-1';
+const TEST_TOKEN = 'test-user-1';
+
+type SyncAction = ReturnType<typeof useTransactionsStore.getState>['syncFromMonobank'];
+
 const originalFetch = global.fetch;
-let fetchSpy: jest.Mock;
+
+let transactionsRepository: TransactionsRepository;
+let teardown: () => Promise<void>;
+let realSyncFromMonobank: SyncAction;
+let triggeredSync: Promise<void>;
 
 beforeEach(() => {
-  // One linked Monobank card, so that a sync which is NOT blocked has an account to
-  // pull a statement for. Without it the zero below would hold for the wrong reason.
-  mockGetMonobankCards = jest.fn().mockResolvedValue([
-    makeCard({ id: 'card-1', type: 'monobank', monobankAccountId: 'acc-1' }),
-  ]);
-  mockGetAll = jest.fn().mockResolvedValue([]);
-  mockGetLatestOccurredAt = jest.fn().mockResolvedValue(null);
-  mockUpsertBatch = jest.fn().mockResolvedValue(undefined);
+  const testDatabase = createTestDatabase();
+  mockDatabase = testDatabase.database;
+  teardown = testDatabase.teardown;
+  transactionsRepository = new TransactionsRepository();
 
-  fetchSpy = jest.fn(() => Promise.reject(new Error('fetch was called')));
-  global.fetch = fetchSpy as unknown as typeof fetch;
+  global.fetch = jest.fn(() =>
+    Promise.reject(new Error('fetch was called')),
+  ) as unknown as typeof fetch;
 
   clearMonobankService();
   monobankTokenService.clear();
   monobankAccountSelectionService.clear();
   useTransactionsStore.getState().reset();
+  useMonobankStore.setState({
+    status: 'idle',
+    clientName: null,
+    errorMessage: null,
+    accounts: [],
+    selectedAccountIds: null,
+  });
+
+  // connect() fires its sync and deliberately does not await it. Wrap the store's own
+  // action to keep the promise connect throws away — the REAL sync still runs, so the
+  // "already filled the database" precondition can be awaited rather than guessed at.
+  triggeredSync = Promise.resolve();
+  realSyncFromMonobank = useTransactionsStore.getState().syncFromMonobank;
+  useTransactionsStore.setState({
+    syncFromMonobank: (userId, options) => {
+      triggeredSync = realSyncFromMonobank(userId, options);
+      return triggeredSync;
+    },
+  });
 });
 
-afterEach(() => {
+afterEach(async () => {
+  useTransactionsStore.setState({ syncFromMonobank: realSyncFromMonobank });
   global.fetch = originalFetch;
   delete config.OPES_ENV;
   clearMonobankService();
   monobankTokenService.clear();
   monobankAccountSelectionService.clear();
+  await teardown();
 });
 
-describe('useTransactionsStore.syncFromMonobank', () => {
-  it('AC-005 — makes no fetch call at all in a sandbox build', async () => {
-    config.OPES_ENV = 'sandbox';
-    monobankTokenService.save('token-sandbox', 'Test Client');
+/** The criteria's given: a sandbox connect that has already filled the database. */
+const connectAndFill = async (): Promise<void> => {
+  config.OPES_ENV = 'sandbox';
+  await useMonobankStore.getState().connect(USER_ID, TEST_TOKEN);
+  await triggeredSync;
 
-    // syncFromMonobank returns early when the storage holds no token, so without
-    // this the zero below would be true for the wrong reason. The criterion is that
-    // the call does not exist, not that a token fails.
-    expect(monobankTokenService.get()?.token).toBe('token-sandbox');
+  // Stated as a precondition, not assumed: a second sync over an empty database would
+  // satisfy both criteria below for reasons that have nothing to do with them.
+  expect(await transactionsRepository.getAll()).toHaveLength(44);
+};
 
-    await useTransactionsStore.getState().syncFromMonobank('user-1');
+describe('useTransactionsStore.syncFromMonobank run a second time', () => {
+  it('AC-013 — updates the existing rows instead of adding a second copy', async () => {
+    await connectAndFill();
 
-    expect(fetchSpy).toHaveBeenCalledTimes(0);
+    await useTransactionsStore.getState().syncFromMonobank(USER_ID);
+
+    // Statement ids are fixed literals, so upsertBatch has rows to update. A fake
+    // whose ids moved with the clock would leave 88 here.
+    expect(await transactionsRepository.getAll()).toHaveLength(44);
+  });
+
+  it('AC-014 — settles back to idle rather than to an error', async () => {
+    await connectAndFill();
+
+    await useTransactionsStore.getState().syncFromMonobank(USER_ID);
+
+    // The fake carries no rate limiter, so the second sync is not refused the way a
+    // real one-request-per-60s endpoint would refuse it.
+    expect(useTransactionsStore.getState().syncStatus).toBe('idle');
   });
 });

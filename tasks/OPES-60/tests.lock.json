@@ -1,0 +1,52 @@
+{
+  "schema": 1,
+  "plan_sha256": "b1d0e860c4a428cd5bc076ad3ed54d9da875a53cda459151e646c04c9e8b4913",
+  "mode": "per-test",
+  "at": "2026-08-20T13:41:57Z",
+  "tests": {
+    "src/features/monobank/state/useMonobankStore.test.ts": "90e4745511156939f1399c314671c76a81db5cbe09da3bae530f3bf0427978ab",
+    "src/features/transactions/state/useTransactionsStore.test.ts": "64b06ff7c79bafe8b49e6c2004dd77ca18f193b71b2f272aeac6bbcd11fcd925",
+    "src/services/monobank/sandbox/SandboxMonobankService.test.ts": "ac15fa53502577f78141637c5bdb4041a3cbe1c4a776a9e488a126471e43fc33",
+    "src/services/monobank/serviceInstance.test.ts": "ca1e61f575de80d5e46e7e9570b1cdad86a5df17ae82708211275dfdc0936de0",
+    "test/CLAUDE.md": "2239846ae20caf9ce773446592c28676be11ebb10a3eca37e1359bf3827d7b42",
+    "test/db/createTestDatabase.ts": "3980e511bdfadbf7191d2f9aacefe87acf2a1f72664bcf87b0c85c3472f256b9",
+    "test/db/index.ts": "72fd8c0649ae1635bd9d334f06bea079c466e7b34c554b3d6d02f74ce2790005",
+    "test/doubles/cardsRepository.ts": "951c699b99c1ebbf1c1ce804b9bca35352ef2e4273d849bcc324b051d2774195",
+    "test/doubles/index.ts": "2600505446129e2b078a94ebc0011386062c6c29dea8e09d805777baf8baab5a",
+    "test/factories/card.ts": "848ef38faae77d256265132657369a0398784c0bf9ba332de1d52bf2e070a511",
+    "test/factories/index.ts": "bdbfee3add31c224b058f925dd235b65b91ad6989097b9e9e46086e53115cf50",
+    "test/factories/transaction.ts": "8aaa65083d628bd14f5b3711ab860fc131a8d9142a419220b27beb2b93d3eca6",
+    "test/index.ts": "e6cabbb61f2984dcc29c2f16e3b86fef67c01ffb58767c10f063c69a405d43c4",
+    "test/setup.js": "d816ef0a8996f218d7cd0c8830d995613f8f6149eaf61b19bb2eb672e7a6f70e"
+  },
+  "covering": [
+    "SandboxMonobankService token resolution AC-002 — raises the production UNAUTHORIZED error for a token that is not a test user::SandboxMonobankService token resolution AC-002 — raises the production UNAUTHORIZED error for a token that is not a test user",
+    "SandboxMonobankService statements AC-008 — returns the whole fixture set, ignoring the requested range::SandboxMonobankService statements AC-008 — returns the whole fixture set, ignoring the requested range",
+    "SandboxMonobankService statements AC-009 — dates 4 of them on the day of the call::SandboxMonobankService statements AC-009 — dates 4 of them on the day of the call",
+    "SandboxMonobankService statements AC-010 — dates none of them after the call moment::SandboxMonobankService statements AC-010 — dates none of them after the call moment",
+    "SandboxMonobankService statements AC-011 — spreads them across 3 distinct calendar months::SandboxMonobankService statements AC-011 — spreads them across 3 distinct calendar months",
+    "SandboxMonobankService statements AC-012 — carries a donations MCC on 4 of them::SandboxMonobankService statements AC-012 — carries a donations MCC on 4 of them",
+    "getMonobankService AC-001 — hands back a real MonobankService in a non-sandbox build::getMonobankService AC-001 — hands back a real MonobankService in a non-sandbox build",
+    "useTransactionsStore.syncFromMonobank run a second time AC-013 — updates the existing rows instead of adding a second copy::useTransactionsStore.syncFromMonobank run a second time AC-013 — updates the existing rows instead of adding a second copy",
+    "useTransactionsStore.syncFromMonobank run a second time AC-014 — settles back to idle rather than to an error::useTransactionsStore.syncFromMonobank run a second time AC-014 — settles back to idle rather than to an error",
+    "useMonobankStore.connect in a sandbox build AC-003 — reports the production 401 text for a token that is not a test user::useMonobankStore.connect in a sandbox build AC-003 — reports the production 401 text for a token that is not a test user",
+    "useMonobankStore.connect in a sandbox build AC-004 — connects on a test token surrounded by whitespace::useMonobankStore.connect in a sandbox build AC-004 — connects on a test token surrounded by whitespace",
+    "useMonobankStore.connect in a sandbox build AC-005 — makes no fetch call at all, connect and its sync together::useMonobankStore.connect in a sandbox build AC-005 — makes no fetch call at all, connect and its sync together",
+    "useMonobankStore.connect in a sandbox build AC-006 — creates one Monobank card in an empty database::useMonobankStore.connect in a sandbox build AC-006 — creates one Monobank card in an empty database",
+    "useMonobankStore.connect in a sandbox build AC-007 — writes every fixture transaction through the production sync::useMonobankStore.connect in a sandbox build AC-007 — writes every fixture transaction through the production sync",
+    "useMonobankStore.connect in a sandbox build AC-015 — refills the database after a sandbox reset empties it::useMonobankStore.connect in a sandbox build AC-015 — refills the database after a sandbox reset empties it"
+  ],
+  "impl_frozen": {
+    "src/services/monobank/types.ts": "091403905e1f9aa037e2c2025a073224ad1aa622c7ae85c8585fb39025571054",
+    "src/services/monobank/api.ts": "34e46ded0b1695303c1271de7927a1873c58df2aa12df46518d26f6f67d0c0ce",
+    "src/services/monobank/serviceInstance.ts": "f49c511c5304bd8dffd773fcf5a6ab6308d74b34a9f34859aacc101023bdfb35",
+    "src/services/monobank/index.ts": "3fa95d97405bc1d91cb2f0b5d32740760f86be5135d8ea378b48ddbb02cffaa4",
+    "src/services/sync/TransactionSyncService.ts": "3dc5542001fdb02872a32df1e9be3c41f7cb5977c274c2f58e1a56538ff9b628",
+    "src/services/monobank/CLAUDE.md": "500aac468f53019c75914f379765ab42ec134e935b2ef2192d498e2109f484fa"
+  },
+  "impl_created": [
+    "src/services/monobank/sandbox/SandboxMonobankService.ts",
+    "src/services/monobank/sandbox/fixtures.ts",
+    "src/services/monobank/sandbox/index.ts"
+  ]
+}
