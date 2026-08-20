@@ -197,6 +197,38 @@
       "seq": 12,
       "at": "2026-08-20T12:56:01Z",
       "prev": "75693acccb9ef447ab14a6e74eba0502cb92d050a4aaf8483807710ed244d232"
+    },
+    {
+      "station": "plan-judge",
+      "attempt": 1,
+      "agent": "aif-plan-judge",
+      "agent_id": "a7ed16c3751a306a1",
+      "model": "claude-sonnet-5",
+      "usage": {
+        "input_tokens": 104,
+        "output_tokens": 811,
+        "cache_read_input_tokens": 672015,
+        "cache_creation_input_tokens": 70629
+      },
+      "num_turns": 15,
+      "cost_usd": null,
+      "cost_source": "tokens-only",
+      "result": "ran",
+      "summary": "I read `tasks/OPES-60/plan.md` and `tasks/OPES-60/spec.md`, then worked through every file the plan touches against the current repository state:",
+      "seq": 13,
+      "at": "2026-08-20T13:00:24Z",
+      "prev": "a21636bb3137be7593c2019594f6cdf6ad1b1256eb2017078bf3976a831896cf"
+    },
+    {
+      "gate": "plan-judge",
+      "result": "pass",
+      "subject": "verdict-plan.json",
+      "subject_sha256": "12c88e494a738fcaf2f371bc78a46399224139d4a7d72f576473399cf8cc4443",
+      "gate_sha256": "59675a1bad164f7ab3c03f8c0367a946515f818c47fbd318ef4f6aca3cf6f773",
+      "reason": "plan-judge: nothing left to guess, manifest covers the work",
+      "seq": 14,
+      "at": "2026-08-20T13:00:30Z",
+      "prev": "6665b15877f387460b7e398640ab4dfe81d1167a554cb247b38b7c481ef3441e"
     }
   ],
   "accepted_at": null
