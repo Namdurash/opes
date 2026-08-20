@@ -2,7 +2,7 @@ import type { Transaction } from '../../domain/transactions';
 import type { Card } from '../../domain/cards';
 import type { TransactionsRepositoryContract } from '../../models/transactions';
 import type { CardsRepositoryContract } from '../../models/cards';
-import type { MonobankService } from '../monobank/api';
+import type { MonobankApi } from '../monobank/types';
 import { MonobankError } from '../monobank/types';
 import { mapStatementToTransaction } from './mappers';
 
@@ -23,7 +23,7 @@ const buildFromDate = (latestOccurredAt: string | null): Date => {
 
 const fetchAccountTransactions = async (
   card: Card,
-  monobankService: MonobankService,
+  monobankService: MonobankApi,
   transactionsRepository: TransactionsRepositoryContract,
 ): Promise<Transaction[]> => {
   const latestOccurredAt = await transactionsRepository.getLatestOccurredAt(card.id);
@@ -42,7 +42,7 @@ export class TransactionSyncService {
 
   async syncAllAccounts(
     userId: string,
-    monobankService: MonobankService,
+    monobankService: MonobankApi,
     selectedAccountIds?: string[] | null,
   ): Promise<SyncResult> {
     const monobankCards = await this.cardsRepository.getMonobankCards(userId);

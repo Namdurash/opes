@@ -85,7 +85,27 @@ export interface MonobankStatement {
   comment?: string;
 }
 
+// ─── Service Contract ──────────────────────────────────────────────────────
+
+/**
+ * The shared surface both `MonobankService` (real API) and `SandboxMonobankService`
+ * (sandbox fake) implement. Every caller — `TransactionSyncService`, the stores —
+ * is typed against this interface rather than the concrete class, so which one
+ * `getMonobankService` hands back is invisible above the factory.
+ */
+export interface MonobankApi {
+  getClientInfo(): Promise<MonobankClientInfo>;
+  getStatements(accountId: string, from: Date, to: Date): Promise<MonobankStatement[]>;
+}
+
 // ─── Error Types ───────────────────────────────────────────────────────────
+
+/**
+ * The exact text the real 401 branch (api.ts) raises, extracted so the sandbox
+ * fake can raise the identical string instead of growing its own "test mode"
+ * message.
+ */
+export const MONOBANK_UNAUTHORIZED_MESSAGE = 'Invalid or missing Monobank token.';
 
 export type MonobankErrorCode =
   | 'UNAUTHORIZED'

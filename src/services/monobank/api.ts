@@ -3,8 +3,9 @@ import type {
   MonobankRawStatementItem,
   MonobankClientInfo,
   MonobankStatement,
+  MonobankApi,
 } from './types';
-import { MonobankError } from './types';
+import { MonobankError, MONOBANK_UNAUTHORIZED_MESSAGE } from './types';
 import { RateLimiter } from './rateLimiter';
 import { transformClientInfo, transformStatements } from './transformers';
 
@@ -16,7 +17,7 @@ const MAX_STATEMENT_RANGE_SEC = 31 * 24 * 60 * 60;
 const RATE_KEY_CLIENT_INFO = '/personal/client-info';
 const statementRateKey = (accountId: string) => `/personal/statement/${accountId}`;
 
-export class MonobankService {
+export class MonobankService implements MonobankApi {
   private readonly rateLimiter = new RateLimiter();
 
   constructor(private readonly token: string) {}
@@ -90,7 +91,7 @@ export class MonobankService {
 
     switch (response.status) {
       case 401:
-        throw new MonobankError('UNAUTHORIZED', 'Invalid or missing Monobank token.');
+        throw new MonobankError('UNAUTHORIZED', MONOBANK_UNAUTHORIZED_MESSAGE);
       case 403:
         throw new MonobankError('FORBIDDEN', 'Access denied by Monobank API.');
       case 429: {
