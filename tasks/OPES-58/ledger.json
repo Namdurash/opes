@@ -141,6 +141,25 @@
       "seq": 9,
       "at": "2026-08-23T13:53:59Z",
       "prev": "0c485f3531acabe2b9037b602766594ecb4cef24f7e6fa3cd4d0bd38260317cc"
+    },
+    {
+      "event": "approve",
+      "subject": "spec.md",
+      "subject_sha256": "ac4f9383c4f362d996e6e02f3d87d39262a8bce47451ea019715a3200b65ef97",
+      "approver": "Namdurash",
+      "channel": "chat",
+      "confirmation": "Accept as specified — nothing missing; AS-001 through AS-010 are accepted as written, including the unordered non-atomic save()/clear().",
+      "acknowledged_gaps": [
+        "VG-001",
+        "VG-002",
+        "VG-003",
+        "VG-004",
+        "VG-005"
+      ],
+      "gaps_confirmation": "Accept all five gaps — ship with VG-001 through VG-005 unverified. They come back as a manual checklist at the end of the cycle, and OPES-63/OPES-64 close two of them.",
+      "seq": 10,
+      "at": "2026-08-23T13:59:17Z",
+      "prev": "5ea6cade50e238d9de38cae3fd7c553912c32b4c87c08f9d875a6a2cd91673ce"
     }
   ],
   "accepted_at": null
