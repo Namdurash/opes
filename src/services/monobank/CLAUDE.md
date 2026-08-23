@@ -15,7 +15,7 @@ Wraps the Monobank Personal API. Optional — the app must function without it.
 - `SandboxMonobankService` implements `MonobankApi`, resolving the token to a fixture user on every call (never at construction) through the token map in `sandbox/fixtures.ts`. An unlisted token raises the same `MonobankError('UNAUTHORIZED', MONOBANK_UNAUTHORIZED_MESSAGE)` a real 401 would.
 - The fake **carries no rate limiter, no timer and no module-level mutable state** — only the dates on its statements move, derived from the clock at call time.
 - Fixtures are stored as raw API shapes and returned through the production `transformClientInfo` / `transformStatements`, so minor-unit and currency-symbol conversion is never restated.
-- Import it through the barrel: `import { SandboxMonobankService } from './sandbox'` (or the monobank barrel).
+- Import it through `sandbox/`'s own barrel: `import { SandboxMonobankService } from './sandbox'`. The monobank barrel deliberately does **not** re-export it — `getMonobankService` is the only caller, and nothing above the factory should be able to reach for the fake by name.
 
 ## Rate limiting
 

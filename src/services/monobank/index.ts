@@ -17,4 +17,3 @@ export type {
   MonobankRawAccount,
   MonobankRawStatementItem,
 } from './types';
-export { SandboxMonobankService } from './sandbox';
