@@ -1,32 +1,17 @@
-import type { Card } from '../../../domain/cards';
-import type { MonobankAccount } from '../../../services/monobank/types';
+import type { Database } from '@nozbe/watermelondb';
+import { createTestDatabase } from '../../../../test/db';
 
-// Test knobs. The store news up its repository and reaches its sibling store at
-// module scope, so those modules are the only seam these cases have. Held on hoisted
-// `var`s so the hoisted jest.mock factories can read them at call time.
-var mockUpsertMonobankCards: jest.Mock;
-var mockGetMonobankCards: jest.Mock;
-var mockSyncFromMonobank: jest.Mock;
+// The repositories reach WatermelonDB through a module singleton rather than an
+// injected handle, so the only way to point them at a throwaway database is to
+// replace that module. The barrel is left alone — it also re-exports the schema and
+// model classes the test helper itself needs.
+//
+// `var`, not `let`: the jest.mock factory is hoisted above this declaration.
+var mockDatabase: Database;
 
-// The methods forward rather than the constructor returning the double: the store's
-// repository is constructed at import time, long before beforeEach assigns anything.
-jest.mock('../../../models/cards', () => ({
-  CardsRepository: class {
-    upsertMonobankCards(userId: string, accounts: MonobankAccount[]): Promise<Card[]> {
-      return mockUpsertMonobankCards(userId, accounts);
-    }
-    getMonobankCards(userId: string): Promise<Card[]> {
-      return mockGetMonobankCards(userId);
-    }
-  },
-}));
-
-// connect() kicks off a sync on success. That trigger has its own criterion in
-// useTransactionsStore.test.ts; here it is a knob, so a second HTTP path cannot
-// muddy a call count these cases read as evidence.
-jest.mock('../../transactions/state/useTransactionsStore', () => ({
-  useTransactionsStore: {
-    getState: () => ({ syncFromMonobank: mockSyncFromMonobank, reset: jest.fn() }),
+jest.mock('../../../services/database/database', () => ({
+  get database() {
+    return mockDatabase;
   },
 }));
 
@@ -35,84 +20,159 @@ jest.mock('../../../shared/ui/bottom-sheet', () => ({
   showErrorBottomSheet: jest.fn(),
 }));
 
-// Nothing here should reach WatermelonDB, and merely importing the singleton opens a
-// real Loki instance whose autosave interval outlives the run. Refuse to hand it out,
-// so a case that starts depending on it says so loudly.
-jest.mock('../../../services/database/database', () => ({
-  get database(): never {
-    throw new Error(
-      'useMonobankStore tests stub their repository; the real database must not be used',
-    );
-  },
-}));
-
 import Config from 'react-native-config';
-import { isSandboxBuild } from '../../../shared/env';
+import { CardsRepository } from '../../../models/cards';
+import { TransactionsRepository } from '../../../models/transactions';
+import { MONOBANK_UNAUTHORIZED_MESSAGE } from '../../../services/monobank';
 import { clearMonobankService } from '../../../services/monobank/serviceInstance';
 import { monobankTokenService } from '../../../services/monobank/MonobankTokenService';
+import { monobankAccountSelectionService } from '../../../services/monobank/MonobankAccountSelectionService';
+import { resetSandboxEnvironment } from '../../../services/sandbox';
+import { useTransactionsStore } from '../../transactions/state/useTransactionsStore';
 import { useMonobankStore } from './useMonobankStore';
 
 const config = Config as Record<string, string | undefined>;
 
-const CLIENT_INFO = {
-  clientId: 'client-1',
-  name: 'Test Client',
-  webHookUrl: '',
-  permissions: 'psfj',
-  accounts: [],
-  jars: [],
-};
+const USER_ID = 'user-1';
+const TEST_TOKEN = 'test-user-1';
+
+type SyncAction = ReturnType<typeof useTransactionsStore.getState>['syncFromMonobank'];
 
 const originalFetch = global.fetch;
+
+let cardsRepository: CardsRepository;
+let transactionsRepository: TransactionsRepository;
+let teardown: () => Promise<void>;
 let fetchSpy: jest.Mock;
+let realSyncFromMonobank: SyncAction;
+let triggeredSync: Promise<void>;
 
 beforeEach(() => {
-  mockUpsertMonobankCards = jest.fn().mockResolvedValue([]);
-  mockGetMonobankCards = jest.fn().mockResolvedValue([]);
-  mockSyncFromMonobank = jest.fn().mockResolvedValue(undefined);
+  const testDatabase = createTestDatabase();
+  mockDatabase = testDatabase.database;
+  teardown = testDatabase.teardown;
+
+  // Read-side handles for the assertions. The store's own repositories are separate
+  // instances, but they all reach the one throwaway database above.
+  cardsRepository = new CardsRepository();
+  transactionsRepository = new TransactionsRepository();
 
   fetchSpy = jest.fn(() => Promise.reject(new Error('fetch was called')));
   global.fetch = fetchSpy as unknown as typeof fetch;
 
-  // The service is cached per token and carries the rate limiter with it; without
-  // this the second case would be refused before it could reach the HTTP boundary.
   clearMonobankService();
   monobankTokenService.clear();
+  monobankAccountSelectionService.clear();
+  useTransactionsStore.getState().reset();
+  useMonobankStore.setState({
+    status: 'idle',
+    clientName: null,
+    errorMessage: null,
+    accounts: [],
+    selectedAccountIds: null,
+  });
+
+  // connect() fires its sync and deliberately does not await it — that fire-and-forget
+  // shape is the product's, and it stays. Wrap the store's own action to keep the
+  // promise connect throws away: the REAL sync still runs and still writes the
+  // database, so "settles together with the sync it triggers" becomes an await rather
+  // than a guess about how many microtasks are enough.
+  triggeredSync = Promise.resolve();
+  realSyncFromMonobank = useTransactionsStore.getState().syncFromMonobank;
+  useTransactionsStore.setState({
+    syncFromMonobank: (userId, options) => {
+      triggeredSync = realSyncFromMonobank(userId, options);
+      return triggeredSync;
+    },
+  });
 });
 
-afterEach(() => {
+afterEach(async () => {
+  useTransactionsStore.setState({ syncFromMonobank: realSyncFromMonobank });
   global.fetch = originalFetch;
   delete config.OPES_ENV;
   clearMonobankService();
   monobankTokenService.clear();
+  monobankAccountSelectionService.clear();
+  await teardown();
 });
 
-describe('useMonobankStore.connect', () => {
-  it('AC-004 — makes no fetch call at all in a sandbox build', async () => {
+const connect = async (token: string): Promise<void> => {
+  await useMonobankStore.getState().connect(USER_ID, token);
+  await triggeredSync;
+};
+
+describe('useMonobankStore.connect in a sandbox build', () => {
+  it('AC-003 — reports the production 401 text for a token that is not a test user', async () => {
     config.OPES_ENV = 'sandbox';
 
-    await useMonobankStore.getState().connect('user-1', 'token-sandbox');
+    await connect('uKqRr3fLxYt0');
 
-    // Not "the token was rejected", not "the request failed" — the criterion is that
-    // the call does not exist. Zero, at the HTTP boundary.
+    // The text is pinned twice over. Once to its literal, character for character
+    // including the full stop — this is the string the real 401 branch of api.ts
+    // inlines today, and extracting it must not change it. Once to the store, so the
+    // sandbox build shows exactly what the production build shows and no separate
+    // "test mode" message can grow beside it.
+    expect(MONOBANK_UNAUTHORIZED_MESSAGE).toBe('Invalid or missing Monobank token.');
+    expect(useMonobankStore.getState().errorMessage).toBe(MONOBANK_UNAUTHORIZED_MESSAGE);
+  });
+
+  it('AC-004 — connects on a test token surrounded by whitespace', async () => {
+    config.OPES_ENV = 'sandbox';
+
+    await connect('  test-user-1  ');
+
+    // Trimming stays in connect(); the fake compares exactly. Both halves have to
+    // hold for this to be 'connected'.
+    expect(useMonobankStore.getState().status).toBe('connected');
+  });
+
+  it('AC-005 — makes no fetch call at all, connect and its sync together', async () => {
+    config.OPES_ENV = 'sandbox';
+
+    await connect(TEST_TOKEN);
+
+    // A connect that failed would report zero fetches too, and for the wrong reason.
+    // Say first that the whole path ran.
+    expect(useMonobankStore.getState().status).toBe('connected');
+    expect(await transactionsRepository.getAll()).not.toHaveLength(0);
+
     expect(fetchSpy).toHaveBeenCalledTimes(0);
   });
 
-  it('AC-006 — reaches the Monobank host in a normal build', async () => {
-    delete config.OPES_ENV;
-    // The criterion's precondition is a NON-sandbox build. Until the flag exists
-    // there is no such thing as a build here at all, so the precondition is
-    // established through the product's own seam rather than assumed.
-    expect(isSandboxBuild?.()).toBe(false);
+  it('AC-006 — creates one Monobank card in an empty database', async () => {
+    config.OPES_ENV = 'sandbox';
+    expect(await cardsRepository.getMonobankCards(USER_ID)).toHaveLength(0);
 
-    fetchSpy.mockResolvedValue({
-      ok: true,
-      status: 200,
-      json: () => Promise.resolve(CLIENT_INFO),
-    });
+    await connect(TEST_TOKEN);
 
-    await useMonobankStore.getState().connect('user-1', 'token-normal');
+    // The card comes from the production upsertMonobankCards path, fed by the fake's
+    // one-account client-info fixture — the fake creates no card of its own.
+    expect(await cardsRepository.getMonobankCards(USER_ID)).toHaveLength(1);
+  });
 
-    expect(String(fetchSpy.mock.calls[0]?.[0])).toContain('api.monobank.ua');
+  it('AC-007 — writes every fixture transaction through the production sync', async () => {
+    config.OPES_ENV = 'sandbox';
+    expect(await transactionsRepository.getAll()).toHaveLength(0);
+
+    await connect(TEST_TOKEN);
+
+    expect(await transactionsRepository.getAll()).toHaveLength(44);
+  });
+
+  it('AC-015 — refills the database after a sandbox reset empties it', async () => {
+    config.OPES_ENV = 'sandbox';
+
+    await connect(TEST_TOKEN);
+    expect(await transactionsRepository.getAll()).toHaveLength(44);
+
+    await resetSandboxEnvironment();
+    expect(await transactionsRepository.getAll()).toHaveLength(0);
+
+    // Nothing is cleared between the two connects but the reset itself: the fake keeps
+    // no state, so a second connect has to reach the same place as the first.
+    await connect(TEST_TOKEN);
+
+    expect(await transactionsRepository.getAll()).toHaveLength(44);
   });
 });

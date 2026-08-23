@@ -6,8 +6,9 @@ export {
   MonobankAccountSelectionService,
   monobankAccountSelectionService,
 } from './MonobankAccountSelectionService';
-export { MonobankError } from './types';
+export { MonobankError, MONOBANK_UNAUTHORIZED_MESSAGE } from './types';
 export type {
+  MonobankApi,
   MonobankClientInfo,
   MonobankAccount,
   MonobankStatement,

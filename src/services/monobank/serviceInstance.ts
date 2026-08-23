@@ -1,24 +1,29 @@
 import { isSandboxBuild } from '../../shared/env';
 import { MonobankService } from './api';
-import { MonobankError } from './types';
+import { SandboxMonobankService } from './sandbox';
+import type { MonobankApi } from './types';
 
-let cached: { token: string; service: MonobankService } | null = null;
+let cached: { token: string; sandbox: boolean; service: MonobankApi } | null = null;
 
 /**
  * The single door to Monobank — every sync trigger reaches the API through here.
  *
- * In the sandbox build the door is shut before the cache is even consulted, so no
- * MonobankService is ever constructed and there is nothing left that could reach the
- * network. The isolation is the absence of the call, not a token that fails.
+ * In the sandbox build the door hands back `SandboxMonobankService` instead of the
+ * real `MonobankService` — same `MonobankApi` shape, so no caller above this factory
+ * changes. The cache key carries the sandbox flag alongside the token: the flag can
+ * flip between test cases while the token stays the same, and a token-only key would
+ * hand back the wrong class.
  */
-export const getMonobankService = (token: string): MonobankService => {
-  if (isSandboxBuild()) {
-    throw new MonobankError('FORBIDDEN', 'Monobank is unavailable in the sandbox build.');
+export const getMonobankService = (token: string): MonobankApi => {
+  const sandbox = isSandboxBuild();
+
+  if (!cached || cached.token !== token || cached.sandbox !== sandbox) {
+    const service: MonobankApi = sandbox
+      ? new SandboxMonobankService(token)
+      : new MonobankService(token);
+    cached = { token, sandbox, service };
   }
 
-  if (!cached || cached.token !== token) {
-    cached = { token, service: new MonobankService(token) };
-  }
   return cached.service;
 };
 
