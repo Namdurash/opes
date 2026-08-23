@@ -224,6 +224,38 @@
       "seq": 14,
       "at": "2026-08-23T14:07:20Z",
       "prev": "9e6bfe49df9b25cc81fc22f627ee4e8ded81790a38df2992444ff009a9447784"
+    },
+    {
+      "station": "plan-judge",
+      "attempt": 1,
+      "agent": "aif-plan-judge",
+      "agent_id": "a571ecc8816a65529",
+      "model": "claude-sonnet-5",
+      "usage": {
+        "input_tokens": 38,
+        "output_tokens": 2032,
+        "cache_read_input_tokens": 811274,
+        "cache_creation_input_tokens": 59424
+      },
+      "num_turns": 19,
+      "cost_usd": null,
+      "cost_source": "tokens-only",
+      "result": "ran",
+      "summary": "I judged `tasks/OPES-58/plan.md` against `tasks/OPES-58/spec.md` and wrote the verdict to `/Users/kyrylokorotych/Desktop/opes/tasks/OPES-58/verdict-plan.json`.",
+      "seq": 15,
+      "at": "2026-08-23T14:10:41Z",
+      "prev": "6db155c7d69f24801d3a379d5f74aeaf3ef017f62f954ea208230d94afdb7c6d"
+    },
+    {
+      "gate": "plan-judge",
+      "result": "pass",
+      "subject": "verdict-plan.json",
+      "subject_sha256": "2fc0c34710a561795c686b0fc49acd6b62418f2ca4410f5ca6a20e85c0ced0bc",
+      "gate_sha256": "59675a1bad164f7ab3c03f8c0367a946515f818c47fbd318ef4f6aca3cf6f773",
+      "reason": "plan-judge: nothing left to guess, manifest covers the work",
+      "seq": 16,
+      "at": "2026-08-23T14:10:48Z",
+      "prev": "adb760f377a9f0d9c544785659c5d1a24f0b9585e9ebf3cca54a2ad80ba8fcb7"
     }
   ],
   "accepted_at": null
