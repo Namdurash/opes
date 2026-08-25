@@ -15,8 +15,7 @@
       "src/services/monobank/CLAUDE.md"
     ],
     "tests": [
-      "src/services/secret-storage/cryptoKey.test.ts",
-      "src/services/monobank/MonobankTokenService.test.ts"
+      "src/services/secret-storage/cryptoKey.test.ts"
     ] },
   "decisions": [
     { "id": "D-001",
@@ -109,7 +108,20 @@
 
     { "id": "D-021",
       "statement": "Touch no call site of save/get/clear, no file under src/features/, and no plaintext-token migration.",
-      "because": "the await propagation landed in the previous round and the migration is OPES-63" } ],
+      "because": "the await propagation landed in the previous round and the migration is OPES-63" },
+
+    { "id": "D-022",
+      "statement": "Keep src/services/monobank/MonobankTokenService.test.ts out of files.tests and out of this round's red oracle.",
+      "because": "it covers behaviour round one already implemented, so it cannot honestly go red — a limit of verify-red, which cannot tell a test written this round from an inherited one" },
+
+    { "id": "D-023",
+      "statement": "Keep that suite running as part of the ordinary jest run, since the green gate still requires the whole suite to pass.",
+      "because": "excluding it from the red oracle costs nothing in regression cover" },
+
+    { "id": "D-024",
+      "statement": "Leave the criterion-id renumbering the tests station already applied to MonobankTokenService.test.ts exactly as it stands.",
+      "because": "the spec renumbered its criteria and those markers are now correct",
+      "rejected": "Do not revert the markers and do not restore the four criteria the spec cut." } ],
   "ac_coverage": {
     "AC-001": ["src/services/monobank/MonobankTokenService.ts"],
     "AC-002": ["src/services/monobank/MonobankTokenService.ts"],
@@ -204,10 +216,14 @@ a file. Both already satisfy their criteria. Do not edit them — in particular 
 `require` of the secret-storage barrel, which is load-bearing: that barrel constructs
 `new SecretStore()` at module load and that construction throws under Jest on purpose.
 
-The one thing that does change on their side is the test file: the spec renumbered its criteria, so
-the markers in `MonobankTokenService.test.ts` no longer match, and the four criteria the rewrite cut
-(the "returns a Promise" case, the plain empty-store null case, and the two `types.ts` signature
-cases) have no criterion left to carry. That is the test station's work, not the implementer's.
+`MonobankTokenService.test.ts` is deliberately **not** in `files.tests`. The spec renumbered its
+criteria, so the tests station has already repointed its markers and dropped the four cases the
+rewrite cut — the "returns a Promise" case, the plain empty-store null case, and the two `types.ts`
+signature cases. Leave that renumbering alone. The file stays out of this round's red oracle for a
+structural reason rather than a defect in it: the eleven criteria it carries were implemented in
+round one, so they pass already and cannot honestly go red, and `verify-red` cannot tell a test
+written this round from an inherited one. It still runs in the ordinary jest invocation, and the
+green gate still demands the whole suite pass, so nothing about regression cover changes.
 
 `AC-013` is a whole-repository `tsc --noEmit`, and it is mapped to the two type-checked files this
 round can break. The `await` propagation in its `given` is already in the tree from round one, and

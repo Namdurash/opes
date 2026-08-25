@@ -28,10 +28,10 @@ import type { SecretStorePort } from './MonobankTokenService';
 const TOKEN_KEY = 'monobank_personal_token';
 const CLIENT_NAME_KEY = 'monobank_client_name';
 
-// AC-007's `given`: the pre-OPES-58 plaintext copy is still sitting in MMKV under
+// AC-005's `given`: the pre-OPES-58 plaintext copy is still sitting in MMKV under
 // the very same key. Nothing in the service is supposed to reach it — this mock is
 // the trap. Were a fallback read ever added, `createMMKV` would answer with
-// 'legacy-tok' and AC-007 would go red, which is the entire point of holding it.
+// 'legacy-tok' and AC-005 would go red, which is the entire point of holding it.
 //
 // `var`, not `let`: the jest.mock factory is hoisted above this declaration and may
 // only close over a name that already exists at that point.
@@ -142,19 +142,7 @@ describe('MonobankTokenService.save', () => {
     expect(store.written.get(CLIENT_NAME_KEY)).toBe('Ada Lovelace');
   });
 
-  it('AC-003 — hands the caller a promise instead of completing synchronously', async () => {
-    const store = new RecordingSecretStore();
-    const service = new MonobankTokenService(store);
-
-    const saving = service.save('tok-1', 'Ada Lovelace');
-
-    // This is the whole reason every call site in this ticket grows an `await`:
-    // without a promise to hold, a caller cannot know the secret store finished.
-    expect(saving instanceof Promise).toBe(true);
-    await saving;
-  });
-
-  it('AC-010 — lets a rejected write reach the caller unchanged', async () => {
+  it('AC-008 — lets a rejected write reach the caller unchanged', async () => {
     const store = new RejectingSecretStore({
       on: 'set',
       error: new Error('boom-on-set'),
@@ -176,7 +164,7 @@ describe('MonobankTokenService.save', () => {
 });
 
 describe('MonobankTokenService.get', () => {
-  it('AC-004 — resolves the token held in the secret store', async () => {
+  it('AC-003 — resolves the token held in the secret store', async () => {
     const store = new RecordingSecretStore()
       .seed(TOKEN_KEY, 'tok-1')
       .seed(CLIENT_NAME_KEY, 'Ada Lovelace');
@@ -187,7 +175,7 @@ describe('MonobankTokenService.get', () => {
     expect(credentials?.token).toBe('tok-1');
   });
 
-  it('AC-005 — resolves the client name held in the secret store', async () => {
+  it('AC-004 — resolves the client name held in the secret store', async () => {
     const store = new RecordingSecretStore()
       .seed(TOKEN_KEY, 'tok-1')
       .seed(CLIENT_NAME_KEY, 'Ada Lovelace');
@@ -198,14 +186,7 @@ describe('MonobankTokenService.get', () => {
     expect(credentials?.clientName).toBe('Ada Lovelace');
   });
 
-  it('AC-006 — resolves null when the secret store holds neither key', async () => {
-    const store = new RecordingSecretStore();
-    const service = new MonobankTokenService(store);
-
-    expect(await service.get()).toBeNull();
-  });
-
-  it('AC-007 — resolves null rather than falling back to the plaintext copy', async () => {
+  it('AC-005 — resolves null rather than falling back to the plaintext copy', async () => {
     // The secret store is empty; the plaintext MMKV instance is not. AS-005 says
     // there is no fallback branch left to take, so the legacy value must stay
     // invisible — an already-connected user reads as disconnected until OPES-63.
@@ -218,7 +199,7 @@ describe('MonobankTokenService.get', () => {
     expect(await service.get()).toBeNull();
   });
 
-  it('AC-011 — lets a rejected read reach the caller unchanged', async () => {
+  it('AC-009 — lets a rejected read reach the caller unchanged', async () => {
     const store = new RejectingSecretStore({
       on: 'get',
       error: new Error('boom-on-get'),
@@ -237,7 +218,7 @@ describe('MonobankTokenService.get', () => {
 });
 
 describe('MonobankTokenService.clear', () => {
-  it('AC-008 — deletes monobank_personal_token', async () => {
+  it('AC-006 — deletes monobank_personal_token', async () => {
     const store = new RecordingSecretStore().seed(TOKEN_KEY, 'tok-1');
     const service = new MonobankTokenService(store);
 
@@ -246,7 +227,7 @@ describe('MonobankTokenService.clear', () => {
     expect(store.deleted).toContain(TOKEN_KEY);
   });
 
-  it('AC-009 — deletes monobank_client_name', async () => {
+  it('AC-007 — deletes monobank_client_name', async () => {
     const store = new RecordingSecretStore().seed(CLIENT_NAME_KEY, 'Ada Lovelace');
     const service = new MonobankTokenService(store);
 
@@ -257,33 +238,19 @@ describe('MonobankTokenService.clear', () => {
 });
 
 /**
- * The remaining criteria are about declarations, a compiler and a document — none of
- * which survives to runtime as a value. They are read off the source text and off
- * the compiler's own exit code, from the project root, which is where jest is
- * invoked from.
+ * The remaining two criteria are about a compiler and a document — neither of which
+ * survives to runtime as a value. They are read off the compiler's own exit code
+ * and off the source text, from the project root, which is where jest is invoked
+ * from.
+ *
+ * The spec's rewrite folded the two `types.ts` signature criteria into AS-011 and
+ * left them to the type-check below: a store whose async implementation did not
+ * match its declared interface cannot compile. So there is no longer a test that
+ * reads those two declarations as text, deliberately.
  */
-const declaredReturnType = (member: string): string | null => {
-  const source = readFileSync('src/features/monobank/types.ts', 'utf8');
-  const declaration = new RegExp(
-    `^\\s*${member}\\(\\s*\\):\\s*(.+?);\\s*$`,
-    'm',
-  ).exec(source);
-  return declaration === null ? null : declaration[1];
-};
-
-describe('MonobankStoreActions', () => {
-  it('AC-012 — declares loadSavedToken as returning Promise<string | null>', () => {
-    expect(declaredReturnType('loadSavedToken')).toBe('Promise<string | null>');
-  });
-
-  it('AC-013 — declares disconnect as returning Promise<void>', () => {
-    expect(declaredReturnType('disconnect')).toBe('Promise<void>');
-  });
-});
-
 describe('the repository after the await propagation', () => {
   it(
-    'AC-014 — type-checks with every awaited call site in place',
+    'AC-013 — type-checks with every awaited call site in place',
     () => {
       // The awaits this ticket adds are invisible to every other test here: what
       // establishes that the call sites were actually updated is the compiler.
@@ -301,7 +268,7 @@ describe('the repository after the await propagation', () => {
 });
 
 describe('src/services/monobank/CLAUDE.md', () => {
-  it('AC-015 — documents the token as living in secret-storage', () => {
+  it('AC-014 — documents the token as living in secret-storage', () => {
     const doc = readFileSync('src/services/monobank/CLAUDE.md', 'utf8');
     const section = doc
       .split(/^## /m)

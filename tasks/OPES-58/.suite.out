@@ -1,0 +1,2875 @@
+watchman warning:  Recrawled this watch 25 times, most recently because:
+MustScanSubDirs UserDroppedTo resolve, please review the information on
+https://facebook.github.io/watchman/docs/troubleshooting.html#recrawl
+To clear this warning, run:
+`watchman watch-del '/Users/kyrylokorotych/Desktop/opes' ; watchman watch-project '/Users/kyrylokorotych/Desktop/opes'`
+
+FAIL src/services/secret-storage/cryptoKey.test.ts
+  ● cryptoKey.generateKey resolves its random source at call time › AC-010 — draws from the source installed after the module was loaded
+
+    expect(received).toBe(expected) // Object.is equality
+
+    Expected: 1
+    Received: 0
+
+      87 |     generateKey();
+      88 |
+    > 89 |     expect(state.calls).toBe(1);
+         |                         ^
+      90 |   });
+      91 |
+      92 |   it('AC-011 — throws when the source is gone by the time it is called', () => {
+
+      at Object.toBe (src/services/secret-storage/cryptoKey.test.ts:89:25)
+
+  ● cryptoKey.generateKey resolves its random source at call time › AC-011 — throws when the source is gone by the time it is called
+
+    expect(received).toThrow(expected)
+
+    Expected substring: "random source"
+
+    Received function did not throw
+
+       98 |
+       99 |     // Fail closed (AS-015): no source means no key, never a Math.random draw.
+    > 100 |     expect(() => generateKey()).toThrow('random source');
+          |                                 ^
+      101 |   });
+      102 | });
+      103 |
+
+      at Object.toThrow (src/services/secret-storage/cryptoKey.test.ts:100:33)
+
+  ● index.js › AC-012 — imports the random-values polyfill before anything else
+
+    expect(received).toBe(expected) // Object.is equality
+
+    Expected: "react-native-get-random-values"
+    Received: "react-native"
+
+      123 |     const specifier = firstImportSpecifier(readFileSync('index.js', 'utf8'));
+      124 |
+    > 125 |     expect(specifier).toBe('react-native-get-random-values');
+          |                       ^
+      126 |   });
+      127 | });
+      128 |
+
+      at Object.toBe (src/services/secret-storage/cryptoKey.test.ts:125:23)
+
+  ● src/services/secret-storage/CLAUDE.md › AC-015 — records where the random bytes come from on device
+
+    expect(received).toContain(expected) // indexOf
+
+    Expected substring: "react-native-get-random-values"
+    Received string:    "# secret-storage — encrypted secrets at rest·
+    `SecretStore` keeps secrets encrypted at rest in a dedicated MMKV instance, keyed
+    by a 32-byte crypto-secure key held in the device Keychain. Import it through the
+    barrel (`index.ts`) — never the individual backend files.·
+    ```
+    new SecretStore({ keychain, encrypted, generateKey })   // constructor-DI
+      .get(key)    : Promise<string | null>   // stored string, or null if absent
+      .set(key, v) : Promise<void>
+      .delete(key) : Promise<void>            // silent no-op on an absent key
+    ```·
+    The three backends are constructor dependencies with real device defaults, so
+    tests inject fakes (mirrors `MonobankAccountSelectionService`).·
+    ## The two load-bearing rules·
+    1. **The encrypted store is never opened without its Keychain key.** Bootstrap is a
+       single memoized readiness Promise that every `get`/`set`/`delete` awaits. It reads
+       the Keychain key; opens the encrypted MMKV instance only with a real key; and, on
+       any read/write failure, rejects and opens nothing — never a plaintext or keyless
+       store. A rejected readiness is nulled so the next call retries.·
+    2. **Absent vs. transient is classified, not guessed.** `getGenericPassword`
+       resolving `false` is a *genuinely absent* key: mint a new key, write it, and wipe
+       the stale encrypted instance before opening (stale ciphertext under the old key is
+       discarded, not read back). Any *thrown/rejected* Keychain read is *transient*: the
+       stored data is preserved and the caller sees a rejection.·
+    ## Jest vs. device split·
+    - **Keychain** (`keychainKeyStore.ts`) reaches `react-native-keychain` only behind a
+      `typeof jest` guard via a lazy `require` — never a top-level import, so the
+      uninstalled/unmocked native module never loads under Jest (tests inject a fake
+      keychain). If the `require` throws on device, it propagates and bootstrap fails
+      closed — there is no in-memory keychain fallback.
+    - **Encrypted store** (`encryptedStore.ts`) uses `createMMKV({ id, encryptionKey,
+      encryptionType: 'AES-256' })` / `deleteMMKV(id)` on device and an in-memory `Map`
+      under Jest. A device open failure rejects — it never degrades in-memory.
+    - **Key generation** (`cryptoKey.ts`) draws 32 bytes from `crypto.getRandomValues`
+      (never `Math.random`) and base64-encodes them with a hand-rolled encoder (no
+      Buffer/btoa, no new dependency). The 32 is the raw byte count, measured before
+      encoding.·
+    The Keychain service/account names and the secret MMKV instance id are fixed
+    module-level constants.
+    "
+
+      131 |     const doc = readFileSync('src/services/secret-storage/CLAUDE.md', 'utf8');
+      132 |
+    > 133 |     expect(doc).toContain('react-native-get-random-values');
+          |                 ^
+      134 |   });
+      135 | });
+      136 |
+
+      at Object.toContain (src/services/secret-storage/cryptoKey.test.ts:133:17)
+
+  ● package.json › AC-016 — declares the polyfill as a runtime dependency
+
+    expect(received).toContain(expected) // indexOf
+
+    Expected value: "react-native-get-random-values"
+    Received array: ["@anthropic-ai/sdk", "@gorhom/bottom-sheet", "@hookform/resolvers", "@nozbe/watermelondb", "@react-native/new-app-screen", "@react-navigation/native", "@react-navigation/native-stack", "react", "react-hook-form", "react-native", …]
+
+      147 |     };
+      148 |
+    > 149 |     expect(Object.keys(dependencies)).toContain(
+          |                                       ^
+      150 |       'react-native-get-random-values',
+      151 |     );
+      152 |   });
+
+      at Object.toContain (src/services/secret-storage/cryptoKey.test.ts:149:39)
+
+PASS src/services/monobank/serviceInstance.test.ts
+PASS src/services/monobank/sandbox/SandboxMonobankService.test.ts
+PASS src/shared/utils/money.test.ts
+PASS src/services/secret-storage/SecretStore.test.ts
+PASS src/features/donations/utils.test.ts
+PASS scripts/checkTestConvention.test.ts
+PASS src/features/settings/utils.test.ts
+PASS src/features/transactions/state/useTransactionsViewModel.test.tsx
+PASS src/shared/env/env.test.ts
+PASS src/services/monobank/MonobankAccountSelectionService.test.ts
+PASS scripts/testConventionGuard.test.ts
+PASS src/services/database/createSqliteAdapter.test.ts
+PASS src/models/cards/CardsRepository.test.ts
+  ● Console
+
+    console.warn
+      [🍉] LokiJSAdapter {useIncrementalIndexedDB: false} option is now deprecated. If you rely on this feature, please file an issue
+
+      43 |     ) => DatabaseAdapter;
+      44 |
+    > 45 |   const adapter = new LokiJSAdapter({
+         |                   ^
+      46 |     schema: databaseSchema,
+      47 |     migrations: databaseMigrations,
+      48 |     useWebWorker: false,
+
+      at Logger._proto.warn (node_modules/@nozbe/watermelondb/utils/common/logger/index.js:27:47)
+      at new LokiJSAdapter (node_modules/@nozbe/watermelondb/adapters/lokijs/index.js:33:25)
+      at createTestDatabase (test/db/createTestDatabase.ts:45:19)
+      at Object.<anonymous> (src/models/cards/CardsRepository.test.ts:26:42)
+
+    console.log
+      [🍉] [Loki] Initializing IndexedDB
+
+      at Logger._proto.log (node_modules/@nozbe/watermelondb/utils/common/logger/index.js:23:46)
+
+    console.log
+      [🍉] [Loki] Database loaded
+
+      at Logger._proto.log (node_modules/@nozbe/watermelondb/utils/common/logger/index.js:23:46)
+
+    console.log
+      [🍉] [Loki] Empty database, setting up
+
+      at Logger._proto.log (node_modules/@nozbe/watermelondb/utils/common/logger/index.js:23:46)
+
+    console.log
+      [🍉] [Loki] Database is now reset
+
+      at Logger._proto.log (node_modules/@nozbe/watermelondb/utils/common/logger/index.js:23:46)
+
+    console.log
+      [🍉] [Loki] Initializing IndexedDB
+
+      at Logger._proto.log (node_modules/@nozbe/watermelondb/utils/common/logger/index.js:23:46)
+
+    console.log
+      [🍉] [Loki] Database loaded
+
+      at Logger._proto.log (node_modules/@nozbe/watermelondb/utils/common/logger/index.js:23:46)
+
+    console.log
+      [🍉] [Loki] Setting up schema
+
+      at Logger._proto.log (node_modules/@nozbe/watermelondb/utils/common/logger/index.js:23:46)
+
+    console.log
+      [🍉] [Loki] Database collections set up
+
+      at Logger._proto.log (node_modules/@nozbe/watermelondb/utils/common/logger/index.js:23:46)
+
+    console.log
+      [🍉] [Loki] Database is now reset
+
+      at Logger._proto.log (node_modules/@nozbe/watermelondb/utils/common/logger/index.js:23:46)
+
+    console.log
+      [🍉] [Loki] Initializing IndexedDB
+
+      at Logger._proto.log (node_modules/@nozbe/watermelondb/utils/common/logger/index.js:23:46)
+
+    console.log
+      [🍉] [Loki] Database loaded
+
+      at Logger._proto.log (node_modules/@nozbe/watermelondb/utils/common/logger/index.js:23:46)
+
+    console.log
+      [🍉] [Loki] Setting up schema
+
+      at Logger._proto.log (node_modules/@nozbe/watermelondb/utils/common/logger/index.js:23:46)
+
+    console.log
+      [🍉] [Loki] Database collections set up
+
+      at Logger._proto.log (node_modules/@nozbe/watermelondb/utils/common/logger/index.js:23:46)
+
+    console.warn
+      [🍉] LokiJSAdapter {useIncrementalIndexedDB: false} option is now deprecated. If you rely on this feature, please file an issue
+
+      43 |     ) => DatabaseAdapter;
+      44 |
+    > 45 |   const adapter = new LokiJSAdapter({
+         |                   ^
+      46 |     schema: databaseSchema,
+      47 |     migrations: databaseMigrations,
+      48 |     useWebWorker: false,
+
+      at Logger._proto.warn (node_modules/@nozbe/watermelondb/utils/common/logger/index.js:27:47)
+      at new LokiJSAdapter (node_modules/@nozbe/watermelondb/adapters/lokijs/index.js:33:25)
+      at createTestDatabase (test/db/createTestDatabase.ts:45:19)
+      at Object.<anonymous> (src/models/cards/CardsRepository.test.ts:26:42)
+
+    console.log
+      [🍉] [Loki] Initializing IndexedDB
+
+      at Logger._proto.log (node_modules/@nozbe/watermelondb/utils/common/logger/index.js:23:46)
+
+    console.log
+      [🍉] [Loki] Database loaded
+
+      at Logger._proto.log (node_modules/@nozbe/watermelondb/utils/common/logger/index.js:23:46)
+
+    console.log
+      [🍉] [Loki] Empty database, setting up
+
+      at Logger._proto.log (node_modules/@nozbe/watermelondb/utils/common/logger/index.js:23:46)
+
+    console.log
+      [🍉] [Loki] Database is now reset
+
+      at Logger._proto.log (node_modules/@nozbe/watermelondb/utils/common/logger/index.js:23:46)
+
+    console.log
+      [🍉] [Loki] Initializing IndexedDB
+
+      at Logger._proto.log (node_modules/@nozbe/watermelondb/utils/common/logger/index.js:23:46)
+
+    console.log
+      [🍉] [Loki] Database loaded
+
+      at Logger._proto.log (node_modules/@nozbe/watermelondb/utils/common/logger/index.js:23:46)
+
+    console.log
+      [🍉] [Loki] Setting up schema
+
+      at Logger._proto.log (node_modules/@nozbe/watermelondb/utils/common/logger/index.js:23:46)
+
+    console.log
+      [🍉] [Loki] Database collections set up
+
+      at Logger._proto.log (node_modules/@nozbe/watermelondb/utils/common/logger/index.js:23:46)
+
+    console.log
+      [🍉] [Loki] Database is now reset
+
+      at Logger._proto.log (node_modules/@nozbe/watermelondb/utils/common/logger/index.js:23:46)
+
+    console.log
+      [🍉] [Loki] Initializing IndexedDB
+
+      at Logger._proto.log (node_modules/@nozbe/watermelondb/utils/common/logger/index.js:23:46)
+
+    console.log
+      [🍉] [Loki] Database loaded
+
+      at Logger._proto.log (node_modules/@nozbe/watermelondb/utils/common/logger/index.js:23:46)
+
+    console.log
+      [🍉] [Loki] Setting up schema
+
+      at Logger._proto.log (node_modules/@nozbe/watermelondb/utils/common/logger/index.js:23:46)
+
+    console.log
+      [🍉] [Loki] Database collections set up
+
+      at Logger._proto.log (node_modules/@nozbe/watermelondb/utils/common/logger/index.js:23:46)
+
+    console.warn
+      [🍉] LokiJSAdapter {useIncrementalIndexedDB: false} option is now deprecated. If you rely on this feature, please file an issue
+
+      43 |     ) => DatabaseAdapter;
+      44 |
+    > 45 |   const adapter = new LokiJSAdapter({
+         |                   ^
+      46 |     schema: databaseSchema,
+      47 |     migrations: databaseMigrations,
+      48 |     useWebWorker: false,
+
+      at Logger._proto.warn (node_modules/@nozbe/watermelondb/utils/common/logger/index.js:27:47)
+      at new LokiJSAdapter (node_modules/@nozbe/watermelondb/adapters/lokijs/index.js:33:25)
+      at createTestDatabase (test/db/createTestDatabase.ts:45:19)
+      at Object.<anonymous> (src/models/cards/CardsRepository.test.ts:26:42)
+
+    console.log
+      [🍉] [Loki] Initializing IndexedDB
+
+      at Logger._proto.log (node_modules/@nozbe/watermelondb/utils/common/logger/index.js:23:46)
+
+    console.log
+      [🍉] [Loki] Database loaded
+
+      at Logger._proto.log (node_modules/@nozbe/watermelondb/utils/common/logger/index.js:23:46)
+
+    console.log
+      [🍉] [Loki] Empty database, setting up
+
+      at Logger._proto.log (node_modules/@nozbe/watermelondb/utils/common/logger/index.js:23:46)
+
+    console.log
+      [🍉] [Loki] Database is now reset
+
+      at Logger._proto.log (node_modules/@nozbe/watermelondb/utils/common/logger/index.js:23:46)
+
+    console.log
+      [🍉] [Loki] Initializing IndexedDB
+
+      at Logger._proto.log (node_modules/@nozbe/watermelondb/utils/common/logger/index.js:23:46)
+
+    console.log
+      [🍉] [Loki] Database loaded
+
+      at Logger._proto.log (node_modules/@nozbe/watermelondb/utils/common/logger/index.js:23:46)
+
+    console.log
+      [🍉] [Loki] Setting up schema
+
+      at Logger._proto.log (node_modules/@nozbe/watermelondb/utils/common/logger/index.js:23:46)
+
+    console.log
+      [🍉] [Loki] Database collections set up
+
+      at Logger._proto.log (node_modules/@nozbe/watermelondb/utils/common/logger/index.js:23:46)
+
+    console.log
+      [🍉] [Loki] Database is now reset
+
+      at Logger._proto.log (node_modules/@nozbe/watermelondb/utils/common/logger/index.js:23:46)
+
+    console.log
+      [🍉] [Loki] Initializing IndexedDB
+
+      at Logger._proto.log (node_modules/@nozbe/watermelondb/utils/common/logger/index.js:23:46)
+
+    console.log
+      [🍉] [Loki] Database loaded
+
+      at Logger._proto.log (node_modules/@nozbe/watermelondb/utils/common/logger/index.js:23:46)
+
+    console.log
+      [🍉] [Loki] Setting up schema
+
+      at Logger._proto.log (node_modules/@nozbe/watermelondb/utils/common/logger/index.js:23:46)
+
+    console.log
+      [🍉] [Loki] Database collections set up
+
+      at Logger._proto.log (node_modules/@nozbe/watermelondb/utils/common/logger/index.js:23:46)
+
+    console.warn
+      [🍉] LokiJSAdapter {useIncrementalIndexedDB: false} option is now deprecated. If you rely on this feature, please file an issue
+
+      43 |     ) => DatabaseAdapter;
+      44 |
+    > 45 |   const adapter = new LokiJSAdapter({
+         |                   ^
+      46 |     schema: databaseSchema,
+      47 |     migrations: databaseMigrations,
+      48 |     useWebWorker: false,
+
+      at Logger._proto.warn (node_modules/@nozbe/watermelondb/utils/common/logger/index.js:27:47)
+      at new LokiJSAdapter (node_modules/@nozbe/watermelondb/adapters/lokijs/index.js:33:25)
+      at createTestDatabase (test/db/createTestDatabase.ts:45:19)
+      at Object.<anonymous> (src/models/cards/CardsRepository.test.ts:26:42)
+
+    console.log
+      [🍉] [Loki] Initializing IndexedDB
+
+      at Logger._proto.log (node_modules/@nozbe/watermelondb/utils/common/logger/index.js:23:46)
+
+    console.log
+      [🍉] [Loki] Database loaded
+
+      at Logger._proto.log (node_modules/@nozbe/watermelondb/utils/common/logger/index.js:23:46)
+
+    console.log
+      [🍉] [Loki] Empty database, setting up
+
+      at Logger._proto.log (node_modules/@nozbe/watermelondb/utils/common/logger/index.js:23:46)
+
+    console.log
+      [🍉] [Loki] Database is now reset
+
+      at Logger._proto.log (node_modules/@nozbe/watermelondb/utils/common/logger/index.js:23:46)
+
+    console.log
+      [🍉] [Loki] Initializing IndexedDB
+
+      at Logger._proto.log (node_modules/@nozbe/watermelondb/utils/common/logger/index.js:23:46)
+
+    console.log
+      [🍉] [Loki] Database loaded
+
+      at Logger._proto.log (node_modules/@nozbe/watermelondb/utils/common/logger/index.js:23:46)
+
+    console.log
+      [🍉] [Loki] Setting up schema
+
+      at Logger._proto.log (node_modules/@nozbe/watermelondb/utils/common/logger/index.js:23:46)
+
+    console.log
+      [🍉] [Loki] Database collections set up
+
+      at Logger._proto.log (node_modules/@nozbe/watermelondb/utils/common/logger/index.js:23:46)
+
+    console.log
+      [🍉] [Loki] Database is now reset
+
+      at Logger._proto.log (node_modules/@nozbe/watermelondb/utils/common/logger/index.js:23:46)
+
+    console.log
+      [🍉] [Loki] Initializing IndexedDB
+
+      at Logger._proto.log (node_modules/@nozbe/watermelondb/utils/common/logger/index.js:23:46)
+
+    console.log
+      [🍉] [Loki] Database loaded
+
+      at Logger._proto.log (node_modules/@nozbe/watermelondb/utils/common/logger/index.js:23:46)
+
+    console.log
+      [🍉] [Loki] Setting up schema
+
+      at Logger._proto.log (node_modules/@nozbe/watermelondb/utils/common/logger/index.js:23:46)
+
+    console.log
+      [🍉] [Loki] Database collections set up
+
+      at Logger._proto.log (node_modules/@nozbe/watermelondb/utils/common/logger/index.js:23:46)
+
+    console.warn
+      [🍉] LokiJSAdapter {useIncrementalIndexedDB: false} option is now deprecated. If you rely on this feature, please file an issue
+
+      43 |     ) => DatabaseAdapter;
+      44 |
+    > 45 |   const adapter = new LokiJSAdapter({
+         |                   ^
+      46 |     schema: databaseSchema,
+      47 |     migrations: databaseMigrations,
+      48 |     useWebWorker: false,
+
+      at Logger._proto.warn (node_modules/@nozbe/watermelondb/utils/common/logger/index.js:27:47)
+      at new LokiJSAdapter (node_modules/@nozbe/watermelondb/adapters/lokijs/index.js:33:25)
+      at createTestDatabase (test/db/createTestDatabase.ts:45:19)
+      at Object.<anonymous> (src/models/cards/CardsRepository.test.ts:26:42)
+
+    console.log
+      [🍉] [Loki] Initializing IndexedDB
+
+      at Logger._proto.log (node_modules/@nozbe/watermelondb/utils/common/logger/index.js:23:46)
+
+    console.log
+      [🍉] [Loki] Database loaded
+
+      at Logger._proto.log (node_modules/@nozbe/watermelondb/utils/common/logger/index.js:23:46)
+
+    console.log
+      [🍉] [Loki] Empty database, setting up
+
+      at Logger._proto.log (node_modules/@nozbe/watermelondb/utils/common/logger/index.js:23:46)
+
+    console.log
+      [🍉] [Loki] Database is now reset
+
+      at Logger._proto.log (node_modules/@nozbe/watermelondb/utils/common/logger/index.js:23:46)
+
+    console.log
+      [🍉] [Loki] Initializing IndexedDB
+
+      at Logger._proto.log (node_modules/@nozbe/watermelondb/utils/common/logger/index.js:23:46)
+
+    console.log
+      [🍉] [Loki] Database loaded
+
+      at Logger._proto.log (node_modules/@nozbe/watermelondb/utils/common/logger/index.js:23:46)
+
+    console.log
+      [🍉] [Loki] Setting up schema
+
+      at Logger._proto.log (node_modules/@nozbe/watermelondb/utils/common/logger/index.js:23:46)
+
+    console.log
+      [🍉] [Loki] Database collections set up
+
+      at Logger._proto.log (node_modules/@nozbe/watermelondb/utils/common/logger/index.js:23:46)
+
+    console.log
+      [🍉] [Loki] Database is now reset
+
+      at Logger._proto.log (node_modules/@nozbe/watermelondb/utils/common/logger/index.js:23:46)
+
+    console.log
+      [🍉] [Loki] Initializing IndexedDB
+
+      at Logger._proto.log (node_modules/@nozbe/watermelondb/utils/common/logger/index.js:23:46)
+
+    console.log
+      [🍉] [Loki] Database loaded
+
+      at Logger._proto.log (node_modules/@nozbe/watermelondb/utils/common/logger/index.js:23:46)
+
+    console.log
+      [🍉] [Loki] Setting up schema
+
+      at Logger._proto.log (node_modules/@nozbe/watermelondb/utils/common/logger/index.js:23:46)
+
+    console.log
+      [🍉] [Loki] Database collections set up
+
+      at Logger._proto.log (node_modules/@nozbe/watermelondb/utils/common/logger/index.js:23:46)
+
+    console.warn
+      [🍉] LokiJSAdapter {useIncrementalIndexedDB: false} option is now deprecated. If you rely on this feature, please file an issue
+
+      43 |     ) => DatabaseAdapter;
+      44 |
+    > 45 |   const adapter = new LokiJSAdapter({
+         |                   ^
+      46 |     schema: databaseSchema,
+      47 |     migrations: databaseMigrations,
+      48 |     useWebWorker: false,
+
+      at Logger._proto.warn (node_modules/@nozbe/watermelondb/utils/common/logger/index.js:27:47)
+      at new LokiJSAdapter (node_modules/@nozbe/watermelondb/adapters/lokijs/index.js:33:25)
+      at createTestDatabase (test/db/createTestDatabase.ts:45:19)
+      at Object.<anonymous> (src/models/cards/CardsRepository.test.ts:26:42)
+
+    console.log
+      [🍉] [Loki] Initializing IndexedDB
+
+      at Logger._proto.log (node_modules/@nozbe/watermelondb/utils/common/logger/index.js:23:46)
+
+    console.log
+      [🍉] [Loki] Database loaded
+
+      at Logger._proto.log (node_modules/@nozbe/watermelondb/utils/common/logger/index.js:23:46)
+
+    console.log
+      [🍉] [Loki] Empty database, setting up
+
+      at Logger._proto.log (node_modules/@nozbe/watermelondb/utils/common/logger/index.js:23:46)
+
+    console.log
+      [🍉] [Loki] Database is now reset
+
+      at Logger._proto.log (node_modules/@nozbe/watermelondb/utils/common/logger/index.js:23:46)
+
+    console.log
+      [🍉] [Loki] Initializing IndexedDB
+
+      at Logger._proto.log (node_modules/@nozbe/watermelondb/utils/common/logger/index.js:23:46)
+
+    console.log
+      [🍉] [Loki] Database loaded
+
+      at Logger._proto.log (node_modules/@nozbe/watermelondb/utils/common/logger/index.js:23:46)
+
+    console.log
+      [🍉] [Loki] Setting up schema
+
+      at Logger._proto.log (node_modules/@nozbe/watermelondb/utils/common/logger/index.js:23:46)
+
+    console.log
+      [🍉] [Loki] Database collections set up
+
+      at Logger._proto.log (node_modules/@nozbe/watermelondb/utils/common/logger/index.js:23:46)
+
+    console.log
+      [🍉] [Loki] Database is now reset
+
+      at Logger._proto.log (node_modules/@nozbe/watermelondb/utils/common/logger/index.js:23:46)
+
+    console.log
+      [🍉] [Loki] Initializing IndexedDB
+
+      at Logger._proto.log (node_modules/@nozbe/watermelondb/utils/common/logger/index.js:23:46)
+
+    console.log
+      [🍉] [Loki] Database loaded
+
+      at Logger._proto.log (node_modules/@nozbe/watermelondb/utils/common/logger/index.js:23:46)
+
+    console.log
+      [🍉] [Loki] Setting up schema
+
+      at Logger._proto.log (node_modules/@nozbe/watermelondb/utils/common/logger/index.js:23:46)
+
+    console.log
+      [🍉] [Loki] Database collections set up
+
+      at Logger._proto.log (node_modules/@nozbe/watermelondb/utils/common/logger/index.js:23:46)
+
+    console.warn
+      [🍉] LokiJSAdapter {useIncrementalIndexedDB: false} option is now deprecated. If you rely on this feature, please file an issue
+
+      43 |     ) => DatabaseAdapter;
+      44 |
+    > 45 |   const adapter = new LokiJSAdapter({
+         |                   ^
+      46 |     schema: databaseSchema,
+      47 |     migrations: databaseMigrations,
+      48 |     useWebWorker: false,
+
+      at Logger._proto.warn (node_modules/@nozbe/watermelondb/utils/common/logger/index.js:27:47)
+      at new LokiJSAdapter (node_modules/@nozbe/watermelondb/adapters/lokijs/index.js:33:25)
+      at createTestDatabase (test/db/createTestDatabase.ts:45:19)
+      at Object.<anonymous> (src/models/cards/CardsRepository.test.ts:26:42)
+
+    console.log
+      [🍉] [Loki] Initializing IndexedDB
+
+      at Logger._proto.log (node_modules/@nozbe/watermelondb/utils/common/logger/index.js:23:46)
+
+    console.log
+      [🍉] [Loki] Database loaded
+
+      at Logger._proto.log (node_modules/@nozbe/watermelondb/utils/common/logger/index.js:23:46)
+
+    console.log
+      [🍉] [Loki] Empty database, setting up
+
+      at Logger._proto.log (node_modules/@nozbe/watermelondb/utils/common/logger/index.js:23:46)
+
+    console.log
+      [🍉] [Loki] Database is now reset
+
+      at Logger._proto.log (node_modules/@nozbe/watermelondb/utils/common/logger/index.js:23:46)
+
+    console.log
+      [🍉] [Loki] Initializing IndexedDB
+
+      at Logger._proto.log (node_modules/@nozbe/watermelondb/utils/common/logger/index.js:23:46)
+
+    console.log
+      [🍉] [Loki] Database loaded
+
+      at Logger._proto.log (node_modules/@nozbe/watermelondb/utils/common/logger/index.js:23:46)
+
+    console.log
+      [🍉] [Loki] Setting up schema
+
+      at Logger._proto.log (node_modules/@nozbe/watermelondb/utils/common/logger/index.js:23:46)
+
+    console.log
+      [🍉] [Loki] Database collections set up
+
+      at Logger._proto.log (node_modules/@nozbe/watermelondb/utils/common/logger/index.js:23:46)
+
+    console.log
+      [🍉] [Loki] Database is now reset
+
+      at Logger._proto.log (node_modules/@nozbe/watermelondb/utils/common/logger/index.js:23:46)
+
+    console.log
+      [🍉] [Loki] Initializing IndexedDB
+
+      at Logger._proto.log (node_modules/@nozbe/watermelondb/utils/common/logger/index.js:23:46)
+
+    console.log
+      [🍉] [Loki] Database loaded
+
+      at Logger._proto.log (node_modules/@nozbe/watermelondb/utils/common/logger/index.js:23:46)
+
+    console.log
+      [🍉] [Loki] Setting up schema
+
+      at Logger._proto.log (node_modules/@nozbe/watermelondb/utils/common/logger/index.js:23:46)
+
+    console.log
+      [🍉] [Loki] Database collections set up
+
+      at Logger._proto.log (node_modules/@nozbe/watermelondb/utils/common/logger/index.js:23:46)
+
+    console.warn
+      [🍉] LokiJSAdapter {useIncrementalIndexedDB: false} option is now deprecated. If you rely on this feature, please file an issue
+
+      43 |     ) => DatabaseAdapter;
+      44 |
+    > 45 |   const adapter = new LokiJSAdapter({
+         |                   ^
+      46 |     schema: databaseSchema,
+      47 |     migrations: databaseMigrations,
+      48 |     useWebWorker: false,
+
+      at Logger._proto.warn (node_modules/@nozbe/watermelondb/utils/common/logger/index.js:27:47)
+      at new LokiJSAdapter (node_modules/@nozbe/watermelondb/adapters/lokijs/index.js:33:25)
+      at createTestDatabase (test/db/createTestDatabase.ts:45:19)
+      at Object.<anonymous> (src/models/cards/CardsRepository.test.ts:26:42)
+
+    console.log
+      [🍉] [Loki] Initializing IndexedDB
+
+      at Logger._proto.log (node_modules/@nozbe/watermelondb/utils/common/logger/index.js:23:46)
+
+    console.log
+      [🍉] [Loki] Database loaded
+
+      at Logger._proto.log (node_modules/@nozbe/watermelondb/utils/common/logger/index.js:23:46)
+
+    console.log
+      [🍉] [Loki] Empty database, setting up
+
+      at Logger._proto.log (node_modules/@nozbe/watermelondb/utils/common/logger/index.js:23:46)
+
+    console.log
+      [🍉] [Loki] Database is now reset
+
+      at Logger._proto.log (node_modules/@nozbe/watermelondb/utils/common/logger/index.js:23:46)
+
+    console.log
+      [🍉] [Loki] Initializing IndexedDB
+
+      at Logger._proto.log (node_modules/@nozbe/watermelondb/utils/common/logger/index.js:23:46)
+
+    console.log
+      [🍉] [Loki] Database loaded
+
+      at Logger._proto.log (node_modules/@nozbe/watermelondb/utils/common/logger/index.js:23:46)
+
+    console.log
+      [🍉] [Loki] Setting up schema
+
+      at Logger._proto.log (node_modules/@nozbe/watermelondb/utils/common/logger/index.js:23:46)
+
+    console.log
+      [🍉] [Loki] Database collections set up
+
+      at Logger._proto.log (node_modules/@nozbe/watermelondb/utils/common/logger/index.js:23:46)
+
+    console.log
+      [🍉] [Loki] Database is now reset
+
+      at Logger._proto.log (node_modules/@nozbe/watermelondb/utils/common/logger/index.js:23:46)
+
+    console.log
+      [🍉] [Loki] Initializing IndexedDB
+
+      at Logger._proto.log (node_modules/@nozbe/watermelondb/utils/common/logger/index.js:23:46)
+
+    console.log
+      [🍉] [Loki] Database loaded
+
+      at Logger._proto.log (node_modules/@nozbe/watermelondb/utils/common/logger/index.js:23:46)
+
+    console.log
+      [🍉] [Loki] Setting up schema
+
+      at Logger._proto.log (node_modules/@nozbe/watermelondb/utils/common/logger/index.js:23:46)
+
+    console.log
+      [🍉] [Loki] Database collections set up
+
+      at Logger._proto.log (node_modules/@nozbe/watermelondb/utils/common/logger/index.js:23:46)
+
+    console.warn
+      [🍉] LokiJSAdapter {useIncrementalIndexedDB: false} option is now deprecated. If you rely on this feature, please file an issue
+
+      43 |     ) => DatabaseAdapter;
+      44 |
+    > 45 |   const adapter = new LokiJSAdapter({
+         |                   ^
+      46 |     schema: databaseSchema,
+      47 |     migrations: databaseMigrations,
+      48 |     useWebWorker: false,
+
+      at Logger._proto.warn (node_modules/@nozbe/watermelondb/utils/common/logger/index.js:27:47)
+      at new LokiJSAdapter (node_modules/@nozbe/watermelondb/adapters/lokijs/index.js:33:25)
+      at createTestDatabase (test/db/createTestDatabase.ts:45:19)
+      at Object.<anonymous> (src/models/cards/CardsRepository.test.ts:26:42)
+
+    console.log
+      [🍉] [Loki] Initializing IndexedDB
+
+      at Logger._proto.log (node_modules/@nozbe/watermelondb/utils/common/logger/index.js:23:46)
+
+    console.log
+      [🍉] [Loki] Database loaded
+
+      at Logger._proto.log (node_modules/@nozbe/watermelondb/utils/common/logger/index.js:23:46)
+
+    console.log
+      [🍉] [Loki] Empty database, setting up
+
+      at Logger._proto.log (node_modules/@nozbe/watermelondb/utils/common/logger/index.js:23:46)
+
+    console.log
+      [🍉] [Loki] Database is now reset
+
+      at Logger._proto.log (node_modules/@nozbe/watermelondb/utils/common/logger/index.js:23:46)
+
+    console.log
+      [🍉] [Loki] Initializing IndexedDB
+
+      at Logger._proto.log (node_modules/@nozbe/watermelondb/utils/common/logger/index.js:23:46)
+
+    console.log
+      [🍉] [Loki] Database loaded
+
+      at Logger._proto.log (node_modules/@nozbe/watermelondb/utils/common/logger/index.js:23:46)
+
+    console.log
+      [🍉] [Loki] Setting up schema
+
+      at Logger._proto.log (node_modules/@nozbe/watermelondb/utils/common/logger/index.js:23:46)
+
+    console.log
+      [🍉] [Loki] Database collections set up
+
+      at Logger._proto.log (node_modules/@nozbe/watermelondb/utils/common/logger/index.js:23:46)
+
+    console.log
+      [🍉] [Loki] Database is now reset
+
+      at Logger._proto.log (node_modules/@nozbe/watermelondb/utils/common/logger/index.js:23:46)
+
+    console.log
+      [🍉] [Loki] Initializing IndexedDB
+
+      at Logger._proto.log (node_modules/@nozbe/watermelondb/utils/common/logger/index.js:23:46)
+
+    console.log
+      [🍉] [Loki] Database loaded
+
+      at Logger._proto.log (node_modules/@nozbe/watermelondb/utils/common/logger/index.js:23:46)
+
+    console.log
+      [🍉] [Loki] Setting up schema
+
+      at Logger._proto.log (node_modules/@nozbe/watermelondb/utils/common/logger/index.js:23:46)
+
+    console.log
+      [🍉] [Loki] Database collections set up
+
+      at Logger._proto.log (node_modules/@nozbe/watermelondb/utils/common/logger/index.js:23:46)
+
+    console.warn
+      [🍉] LokiJSAdapter {useIncrementalIndexedDB: false} option is now deprecated. If you rely on this feature, please file an issue
+
+      43 |     ) => DatabaseAdapter;
+      44 |
+    > 45 |   const adapter = new LokiJSAdapter({
+         |                   ^
+      46 |     schema: databaseSchema,
+      47 |     migrations: databaseMigrations,
+      48 |     useWebWorker: false,
+
+      at Logger._proto.warn (node_modules/@nozbe/watermelondb/utils/common/logger/index.js:27:47)
+      at new LokiJSAdapter (node_modules/@nozbe/watermelondb/adapters/lokijs/index.js:33:25)
+      at createTestDatabase (test/db/createTestDatabase.ts:45:19)
+      at Object.<anonymous> (src/models/cards/CardsRepository.test.ts:26:42)
+
+    console.log
+      [🍉] [Loki] Initializing IndexedDB
+
+      at Logger._proto.log (node_modules/@nozbe/watermelondb/utils/common/logger/index.js:23:46)
+
+    console.log
+      [🍉] [Loki] Database loaded
+
+      at Logger._proto.log (node_modules/@nozbe/watermelondb/utils/common/logger/index.js:23:46)
+
+    console.log
+      [🍉] [Loki] Empty database, setting up
+
+      at Logger._proto.log (node_modules/@nozbe/watermelondb/utils/common/logger/index.js:23:46)
+
+    console.log
+      [🍉] [Loki] Database is now reset
+
+      at Logger._proto.log (node_modules/@nozbe/watermelondb/utils/common/logger/index.js:23:46)
+
+    console.log
+      [🍉] [Loki] Initializing IndexedDB
+
+      at Logger._proto.log (node_modules/@nozbe/watermelondb/utils/common/logger/index.js:23:46)
+
+    console.log
+      [🍉] [Loki] Database loaded
+
+      at Logger._proto.log (node_modules/@nozbe/watermelondb/utils/common/logger/index.js:23:46)
+
+    console.log
+      [🍉] [Loki] Setting up schema
+
+      at Logger._proto.log (node_modules/@nozbe/watermelondb/utils/common/logger/index.js:23:46)
+
+    console.log
+      [🍉] [Loki] Database collections set up
+
+      at Logger._proto.log (node_modules/@nozbe/watermelondb/utils/common/logger/index.js:23:46)
+
+    console.log
+      [🍉] [Loki] Database is now reset
+
+      at Logger._proto.log (node_modules/@nozbe/watermelondb/utils/common/logger/index.js:23:46)
+
+    console.log
+      [🍉] [Loki] Initializing IndexedDB
+
+      at Logger._proto.log (node_modules/@nozbe/watermelondb/utils/common/logger/index.js:23:46)
+
+    console.log
+      [🍉] [Loki] Database loaded
+
+      at Logger._proto.log (node_modules/@nozbe/watermelondb/utils/common/logger/index.js:23:46)
+
+    console.log
+      [🍉] [Loki] Setting up schema
+
+      at Logger._proto.log (node_modules/@nozbe/watermelondb/utils/common/logger/index.js:23:46)
+
+    console.log
+      [🍉] [Loki] Database collections set up
+
+      at Logger._proto.log (node_modules/@nozbe/watermelondb/utils/common/logger/index.js:23:46)
+
+    console.warn
+      [🍉] LokiJSAdapter {useIncrementalIndexedDB: false} option is now deprecated. If you rely on this feature, please file an issue
+
+      43 |     ) => DatabaseAdapter;
+      44 |
+    > 45 |   const adapter = new LokiJSAdapter({
+         |                   ^
+      46 |     schema: databaseSchema,
+      47 |     migrations: databaseMigrations,
+      48 |     useWebWorker: false,
+
+      at Logger._proto.warn (node_modules/@nozbe/watermelondb/utils/common/logger/index.js:27:47)
+      at new LokiJSAdapter (node_modules/@nozbe/watermelondb/adapters/lokijs/index.js:33:25)
+      at createTestDatabase (test/db/createTestDatabase.ts:45:19)
+      at Object.<anonymous> (src/models/cards/CardsRepository.test.ts:26:42)
+
+    console.log
+      [🍉] [Loki] Initializing IndexedDB
+
+      at Logger._proto.log (node_modules/@nozbe/watermelondb/utils/common/logger/index.js:23:46)
+
+    console.log
+      [🍉] [Loki] Database loaded
+
+      at Logger._proto.log (node_modules/@nozbe/watermelondb/utils/common/logger/index.js:23:46)
+
+    console.log
+      [🍉] [Loki] Empty database, setting up
+
+      at Logger._proto.log (node_modules/@nozbe/watermelondb/utils/common/logger/index.js:23:46)
+
+    console.log
+      [🍉] [Loki] Database is now reset
+
+      at Logger._proto.log (node_modules/@nozbe/watermelondb/utils/common/logger/index.js:23:46)
+
+    console.log
+      [🍉] [Loki] Initializing IndexedDB
+
+      at Logger._proto.log (node_modules/@nozbe/watermelondb/utils/common/logger/index.js:23:46)
+
+    console.log
+      [🍉] [Loki] Database loaded
+
+      at Logger._proto.log (node_modules/@nozbe/watermelondb/utils/common/logger/index.js:23:46)
+
+    console.log
+      [🍉] [Loki] Setting up schema
+
+      at Logger._proto.log (node_modules/@nozbe/watermelondb/utils/common/logger/index.js:23:46)
+
+    console.log
+      [🍉] [Loki] Database collections set up
+
+      at Logger._proto.log (node_modules/@nozbe/watermelondb/utils/common/logger/index.js:23:46)
+
+    console.log
+      [🍉] [Loki] Database is now reset
+
+      at Logger._proto.log (node_modules/@nozbe/watermelondb/utils/common/logger/index.js:23:46)
+
+    console.log
+      [🍉] [Loki] Initializing IndexedDB
+
+      at Logger._proto.log (node_modules/@nozbe/watermelondb/utils/common/logger/index.js:23:46)
+
+    console.log
+      [🍉] [Loki] Database loaded
+
+      at Logger._proto.log (node_modules/@nozbe/watermelondb/utils/common/logger/index.js:23:46)
+
+    console.log
+      [🍉] [Loki] Setting up schema
+
+      at Logger._proto.log (node_modules/@nozbe/watermelondb/utils/common/logger/index.js:23:46)
+
+    console.log
+      [🍉] [Loki] Database collections set up
+
+      at Logger._proto.log (node_modules/@nozbe/watermelondb/utils/common/logger/index.js:23:46)
+
+    console.warn
+      [🍉] LokiJSAdapter {useIncrementalIndexedDB: false} option is now deprecated. If you rely on this feature, please file an issue
+
+      43 |     ) => DatabaseAdapter;
+      44 |
+    > 45 |   const adapter = new LokiJSAdapter({
+         |                   ^
+      46 |     schema: databaseSchema,
+      47 |     migrations: databaseMigrations,
+      48 |     useWebWorker: false,
+
+      at Logger._proto.warn (node_modules/@nozbe/watermelondb/utils/common/logger/index.js:27:47)
+      at new LokiJSAdapter (node_modules/@nozbe/watermelondb/adapters/lokijs/index.js:33:25)
+      at createTestDatabase (test/db/createTestDatabase.ts:45:19)
+      at Object.<anonymous> (src/models/cards/CardsRepository.test.ts:26:42)
+
+    console.log
+      [🍉] [Loki] Initializing IndexedDB
+
+      at Logger._proto.log (node_modules/@nozbe/watermelondb/utils/common/logger/index.js:23:46)
+
+    console.log
+      [🍉] [Loki] Database loaded
+
+      at Logger._proto.log (node_modules/@nozbe/watermelondb/utils/common/logger/index.js:23:46)
+
+    console.log
+      [🍉] [Loki] Empty database, setting up
+
+      at Logger._proto.log (node_modules/@nozbe/watermelondb/utils/common/logger/index.js:23:46)
+
+    console.log
+      [🍉] [Loki] Database is now reset
+
+      at Logger._proto.log (node_modules/@nozbe/watermelondb/utils/common/logger/index.js:23:46)
+
+    console.log
+      [🍉] [Loki] Initializing IndexedDB
+
+      at Logger._proto.log (node_modules/@nozbe/watermelondb/utils/common/logger/index.js:23:46)
+
+    console.log
+      [🍉] [Loki] Database loaded
+
+      at Logger._proto.log (node_modules/@nozbe/watermelondb/utils/common/logger/index.js:23:46)
+
+    console.log
+      [🍉] [Loki] Setting up schema
+
+      at Logger._proto.log (node_modules/@nozbe/watermelondb/utils/common/logger/index.js:23:46)
+
+    console.log
+      [🍉] [Loki] Database collections set up
+
+      at Logger._proto.log (node_modules/@nozbe/watermelondb/utils/common/logger/index.js:23:46)
+
+    console.log
+      [🍉] [Loki] Database is now reset
+
+      at Logger._proto.log (node_modules/@nozbe/watermelondb/utils/common/logger/index.js:23:46)
+
+    console.log
+      [🍉] [Loki] Initializing IndexedDB
+
+      at Logger._proto.log (node_modules/@nozbe/watermelondb/utils/common/logger/index.js:23:46)
+
+    console.log
+      [🍉] [Loki] Database loaded
+
+      at Logger._proto.log (node_modules/@nozbe/watermelondb/utils/common/logger/index.js:23:46)
+
+    console.log
+      [🍉] [Loki] Setting up schema
+
+      at Logger._proto.log (node_modules/@nozbe/watermelondb/utils/common/logger/index.js:23:46)
+
+    console.log
+      [🍉] [Loki] Database collections set up
+
+      at Logger._proto.log (node_modules/@nozbe/watermelondb/utils/common/logger/index.js:23:46)
+
+    console.warn
+      [🍉] LokiJSAdapter {useIncrementalIndexedDB: false} option is now deprecated. If you rely on this feature, please file an issue
+
+      43 |     ) => DatabaseAdapter;
+      44 |
+    > 45 |   const adapter = new LokiJSAdapter({
+         |                   ^
+      46 |     schema: databaseSchema,
+      47 |     migrations: databaseMigrations,
+      48 |     useWebWorker: false,
+
+      at Logger._proto.warn (node_modules/@nozbe/watermelondb/utils/common/logger/index.js:27:47)
+      at new LokiJSAdapter (node_modules/@nozbe/watermelondb/adapters/lokijs/index.js:33:25)
+      at createTestDatabase (test/db/createTestDatabase.ts:45:19)
+      at Object.<anonymous> (src/models/cards/CardsRepository.test.ts:26:42)
+
+    console.log
+      [🍉] [Loki] Initializing IndexedDB
+
+      at Logger._proto.log (node_modules/@nozbe/watermelondb/utils/common/logger/index.js:23:46)
+
+    console.log
+      [🍉] [Loki] Database loaded
+
+      at Logger._proto.log (node_modules/@nozbe/watermelondb/utils/common/logger/index.js:23:46)
+
+    console.log
+      [🍉] [Loki] Empty database, setting up
+
+      at Logger._proto.log (node_modules/@nozbe/watermelondb/utils/common/logger/index.js:23:46)
+
+    console.log
+      [🍉] [Loki] Database is now reset
+
+      at Logger._proto.log (node_modules/@nozbe/watermelondb/utils/common/logger/index.js:23:46)
+
+    console.log
+      [🍉] [Loki] Initializing IndexedDB
+
+      at Logger._proto.log (node_modules/@nozbe/watermelondb/utils/common/logger/index.js:23:46)
+
+    console.log
+      [🍉] [Loki] Database loaded
+
+      at Logger._proto.log (node_modules/@nozbe/watermelondb/utils/common/logger/index.js:23:46)
+
+    console.log
+      [🍉] [Loki] Setting up schema
+
+      at Logger._proto.log (node_modules/@nozbe/watermelondb/utils/common/logger/index.js:23:46)
+
+    console.log
+      [🍉] [Loki] Database collections set up
+
+      at Logger._proto.log (node_modules/@nozbe/watermelondb/utils/common/logger/index.js:23:46)
+
+    console.log
+      [🍉] [Loki] Database is now reset
+
+      at Logger._proto.log (node_modules/@nozbe/watermelondb/utils/common/logger/index.js:23:46)
+
+    console.log
+      [🍉] [Loki] Initializing IndexedDB
+
+      at Logger._proto.log (node_modules/@nozbe/watermelondb/utils/common/logger/index.js:23:46)
+
+    console.log
+      [🍉] [Loki] Database loaded
+
+      at Logger._proto.log (node_modules/@nozbe/watermelondb/utils/common/logger/index.js:23:46)
+
+    console.log
+      [🍉] [Loki] Setting up schema
+
+      at Logger._proto.log (node_modules/@nozbe/watermelondb/utils/common/logger/index.js:23:46)
+
+    console.log
+      [🍉] [Loki] Database collections set up
+
+      at Logger._proto.log (node_modules/@nozbe/watermelondb/utils/common/logger/index.js:23:46)
+
+    console.warn
+      [🍉] LokiJSAdapter {useIncrementalIndexedDB: false} option is now deprecated. If you rely on this feature, please file an issue
+
+      43 |     ) => DatabaseAdapter;
+      44 |
+    > 45 |   const adapter = new LokiJSAdapter({
+         |                   ^
+      46 |     schema: databaseSchema,
+      47 |     migrations: databaseMigrations,
+      48 |     useWebWorker: false,
+
+      at Logger._proto.warn (node_modules/@nozbe/watermelondb/utils/common/logger/index.js:27:47)
+      at new LokiJSAdapter (node_modules/@nozbe/watermelondb/adapters/lokijs/index.js:33:25)
+      at createTestDatabase (test/db/createTestDatabase.ts:45:19)
+      at Object.<anonymous> (src/models/cards/CardsRepository.test.ts:26:42)
+
+    console.log
+      [🍉] [Loki] Initializing IndexedDB
+
+      at Logger._proto.log (node_modules/@nozbe/watermelondb/utils/common/logger/index.js:23:46)
+
+    console.log
+      [🍉] [Loki] Database loaded
+
+      at Logger._proto.log (node_modules/@nozbe/watermelondb/utils/common/logger/index.js:23:46)
+
+    console.log
+      [🍉] [Loki] Empty database, setting up
+
+      at Logger._proto.log (node_modules/@nozbe/watermelondb/utils/common/logger/index.js:23:46)
+
+    console.log
+      [🍉] [Loki] Database is now reset
+
+      at Logger._proto.log (node_modules/@nozbe/watermelondb/utils/common/logger/index.js:23:46)
+
+    console.log
+      [🍉] [Loki] Initializing IndexedDB
+
+      at Logger._proto.log (node_modules/@nozbe/watermelondb/utils/common/logger/index.js:23:46)
+
+    console.log
+      [🍉] [Loki] Database loaded
+
+      at Logger._proto.log (node_modules/@nozbe/watermelondb/utils/common/logger/index.js:23:46)
+
+    console.log
+      [🍉] [Loki] Setting up schema
+
+      at Logger._proto.log (node_modules/@nozbe/watermelondb/utils/common/logger/index.js:23:46)
+
+    console.log
+      [🍉] [Loki] Database collections set up
+
+      at Logger._proto.log (node_modules/@nozbe/watermelondb/utils/common/logger/index.js:23:46)
+
+    console.log
+      [🍉] [Loki] Database is now reset
+
+      at Logger._proto.log (node_modules/@nozbe/watermelondb/utils/common/logger/index.js:23:46)
+
+    console.log
+      [🍉] [Loki] Initializing IndexedDB
+
+      at Logger._proto.log (node_modules/@nozbe/watermelondb/utils/common/logger/index.js:23:46)
+
+    console.log
+      [🍉] [Loki] Database loaded
+
+      at Logger._proto.log (node_modules/@nozbe/watermelondb/utils/common/logger/index.js:23:46)
+
+    console.log
+      [🍉] [Loki] Setting up schema
+
+      at Logger._proto.log (node_modules/@nozbe/watermelondb/utils/common/logger/index.js:23:46)
+
+    console.log
+      [🍉] [Loki] Database collections set up
+
+      at Logger._proto.log (node_modules/@nozbe/watermelondb/utils/common/logger/index.js:23:46)
+
+PASS src/services/sandbox/resetSandboxEnvironment.test.ts
+  ● Console
+
+    console.warn
+      [🍉] LokiJSAdapter {useIncrementalIndexedDB: false} option is now deprecated. If you rely on this feature, please file an issue
+
+      43 |     ) => DatabaseAdapter;
+      44 |
+    > 45 |   const adapter = new LokiJSAdapter({
+         |                   ^
+      46 |     schema: databaseSchema,
+      47 |     migrations: databaseMigrations,
+      48 |     useWebWorker: false,
+
+      at Logger._proto.warn (node_modules/@nozbe/watermelondb/utils/common/logger/index.js:27:47)
+      at new LokiJSAdapter (node_modules/@nozbe/watermelondb/adapters/lokijs/index.js:33:25)
+      at createTestDatabase (test/db/createTestDatabase.ts:45:19)
+      at Object.<anonymous> (src/services/sandbox/resetSandboxEnvironment.test.ts:75:42)
+      at asyncGeneratorStep (node_modules/@babel/runtime/helpers/asyncToGenerator.js:3:17)
+      at _next (node_modules/@babel/runtime/helpers/asyncToGenerator.js:17:9)
+      at node_modules/@babel/runtime/helpers/asyncToGenerator.js:22:7
+      at Object.<anonymous> (node_modules/@babel/runtime/helpers/asyncToGenerator.js:14:12)
+
+    console.log
+      [🍉] [Loki] Initializing IndexedDB
+
+      at Logger._proto.log (node_modules/@nozbe/watermelondb/utils/common/logger/index.js:23:46)
+
+    console.log
+      [🍉] [Loki] Database loaded
+
+      at Logger._proto.log (node_modules/@nozbe/watermelondb/utils/common/logger/index.js:23:46)
+
+    console.log
+      [🍉] [Loki] Empty database, setting up
+
+      at Logger._proto.log (node_modules/@nozbe/watermelondb/utils/common/logger/index.js:23:46)
+
+    console.log
+      [🍉] [Loki] Database is now reset
+
+      at Logger._proto.log (node_modules/@nozbe/watermelondb/utils/common/logger/index.js:23:46)
+
+    console.log
+      [🍉] [Loki] Initializing IndexedDB
+
+      at Logger._proto.log (node_modules/@nozbe/watermelondb/utils/common/logger/index.js:23:46)
+
+    console.log
+      [🍉] [Loki] Database loaded
+
+      at Logger._proto.log (node_modules/@nozbe/watermelondb/utils/common/logger/index.js:23:46)
+
+    console.log
+      [🍉] [Loki] Setting up schema
+
+      at Logger._proto.log (node_modules/@nozbe/watermelondb/utils/common/logger/index.js:23:46)
+
+    console.log
+      [🍉] [Loki] Database collections set up
+
+      at Logger._proto.log (node_modules/@nozbe/watermelondb/utils/common/logger/index.js:23:46)
+
+    console.log
+      [🍉] [Loki] Database is now reset
+
+      at Logger._proto.log (node_modules/@nozbe/watermelondb/utils/common/logger/index.js:23:46)
+
+    console.log
+      [🍉] [Loki] Initializing IndexedDB
+
+      at Logger._proto.log (node_modules/@nozbe/watermelondb/utils/common/logger/index.js:23:46)
+
+    console.log
+      [🍉] [Loki] Database loaded
+
+      at Logger._proto.log (node_modules/@nozbe/watermelondb/utils/common/logger/index.js:23:46)
+
+    console.log
+      [🍉] [Loki] Setting up schema
+
+      at Logger._proto.log (node_modules/@nozbe/watermelondb/utils/common/logger/index.js:23:46)
+
+    console.log
+      [🍉] [Loki] Database collections set up
+
+      at Logger._proto.log (node_modules/@nozbe/watermelondb/utils/common/logger/index.js:23:46)
+
+    console.log
+      [🍉] [Loki] Database is now reset
+
+      at Logger._proto.log (node_modules/@nozbe/watermelondb/utils/common/logger/index.js:23:46)
+
+    console.log
+      [🍉] [Loki] Initializing IndexedDB
+
+      at Logger._proto.log (node_modules/@nozbe/watermelondb/utils/common/logger/index.js:23:46)
+
+    console.log
+      [🍉] [Loki] Database loaded
+
+      at Logger._proto.log (node_modules/@nozbe/watermelondb/utils/common/logger/index.js:23:46)
+
+    console.log
+      [🍉] [Loki] Setting up schema
+
+      at Logger._proto.log (node_modules/@nozbe/watermelondb/utils/common/logger/index.js:23:46)
+
+    console.log
+      [🍉] [Loki] Database collections set up
+
+      at Logger._proto.log (node_modules/@nozbe/watermelondb/utils/common/logger/index.js:23:46)
+
+    console.warn
+      [🍉] LokiJSAdapter {useIncrementalIndexedDB: false} option is now deprecated. If you rely on this feature, please file an issue
+
+      43 |     ) => DatabaseAdapter;
+      44 |
+    > 45 |   const adapter = new LokiJSAdapter({
+         |                   ^
+      46 |     schema: databaseSchema,
+      47 |     migrations: databaseMigrations,
+      48 |     useWebWorker: false,
+
+      at Logger._proto.warn (node_modules/@nozbe/watermelondb/utils/common/logger/index.js:27:47)
+      at new LokiJSAdapter (node_modules/@nozbe/watermelondb/adapters/lokijs/index.js:33:25)
+      at createTestDatabase (test/db/createTestDatabase.ts:45:19)
+      at Object.<anonymous> (src/services/sandbox/resetSandboxEnvironment.test.ts:75:42)
+      at asyncGeneratorStep (node_modules/@babel/runtime/helpers/asyncToGenerator.js:3:17)
+      at _next (node_modules/@babel/runtime/helpers/asyncToGenerator.js:17:9)
+      at node_modules/@babel/runtime/helpers/asyncToGenerator.js:22:7
+      at Object.<anonymous> (node_modules/@babel/runtime/helpers/asyncToGenerator.js:14:12)
+
+    console.log
+      [🍉] [Loki] Initializing IndexedDB
+
+      at Logger._proto.log (node_modules/@nozbe/watermelondb/utils/common/logger/index.js:23:46)
+
+    console.log
+      [🍉] [Loki] Database loaded
+
+      at Logger._proto.log (node_modules/@nozbe/watermelondb/utils/common/logger/index.js:23:46)
+
+    console.log
+      [🍉] [Loki] Empty database, setting up
+
+      at Logger._proto.log (node_modules/@nozbe/watermelondb/utils/common/logger/index.js:23:46)
+
+    console.log
+      [🍉] [Loki] Database is now reset
+
+      at Logger._proto.log (node_modules/@nozbe/watermelondb/utils/common/logger/index.js:23:46)
+
+    console.log
+      [🍉] [Loki] Initializing IndexedDB
+
+      at Logger._proto.log (node_modules/@nozbe/watermelondb/utils/common/logger/index.js:23:46)
+
+    console.log
+      [🍉] [Loki] Database loaded
+
+      at Logger._proto.log (node_modules/@nozbe/watermelondb/utils/common/logger/index.js:23:46)
+
+    console.log
+      [🍉] [Loki] Setting up schema
+
+      at Logger._proto.log (node_modules/@nozbe/watermelondb/utils/common/logger/index.js:23:46)
+
+    console.log
+      [🍉] [Loki] Database collections set up
+
+      at Logger._proto.log (node_modules/@nozbe/watermelondb/utils/common/logger/index.js:23:46)
+
+    console.log
+      [🍉] [Loki] Database is now reset
+
+      at Logger._proto.log (node_modules/@nozbe/watermelondb/utils/common/logger/index.js:23:46)
+
+    console.log
+      [🍉] [Loki] Initializing IndexedDB
+
+      at Logger._proto.log (node_modules/@nozbe/watermelondb/utils/common/logger/index.js:23:46)
+
+    console.log
+      [🍉] [Loki] Database loaded
+
+      at Logger._proto.log (node_modules/@nozbe/watermelondb/utils/common/logger/index.js:23:46)
+
+    console.log
+      [🍉] [Loki] Setting up schema
+
+      at Logger._proto.log (node_modules/@nozbe/watermelondb/utils/common/logger/index.js:23:46)
+
+    console.log
+      [🍉] [Loki] Database collections set up
+
+      at Logger._proto.log (node_modules/@nozbe/watermelondb/utils/common/logger/index.js:23:46)
+
+    console.log
+      [🍉] [Loki] Database is now reset
+
+      at Logger._proto.log (node_modules/@nozbe/watermelondb/utils/common/logger/index.js:23:46)
+
+    console.log
+      [🍉] [Loki] Initializing IndexedDB
+
+      at Logger._proto.log (node_modules/@nozbe/watermelondb/utils/common/logger/index.js:23:46)
+
+    console.log
+      [🍉] [Loki] Database loaded
+
+      at Logger._proto.log (node_modules/@nozbe/watermelondb/utils/common/logger/index.js:23:46)
+
+    console.log
+      [🍉] [Loki] Setting up schema
+
+      at Logger._proto.log (node_modules/@nozbe/watermelondb/utils/common/logger/index.js:23:46)
+
+    console.log
+      [🍉] [Loki] Database collections set up
+
+      at Logger._proto.log (node_modules/@nozbe/watermelondb/utils/common/logger/index.js:23:46)
+
+    console.warn
+      [🍉] LokiJSAdapter {useIncrementalIndexedDB: false} option is now deprecated. If you rely on this feature, please file an issue
+
+      43 |     ) => DatabaseAdapter;
+      44 |
+    > 45 |   const adapter = new LokiJSAdapter({
+         |                   ^
+      46 |     schema: databaseSchema,
+      47 |     migrations: databaseMigrations,
+      48 |     useWebWorker: false,
+
+      at Logger._proto.warn (node_modules/@nozbe/watermelondb/utils/common/logger/index.js:27:47)
+      at new LokiJSAdapter (node_modules/@nozbe/watermelondb/adapters/lokijs/index.js:33:25)
+      at createTestDatabase (test/db/createTestDatabase.ts:45:19)
+      at Object.<anonymous> (src/services/sandbox/resetSandboxEnvironment.test.ts:75:42)
+      at asyncGeneratorStep (node_modules/@babel/runtime/helpers/asyncToGenerator.js:3:17)
+      at _next (node_modules/@babel/runtime/helpers/asyncToGenerator.js:17:9)
+      at node_modules/@babel/runtime/helpers/asyncToGenerator.js:22:7
+      at Object.<anonymous> (node_modules/@babel/runtime/helpers/asyncToGenerator.js:14:12)
+
+    console.log
+      [🍉] [Loki] Initializing IndexedDB
+
+      at Logger._proto.log (node_modules/@nozbe/watermelondb/utils/common/logger/index.js:23:46)
+
+    console.log
+      [🍉] [Loki] Database loaded
+
+      at Logger._proto.log (node_modules/@nozbe/watermelondb/utils/common/logger/index.js:23:46)
+
+    console.log
+      [🍉] [Loki] Empty database, setting up
+
+      at Logger._proto.log (node_modules/@nozbe/watermelondb/utils/common/logger/index.js:23:46)
+
+    console.log
+      [🍉] [Loki] Database is now reset
+
+      at Logger._proto.log (node_modules/@nozbe/watermelondb/utils/common/logger/index.js:23:46)
+
+    console.log
+      [🍉] [Loki] Initializing IndexedDB
+
+      at Logger._proto.log (node_modules/@nozbe/watermelondb/utils/common/logger/index.js:23:46)
+
+    console.log
+      [🍉] [Loki] Database loaded
+
+      at Logger._proto.log (node_modules/@nozbe/watermelondb/utils/common/logger/index.js:23:46)
+
+    console.log
+      [🍉] [Loki] Setting up schema
+
+      at Logger._proto.log (node_modules/@nozbe/watermelondb/utils/common/logger/index.js:23:46)
+
+    console.log
+      [🍉] [Loki] Database collections set up
+
+      at Logger._proto.log (node_modules/@nozbe/watermelondb/utils/common/logger/index.js:23:46)
+
+    console.log
+      [🍉] [Loki] Database is now reset
+
+      at Logger._proto.log (node_modules/@nozbe/watermelondb/utils/common/logger/index.js:23:46)
+
+    console.log
+      [🍉] [Loki] Initializing IndexedDB
+
+      at Logger._proto.log (node_modules/@nozbe/watermelondb/utils/common/logger/index.js:23:46)
+
+    console.log
+      [🍉] [Loki] Database loaded
+
+      at Logger._proto.log (node_modules/@nozbe/watermelondb/utils/common/logger/index.js:23:46)
+
+    console.log
+      [🍉] [Loki] Setting up schema
+
+      at Logger._proto.log (node_modules/@nozbe/watermelondb/utils/common/logger/index.js:23:46)
+
+    console.log
+      [🍉] [Loki] Database collections set up
+
+      at Logger._proto.log (node_modules/@nozbe/watermelondb/utils/common/logger/index.js:23:46)
+
+    console.log
+      [🍉] [Loki] Database is now reset
+
+      at Logger._proto.log (node_modules/@nozbe/watermelondb/utils/common/logger/index.js:23:46)
+
+    console.log
+      [🍉] [Loki] Initializing IndexedDB
+
+      at Logger._proto.log (node_modules/@nozbe/watermelondb/utils/common/logger/index.js:23:46)
+
+    console.log
+      [🍉] [Loki] Database loaded
+
+      at Logger._proto.log (node_modules/@nozbe/watermelondb/utils/common/logger/index.js:23:46)
+
+    console.log
+      [🍉] [Loki] Setting up schema
+
+      at Logger._proto.log (node_modules/@nozbe/watermelondb/utils/common/logger/index.js:23:46)
+
+    console.log
+      [🍉] [Loki] Database collections set up
+
+      at Logger._proto.log (node_modules/@nozbe/watermelondb/utils/common/logger/index.js:23:46)
+
+    console.warn
+      [🍉] LokiJSAdapter {useIncrementalIndexedDB: false} option is now deprecated. If you rely on this feature, please file an issue
+
+      43 |     ) => DatabaseAdapter;
+      44 |
+    > 45 |   const adapter = new LokiJSAdapter({
+         |                   ^
+      46 |     schema: databaseSchema,
+      47 |     migrations: databaseMigrations,
+      48 |     useWebWorker: false,
+
+      at Logger._proto.warn (node_modules/@nozbe/watermelondb/utils/common/logger/index.js:27:47)
+      at new LokiJSAdapter (node_modules/@nozbe/watermelondb/adapters/lokijs/index.js:33:25)
+      at createTestDatabase (test/db/createTestDatabase.ts:45:19)
+      at Object.<anonymous> (src/services/sandbox/resetSandboxEnvironment.test.ts:75:42)
+      at asyncGeneratorStep (node_modules/@babel/runtime/helpers/asyncToGenerator.js:3:17)
+      at _next (node_modules/@babel/runtime/helpers/asyncToGenerator.js:17:9)
+      at node_modules/@babel/runtime/helpers/asyncToGenerator.js:22:7
+      at Object.<anonymous> (node_modules/@babel/runtime/helpers/asyncToGenerator.js:14:12)
+
+    console.log
+      [🍉] [Loki] Initializing IndexedDB
+
+      at Logger._proto.log (node_modules/@nozbe/watermelondb/utils/common/logger/index.js:23:46)
+
+    console.log
+      [🍉] [Loki] Database loaded
+
+      at Logger._proto.log (node_modules/@nozbe/watermelondb/utils/common/logger/index.js:23:46)
+
+    console.log
+      [🍉] [Loki] Empty database, setting up
+
+      at Logger._proto.log (node_modules/@nozbe/watermelondb/utils/common/logger/index.js:23:46)
+
+    console.log
+      [🍉] [Loki] Database is now reset
+
+      at Logger._proto.log (node_modules/@nozbe/watermelondb/utils/common/logger/index.js:23:46)
+
+    console.log
+      [🍉] [Loki] Initializing IndexedDB
+
+      at Logger._proto.log (node_modules/@nozbe/watermelondb/utils/common/logger/index.js:23:46)
+
+    console.log
+      [🍉] [Loki] Database loaded
+
+      at Logger._proto.log (node_modules/@nozbe/watermelondb/utils/common/logger/index.js:23:46)
+
+    console.log
+      [🍉] [Loki] Setting up schema
+
+      at Logger._proto.log (node_modules/@nozbe/watermelondb/utils/common/logger/index.js:23:46)
+
+    console.log
+      [🍉] [Loki] Database collections set up
+
+      at Logger._proto.log (node_modules/@nozbe/watermelondb/utils/common/logger/index.js:23:46)
+
+    console.log
+      [🍉] [Loki] Database is now reset
+
+      at Logger._proto.log (node_modules/@nozbe/watermelondb/utils/common/logger/index.js:23:46)
+
+    console.log
+      [🍉] [Loki] Initializing IndexedDB
+
+      at Logger._proto.log (node_modules/@nozbe/watermelondb/utils/common/logger/index.js:23:46)
+
+    console.log
+      [🍉] [Loki] Database loaded
+
+      at Logger._proto.log (node_modules/@nozbe/watermelondb/utils/common/logger/index.js:23:46)
+
+    console.log
+      [🍉] [Loki] Setting up schema
+
+      at Logger._proto.log (node_modules/@nozbe/watermelondb/utils/common/logger/index.js:23:46)
+
+    console.log
+      [🍉] [Loki] Database collections set up
+
+      at Logger._proto.log (node_modules/@nozbe/watermelondb/utils/common/logger/index.js:23:46)
+
+    console.log
+      [🍉] [Loki] Database is now reset
+
+      at Logger._proto.log (node_modules/@nozbe/watermelondb/utils/common/logger/index.js:23:46)
+
+    console.log
+      [🍉] [Loki] Initializing IndexedDB
+
+      at Logger._proto.log (node_modules/@nozbe/watermelondb/utils/common/logger/index.js:23:46)
+
+    console.log
+      [🍉] [Loki] Database loaded
+
+      at Logger._proto.log (node_modules/@nozbe/watermelondb/utils/common/logger/index.js:23:46)
+
+    console.log
+      [🍉] [Loki] Setting up schema
+
+      at Logger._proto.log (node_modules/@nozbe/watermelondb/utils/common/logger/index.js:23:46)
+
+    console.log
+      [🍉] [Loki] Database collections set up
+
+      at Logger._proto.log (node_modules/@nozbe/watermelondb/utils/common/logger/index.js:23:46)
+
+    console.warn
+      [🍉] LokiJSAdapter {useIncrementalIndexedDB: false} option is now deprecated. If you rely on this feature, please file an issue
+
+      43 |     ) => DatabaseAdapter;
+      44 |
+    > 45 |   const adapter = new LokiJSAdapter({
+         |                   ^
+      46 |     schema: databaseSchema,
+      47 |     migrations: databaseMigrations,
+      48 |     useWebWorker: false,
+
+      at Logger._proto.warn (node_modules/@nozbe/watermelondb/utils/common/logger/index.js:27:47)
+      at new LokiJSAdapter (node_modules/@nozbe/watermelondb/adapters/lokijs/index.js:33:25)
+      at createTestDatabase (test/db/createTestDatabase.ts:45:19)
+      at Object.<anonymous> (src/services/sandbox/resetSandboxEnvironment.test.ts:75:42)
+      at asyncGeneratorStep (node_modules/@babel/runtime/helpers/asyncToGenerator.js:3:17)
+      at _next (node_modules/@babel/runtime/helpers/asyncToGenerator.js:17:9)
+      at node_modules/@babel/runtime/helpers/asyncToGenerator.js:22:7
+      at Object.<anonymous> (node_modules/@babel/runtime/helpers/asyncToGenerator.js:14:12)
+
+    console.log
+      [🍉] [Loki] Initializing IndexedDB
+
+      at Logger._proto.log (node_modules/@nozbe/watermelondb/utils/common/logger/index.js:23:46)
+
+    console.log
+      [🍉] [Loki] Database loaded
+
+      at Logger._proto.log (node_modules/@nozbe/watermelondb/utils/common/logger/index.js:23:46)
+
+    console.log
+      [🍉] [Loki] Empty database, setting up
+
+      at Logger._proto.log (node_modules/@nozbe/watermelondb/utils/common/logger/index.js:23:46)
+
+    console.log
+      [🍉] [Loki] Database is now reset
+
+      at Logger._proto.log (node_modules/@nozbe/watermelondb/utils/common/logger/index.js:23:46)
+
+    console.log
+      [🍉] [Loki] Initializing IndexedDB
+
+      at Logger._proto.log (node_modules/@nozbe/watermelondb/utils/common/logger/index.js:23:46)
+
+    console.log
+      [🍉] [Loki] Database loaded
+
+      at Logger._proto.log (node_modules/@nozbe/watermelondb/utils/common/logger/index.js:23:46)
+
+    console.log
+      [🍉] [Loki] Setting up schema
+
+      at Logger._proto.log (node_modules/@nozbe/watermelondb/utils/common/logger/index.js:23:46)
+
+    console.log
+      [🍉] [Loki] Database collections set up
+
+      at Logger._proto.log (node_modules/@nozbe/watermelondb/utils/common/logger/index.js:23:46)
+
+    console.log
+      [🍉] [Loki] Database is now reset
+
+      at Logger._proto.log (node_modules/@nozbe/watermelondb/utils/common/logger/index.js:23:46)
+
+    console.log
+      [🍉] [Loki] Initializing IndexedDB
+
+      at Logger._proto.log (node_modules/@nozbe/watermelondb/utils/common/logger/index.js:23:46)
+
+    console.log
+      [🍉] [Loki] Database loaded
+
+      at Logger._proto.log (node_modules/@nozbe/watermelondb/utils/common/logger/index.js:23:46)
+
+    console.log
+      [🍉] [Loki] Setting up schema
+
+      at Logger._proto.log (node_modules/@nozbe/watermelondb/utils/common/logger/index.js:23:46)
+
+    console.log
+      [🍉] [Loki] Database collections set up
+
+      at Logger._proto.log (node_modules/@nozbe/watermelondb/utils/common/logger/index.js:23:46)
+
+    console.log
+      [🍉] [Loki] Database is now reset
+
+      at Logger._proto.log (node_modules/@nozbe/watermelondb/utils/common/logger/index.js:23:46)
+
+    console.log
+      [🍉] [Loki] Initializing IndexedDB
+
+      at Logger._proto.log (node_modules/@nozbe/watermelondb/utils/common/logger/index.js:23:46)
+
+    console.log
+      [🍉] [Loki] Database loaded
+
+      at Logger._proto.log (node_modules/@nozbe/watermelondb/utils/common/logger/index.js:23:46)
+
+    console.log
+      [🍉] [Loki] Setting up schema
+
+      at Logger._proto.log (node_modules/@nozbe/watermelondb/utils/common/logger/index.js:23:46)
+
+    console.log
+      [🍉] [Loki] Database collections set up
+
+      at Logger._proto.log (node_modules/@nozbe/watermelondb/utils/common/logger/index.js:23:46)
+
+    console.log
+      [🍉] [Loki] Database is now reset
+
+      at Logger._proto.log (node_modules/@nozbe/watermelondb/utils/common/logger/index.js:23:46)
+
+    console.log
+      [🍉] [Loki] Initializing IndexedDB
+
+      at Logger._proto.log (node_modules/@nozbe/watermelondb/utils/common/logger/index.js:23:46)
+
+    console.log
+      [🍉] [Loki] Database loaded
+
+      at Logger._proto.log (node_modules/@nozbe/watermelondb/utils/common/logger/index.js:23:46)
+
+    console.log
+      [🍉] [Loki] Setting up schema
+
+      at Logger._proto.log (node_modules/@nozbe/watermelondb/utils/common/logger/index.js:23:46)
+
+    console.log
+      [🍉] [Loki] Database collections set up
+
+      at Logger._proto.log (node_modules/@nozbe/watermelondb/utils/common/logger/index.js:23:46)
+
+    console.warn
+      [🍉] LokiJSAdapter {useIncrementalIndexedDB: false} option is now deprecated. If you rely on this feature, please file an issue
+
+      43 |     ) => DatabaseAdapter;
+      44 |
+    > 45 |   const adapter = new LokiJSAdapter({
+         |                   ^
+      46 |     schema: databaseSchema,
+      47 |     migrations: databaseMigrations,
+      48 |     useWebWorker: false,
+
+      at Logger._proto.warn (node_modules/@nozbe/watermelondb/utils/common/logger/index.js:27:47)
+      at new LokiJSAdapter (node_modules/@nozbe/watermelondb/adapters/lokijs/index.js:33:25)
+      at createTestDatabase (test/db/createTestDatabase.ts:45:19)
+      at Object.<anonymous> (src/services/sandbox/resetSandboxEnvironment.test.ts:75:42)
+      at asyncGeneratorStep (node_modules/@babel/runtime/helpers/asyncToGenerator.js:3:17)
+      at _next (node_modules/@babel/runtime/helpers/asyncToGenerator.js:17:9)
+      at node_modules/@babel/runtime/helpers/asyncToGenerator.js:22:7
+      at Object.<anonymous> (node_modules/@babel/runtime/helpers/asyncToGenerator.js:14:12)
+
+    console.log
+      [🍉] [Loki] Initializing IndexedDB
+
+      at Logger._proto.log (node_modules/@nozbe/watermelondb/utils/common/logger/index.js:23:46)
+
+    console.log
+      [🍉] [Loki] Database loaded
+
+      at Logger._proto.log (node_modules/@nozbe/watermelondb/utils/common/logger/index.js:23:46)
+
+    console.log
+      [🍉] [Loki] Empty database, setting up
+
+      at Logger._proto.log (node_modules/@nozbe/watermelondb/utils/common/logger/index.js:23:46)
+
+    console.log
+      [🍉] [Loki] Database is now reset
+
+      at Logger._proto.log (node_modules/@nozbe/watermelondb/utils/common/logger/index.js:23:46)
+
+    console.log
+      [🍉] [Loki] Initializing IndexedDB
+
+      at Logger._proto.log (node_modules/@nozbe/watermelondb/utils/common/logger/index.js:23:46)
+
+    console.log
+      [🍉] [Loki] Database loaded
+
+      at Logger._proto.log (node_modules/@nozbe/watermelondb/utils/common/logger/index.js:23:46)
+
+    console.log
+      [🍉] [Loki] Setting up schema
+
+      at Logger._proto.log (node_modules/@nozbe/watermelondb/utils/common/logger/index.js:23:46)
+
+    console.log
+      [🍉] [Loki] Database collections set up
+
+      at Logger._proto.log (node_modules/@nozbe/watermelondb/utils/common/logger/index.js:23:46)
+
+    console.log
+      [🍉] [Loki] Database is now reset
+
+      at Logger._proto.log (node_modules/@nozbe/watermelondb/utils/common/logger/index.js:23:46)
+
+    console.log
+      [🍉] [Loki] Initializing IndexedDB
+
+      at Logger._proto.log (node_modules/@nozbe/watermelondb/utils/common/logger/index.js:23:46)
+
+    console.log
+      [🍉] [Loki] Database loaded
+
+      at Logger._proto.log (node_modules/@nozbe/watermelondb/utils/common/logger/index.js:23:46)
+
+    console.log
+      [🍉] [Loki] Setting up schema
+
+      at Logger._proto.log (node_modules/@nozbe/watermelondb/utils/common/logger/index.js:23:46)
+
+    console.log
+      [🍉] [Loki] Database collections set up
+
+      at Logger._proto.log (node_modules/@nozbe/watermelondb/utils/common/logger/index.js:23:46)
+
+PASS src/features/transactions/state/useTransactionsStore.test.ts
+  ● Console
+
+    console.warn
+      [🍉] LokiJSAdapter {useIncrementalIndexedDB: false} option is now deprecated. If you rely on this feature, please file an issue
+
+      43 |     ) => DatabaseAdapter;
+      44 |
+    > 45 |   const adapter = new LokiJSAdapter({
+         |                   ^
+      46 |     schema: databaseSchema,
+      47 |     migrations: databaseMigrations,
+      48 |     useWebWorker: false,
+
+      at Logger._proto.warn (node_modules/@nozbe/watermelondb/utils/common/logger/index.js:27:47)
+      at new LokiJSAdapter (node_modules/@nozbe/watermelondb/adapters/lokijs/index.js:33:25)
+      at createTestDatabase (test/db/createTestDatabase.ts:45:19)
+      at Object.<anonymous> (src/features/transactions/state/useTransactionsStore.test.ts:46:42)
+      at asyncGeneratorStep (node_modules/@babel/runtime/helpers/asyncToGenerator.js:3:17)
+      at _next (node_modules/@babel/runtime/helpers/asyncToGenerator.js:17:9)
+      at node_modules/@babel/runtime/helpers/asyncToGenerator.js:22:7
+      at Object.<anonymous> (node_modules/@babel/runtime/helpers/asyncToGenerator.js:14:12)
+
+    console.log
+      [🍉] [Loki] Initializing IndexedDB
+
+      at Logger._proto.log (node_modules/@nozbe/watermelondb/utils/common/logger/index.js:23:46)
+
+    console.log
+      [🍉] [Loki] Database loaded
+
+      at Logger._proto.log (node_modules/@nozbe/watermelondb/utils/common/logger/index.js:23:46)
+
+    console.log
+      [🍉] [Loki] Empty database, setting up
+
+      at Logger._proto.log (node_modules/@nozbe/watermelondb/utils/common/logger/index.js:23:46)
+
+    console.log
+      [🍉] [Loki] Database is now reset
+
+      at Logger._proto.log (node_modules/@nozbe/watermelondb/utils/common/logger/index.js:23:46)
+
+    console.log
+      [🍉] [Loki] Initializing IndexedDB
+
+      at Logger._proto.log (node_modules/@nozbe/watermelondb/utils/common/logger/index.js:23:46)
+
+    console.log
+      [🍉] [Loki] Database loaded
+
+      at Logger._proto.log (node_modules/@nozbe/watermelondb/utils/common/logger/index.js:23:46)
+
+    console.log
+      [🍉] [Loki] Setting up schema
+
+      at Logger._proto.log (node_modules/@nozbe/watermelondb/utils/common/logger/index.js:23:46)
+
+    console.log
+      [🍉] [Loki] Database collections set up
+
+      at Logger._proto.log (node_modules/@nozbe/watermelondb/utils/common/logger/index.js:23:46)
+
+    console.log
+      [🍉] [Loki] Database is now reset
+
+      at Logger._proto.log (node_modules/@nozbe/watermelondb/utils/common/logger/index.js:23:46)
+
+    console.log
+      [🍉] [Loki] Initializing IndexedDB
+
+      at Logger._proto.log (node_modules/@nozbe/watermelondb/utils/common/logger/index.js:23:46)
+
+    console.log
+      [🍉] [Loki] Database loaded
+
+      at Logger._proto.log (node_modules/@nozbe/watermelondb/utils/common/logger/index.js:23:46)
+
+    console.log
+      [🍉] [Loki] Setting up schema
+
+      at Logger._proto.log (node_modules/@nozbe/watermelondb/utils/common/logger/index.js:23:46)
+
+    console.log
+      [🍉] [Loki] Database collections set up
+
+      at Logger._proto.log (node_modules/@nozbe/watermelondb/utils/common/logger/index.js:23:46)
+
+    console.warn
+      [🍉] LokiJSAdapter {useIncrementalIndexedDB: false} option is now deprecated. If you rely on this feature, please file an issue
+
+      43 |     ) => DatabaseAdapter;
+      44 |
+    > 45 |   const adapter = new LokiJSAdapter({
+         |                   ^
+      46 |     schema: databaseSchema,
+      47 |     migrations: databaseMigrations,
+      48 |     useWebWorker: false,
+
+      at Logger._proto.warn (node_modules/@nozbe/watermelondb/utils/common/logger/index.js:27:47)
+      at new LokiJSAdapter (node_modules/@nozbe/watermelondb/adapters/lokijs/index.js:33:25)
+      at createTestDatabase (test/db/createTestDatabase.ts:45:19)
+      at Object.<anonymous> (src/features/transactions/state/useTransactionsStore.test.ts:46:42)
+      at asyncGeneratorStep (node_modules/@babel/runtime/helpers/asyncToGenerator.js:3:17)
+      at _next (node_modules/@babel/runtime/helpers/asyncToGenerator.js:17:9)
+      at node_modules/@babel/runtime/helpers/asyncToGenerator.js:22:7
+      at Object.<anonymous> (node_modules/@babel/runtime/helpers/asyncToGenerator.js:14:12)
+
+    console.log
+      [🍉] [Loki] Initializing IndexedDB
+
+      at Logger._proto.log (node_modules/@nozbe/watermelondb/utils/common/logger/index.js:23:46)
+
+    console.log
+      [🍉] [Loki] Database loaded
+
+      at Logger._proto.log (node_modules/@nozbe/watermelondb/utils/common/logger/index.js:23:46)
+
+    console.log
+      [🍉] [Loki] Empty database, setting up
+
+      at Logger._proto.log (node_modules/@nozbe/watermelondb/utils/common/logger/index.js:23:46)
+
+    console.log
+      [🍉] [Loki] Database is now reset
+
+      at Logger._proto.log (node_modules/@nozbe/watermelondb/utils/common/logger/index.js:23:46)
+
+    console.log
+      [🍉] [Loki] Initializing IndexedDB
+
+      at Logger._proto.log (node_modules/@nozbe/watermelondb/utils/common/logger/index.js:23:46)
+
+    console.log
+      [🍉] [Loki] Database loaded
+
+      at Logger._proto.log (node_modules/@nozbe/watermelondb/utils/common/logger/index.js:23:46)
+
+    console.log
+      [🍉] [Loki] Setting up schema
+
+      at Logger._proto.log (node_modules/@nozbe/watermelondb/utils/common/logger/index.js:23:46)
+
+    console.log
+      [🍉] [Loki] Database collections set up
+
+      at Logger._proto.log (node_modules/@nozbe/watermelondb/utils/common/logger/index.js:23:46)
+
+    console.log
+      [🍉] [Loki] Database is now reset
+
+      at Logger._proto.log (node_modules/@nozbe/watermelondb/utils/common/logger/index.js:23:46)
+
+    console.log
+      [🍉] [Loki] Initializing IndexedDB
+
+      at Logger._proto.log (node_modules/@nozbe/watermelondb/utils/common/logger/index.js:23:46)
+
+    console.log
+      [🍉] [Loki] Database loaded
+
+      at Logger._proto.log (node_modules/@nozbe/watermelondb/utils/common/logger/index.js:23:46)
+
+    console.log
+      [🍉] [Loki] Setting up schema
+
+      at Logger._proto.log (node_modules/@nozbe/watermelondb/utils/common/logger/index.js:23:46)
+
+    console.log
+      [🍉] [Loki] Database collections set up
+
+      at Logger._proto.log (node_modules/@nozbe/watermelondb/utils/common/logger/index.js:23:46)
+
+PASS src/features/monobank/state/useMonobankStore.test.ts
+  ● Console
+
+    console.warn
+      [🍉] LokiJSAdapter {useIncrementalIndexedDB: false} option is now deprecated. If you rely on this feature, please file an issue
+
+      43 |     ) => DatabaseAdapter;
+      44 |
+    > 45 |   const adapter = new LokiJSAdapter({
+         |                   ^
+      46 |     schema: databaseSchema,
+      47 |     migrations: databaseMigrations,
+      48 |     useWebWorker: false,
+
+      at Logger._proto.warn (node_modules/@nozbe/watermelondb/utils/common/logger/index.js:27:47)
+      at new LokiJSAdapter (node_modules/@nozbe/watermelondb/adapters/lokijs/index.js:33:25)
+      at createTestDatabase (test/db/createTestDatabase.ts:45:19)
+      at Object.<anonymous> (src/features/monobank/state/useMonobankStore.test.ts:51:42)
+      at asyncGeneratorStep (node_modules/@babel/runtime/helpers/asyncToGenerator.js:3:17)
+      at _next (node_modules/@babel/runtime/helpers/asyncToGenerator.js:17:9)
+      at node_modules/@babel/runtime/helpers/asyncToGenerator.js:22:7
+      at Object.<anonymous> (node_modules/@babel/runtime/helpers/asyncToGenerator.js:14:12)
+
+    console.log
+      [🍉] [Loki] Initializing IndexedDB
+
+      at Logger._proto.log (node_modules/@nozbe/watermelondb/utils/common/logger/index.js:23:46)
+
+    console.log
+      [🍉] [Loki] Database loaded
+
+      at Logger._proto.log (node_modules/@nozbe/watermelondb/utils/common/logger/index.js:23:46)
+
+    console.log
+      [🍉] [Loki] Empty database, setting up
+
+      at Logger._proto.log (node_modules/@nozbe/watermelondb/utils/common/logger/index.js:23:46)
+
+    console.log
+      [🍉] [Loki] Database is now reset
+
+      at Logger._proto.log (node_modules/@nozbe/watermelondb/utils/common/logger/index.js:23:46)
+
+    console.log
+      [🍉] [Loki] Initializing IndexedDB
+
+      at Logger._proto.log (node_modules/@nozbe/watermelondb/utils/common/logger/index.js:23:46)
+
+    console.log
+      [🍉] [Loki] Database loaded
+
+      at Logger._proto.log (node_modules/@nozbe/watermelondb/utils/common/logger/index.js:23:46)
+
+    console.log
+      [🍉] [Loki] Setting up schema
+
+      at Logger._proto.log (node_modules/@nozbe/watermelondb/utils/common/logger/index.js:23:46)
+
+    console.log
+      [🍉] [Loki] Database collections set up
+
+      at Logger._proto.log (node_modules/@nozbe/watermelondb/utils/common/logger/index.js:23:46)
+
+    console.log
+      [🍉] [Loki] Database is now reset
+
+      at Logger._proto.log (node_modules/@nozbe/watermelondb/utils/common/logger/index.js:23:46)
+
+    console.log
+      [🍉] [Loki] Initializing IndexedDB
+
+      at Logger._proto.log (node_modules/@nozbe/watermelondb/utils/common/logger/index.js:23:46)
+
+    console.log
+      [🍉] [Loki] Database loaded
+
+      at Logger._proto.log (node_modules/@nozbe/watermelondb/utils/common/logger/index.js:23:46)
+
+    console.log
+      [🍉] [Loki] Setting up schema
+
+      at Logger._proto.log (node_modules/@nozbe/watermelondb/utils/common/logger/index.js:23:46)
+
+    console.log
+      [🍉] [Loki] Database collections set up
+
+      at Logger._proto.log (node_modules/@nozbe/watermelondb/utils/common/logger/index.js:23:46)
+
+    console.warn
+      [🍉] LokiJSAdapter {useIncrementalIndexedDB: false} option is now deprecated. If you rely on this feature, please file an issue
+
+      43 |     ) => DatabaseAdapter;
+      44 |
+    > 45 |   const adapter = new LokiJSAdapter({
+         |                   ^
+      46 |     schema: databaseSchema,
+      47 |     migrations: databaseMigrations,
+      48 |     useWebWorker: false,
+
+      at Logger._proto.warn (node_modules/@nozbe/watermelondb/utils/common/logger/index.js:27:47)
+      at new LokiJSAdapter (node_modules/@nozbe/watermelondb/adapters/lokijs/index.js:33:25)
+      at createTestDatabase (test/db/createTestDatabase.ts:45:19)
+      at Object.<anonymous> (src/features/monobank/state/useMonobankStore.test.ts:51:42)
+      at asyncGeneratorStep (node_modules/@babel/runtime/helpers/asyncToGenerator.js:3:17)
+      at _next (node_modules/@babel/runtime/helpers/asyncToGenerator.js:17:9)
+      at node_modules/@babel/runtime/helpers/asyncToGenerator.js:22:7
+      at Object.<anonymous> (node_modules/@babel/runtime/helpers/asyncToGenerator.js:14:12)
+
+    console.log
+      [🍉] [Loki] Initializing IndexedDB
+
+      at Logger._proto.log (node_modules/@nozbe/watermelondb/utils/common/logger/index.js:23:46)
+
+    console.log
+      [🍉] [Loki] Database loaded
+
+      at Logger._proto.log (node_modules/@nozbe/watermelondb/utils/common/logger/index.js:23:46)
+
+    console.log
+      [🍉] [Loki] Empty database, setting up
+
+      at Logger._proto.log (node_modules/@nozbe/watermelondb/utils/common/logger/index.js:23:46)
+
+    console.log
+      [🍉] [Loki] Database is now reset
+
+      at Logger._proto.log (node_modules/@nozbe/watermelondb/utils/common/logger/index.js:23:46)
+
+    console.log
+      [🍉] [Loki] Initializing IndexedDB
+
+      at Logger._proto.log (node_modules/@nozbe/watermelondb/utils/common/logger/index.js:23:46)
+
+    console.log
+      [🍉] [Loki] Database loaded
+
+      at Logger._proto.log (node_modules/@nozbe/watermelondb/utils/common/logger/index.js:23:46)
+
+    console.log
+      [🍉] [Loki] Setting up schema
+
+      at Logger._proto.log (node_modules/@nozbe/watermelondb/utils/common/logger/index.js:23:46)
+
+    console.log
+      [🍉] [Loki] Database collections set up
+
+      at Logger._proto.log (node_modules/@nozbe/watermelondb/utils/common/logger/index.js:23:46)
+
+    console.log
+      [🍉] [Loki] Database is now reset
+
+      at Logger._proto.log (node_modules/@nozbe/watermelondb/utils/common/logger/index.js:23:46)
+
+    console.log
+      [🍉] [Loki] Initializing IndexedDB
+
+      at Logger._proto.log (node_modules/@nozbe/watermelondb/utils/common/logger/index.js:23:46)
+
+    console.log
+      [🍉] [Loki] Database loaded
+
+      at Logger._proto.log (node_modules/@nozbe/watermelondb/utils/common/logger/index.js:23:46)
+
+    console.log
+      [🍉] [Loki] Setting up schema
+
+      at Logger._proto.log (node_modules/@nozbe/watermelondb/utils/common/logger/index.js:23:46)
+
+    console.log
+      [🍉] [Loki] Database collections set up
+
+      at Logger._proto.log (node_modules/@nozbe/watermelondb/utils/common/logger/index.js:23:46)
+
+    console.warn
+      [🍉] LokiJSAdapter {useIncrementalIndexedDB: false} option is now deprecated. If you rely on this feature, please file an issue
+
+      43 |     ) => DatabaseAdapter;
+      44 |
+    > 45 |   const adapter = new LokiJSAdapter({
+         |                   ^
+      46 |     schema: databaseSchema,
+      47 |     migrations: databaseMigrations,
+      48 |     useWebWorker: false,
+
+      at Logger._proto.warn (node_modules/@nozbe/watermelondb/utils/common/logger/index.js:27:47)
+      at new LokiJSAdapter (node_modules/@nozbe/watermelondb/adapters/lokijs/index.js:33:25)
+      at createTestDatabase (test/db/createTestDatabase.ts:45:19)
+      at Object.<anonymous> (src/features/monobank/state/useMonobankStore.test.ts:51:42)
+      at asyncGeneratorStep (node_modules/@babel/runtime/helpers/asyncToGenerator.js:3:17)
+      at _next (node_modules/@babel/runtime/helpers/asyncToGenerator.js:17:9)
+      at node_modules/@babel/runtime/helpers/asyncToGenerator.js:22:7
+      at Object.<anonymous> (node_modules/@babel/runtime/helpers/asyncToGenerator.js:14:12)
+
+    console.log
+      [🍉] [Loki] Initializing IndexedDB
+
+      at Logger._proto.log (node_modules/@nozbe/watermelondb/utils/common/logger/index.js:23:46)
+
+    console.log
+      [🍉] [Loki] Database loaded
+
+      at Logger._proto.log (node_modules/@nozbe/watermelondb/utils/common/logger/index.js:23:46)
+
+    console.log
+      [🍉] [Loki] Empty database, setting up
+
+      at Logger._proto.log (node_modules/@nozbe/watermelondb/utils/common/logger/index.js:23:46)
+
+    console.log
+      [🍉] [Loki] Database is now reset
+
+      at Logger._proto.log (node_modules/@nozbe/watermelondb/utils/common/logger/index.js:23:46)
+
+    console.log
+      [🍉] [Loki] Initializing IndexedDB
+
+      at Logger._proto.log (node_modules/@nozbe/watermelondb/utils/common/logger/index.js:23:46)
+
+    console.log
+      [🍉] [Loki] Database loaded
+
+      at Logger._proto.log (node_modules/@nozbe/watermelondb/utils/common/logger/index.js:23:46)
+
+    console.log
+      [🍉] [Loki] Setting up schema
+
+      at Logger._proto.log (node_modules/@nozbe/watermelondb/utils/common/logger/index.js:23:46)
+
+    console.log
+      [🍉] [Loki] Database collections set up
+
+      at Logger._proto.log (node_modules/@nozbe/watermelondb/utils/common/logger/index.js:23:46)
+
+    console.log
+      [🍉] [Loki] Database is now reset
+
+      at Logger._proto.log (node_modules/@nozbe/watermelondb/utils/common/logger/index.js:23:46)
+
+    console.log
+      [🍉] [Loki] Initializing IndexedDB
+
+      at Logger._proto.log (node_modules/@nozbe/watermelondb/utils/common/logger/index.js:23:46)
+
+    console.log
+      [🍉] [Loki] Database loaded
+
+      at Logger._proto.log (node_modules/@nozbe/watermelondb/utils/common/logger/index.js:23:46)
+
+    console.log
+      [🍉] [Loki] Setting up schema
+
+      at Logger._proto.log (node_modules/@nozbe/watermelondb/utils/common/logger/index.js:23:46)
+
+    console.log
+      [🍉] [Loki] Database collections set up
+
+      at Logger._proto.log (node_modules/@nozbe/watermelondb/utils/common/logger/index.js:23:46)
+
+    console.warn
+      [🍉] LokiJSAdapter {useIncrementalIndexedDB: false} option is now deprecated. If you rely on this feature, please file an issue
+
+      43 |     ) => DatabaseAdapter;
+      44 |
+    > 45 |   const adapter = new LokiJSAdapter({
+         |                   ^
+      46 |     schema: databaseSchema,
+      47 |     migrations: databaseMigrations,
+      48 |     useWebWorker: false,
+
+      at Logger._proto.warn (node_modules/@nozbe/watermelondb/utils/common/logger/index.js:27:47)
+      at new LokiJSAdapter (node_modules/@nozbe/watermelondb/adapters/lokijs/index.js:33:25)
+      at createTestDatabase (test/db/createTestDatabase.ts:45:19)
+      at Object.<anonymous> (src/features/monobank/state/useMonobankStore.test.ts:51:42)
+      at asyncGeneratorStep (node_modules/@babel/runtime/helpers/asyncToGenerator.js:3:17)
+      at _next (node_modules/@babel/runtime/helpers/asyncToGenerator.js:17:9)
+      at node_modules/@babel/runtime/helpers/asyncToGenerator.js:22:7
+      at Object.<anonymous> (node_modules/@babel/runtime/helpers/asyncToGenerator.js:14:12)
+
+    console.log
+      [🍉] [Loki] Initializing IndexedDB
+
+      at Logger._proto.log (node_modules/@nozbe/watermelondb/utils/common/logger/index.js:23:46)
+
+    console.log
+      [🍉] [Loki] Database loaded
+
+      at Logger._proto.log (node_modules/@nozbe/watermelondb/utils/common/logger/index.js:23:46)
+
+    console.log
+      [🍉] [Loki] Empty database, setting up
+
+      at Logger._proto.log (node_modules/@nozbe/watermelondb/utils/common/logger/index.js:23:46)
+
+    console.log
+      [🍉] [Loki] Database is now reset
+
+      at Logger._proto.log (node_modules/@nozbe/watermelondb/utils/common/logger/index.js:23:46)
+
+    console.log
+      [🍉] [Loki] Initializing IndexedDB
+
+      at Logger._proto.log (node_modules/@nozbe/watermelondb/utils/common/logger/index.js:23:46)
+
+    console.log
+      [🍉] [Loki] Database loaded
+
+      at Logger._proto.log (node_modules/@nozbe/watermelondb/utils/common/logger/index.js:23:46)
+
+    console.log
+      [🍉] [Loki] Setting up schema
+
+      at Logger._proto.log (node_modules/@nozbe/watermelondb/utils/common/logger/index.js:23:46)
+
+    console.log
+      [🍉] [Loki] Database collections set up
+
+      at Logger._proto.log (node_modules/@nozbe/watermelondb/utils/common/logger/index.js:23:46)
+
+    console.log
+      [🍉] [Loki] Database is now reset
+
+      at Logger._proto.log (node_modules/@nozbe/watermelondb/utils/common/logger/index.js:23:46)
+
+    console.log
+      [🍉] [Loki] Initializing IndexedDB
+
+      at Logger._proto.log (node_modules/@nozbe/watermelondb/utils/common/logger/index.js:23:46)
+
+    console.log
+      [🍉] [Loki] Database loaded
+
+      at Logger._proto.log (node_modules/@nozbe/watermelondb/utils/common/logger/index.js:23:46)
+
+    console.log
+      [🍉] [Loki] Setting up schema
+
+      at Logger._proto.log (node_modules/@nozbe/watermelondb/utils/common/logger/index.js:23:46)
+
+    console.log
+      [🍉] [Loki] Database collections set up
+
+      at Logger._proto.log (node_modules/@nozbe/watermelondb/utils/common/logger/index.js:23:46)
+
+    console.warn
+      [🍉] LokiJSAdapter {useIncrementalIndexedDB: false} option is now deprecated. If you rely on this feature, please file an issue
+
+      43 |     ) => DatabaseAdapter;
+      44 |
+    > 45 |   const adapter = new LokiJSAdapter({
+         |                   ^
+      46 |     schema: databaseSchema,
+      47 |     migrations: databaseMigrations,
+      48 |     useWebWorker: false,
+
+      at Logger._proto.warn (node_modules/@nozbe/watermelondb/utils/common/logger/index.js:27:47)
+      at new LokiJSAdapter (node_modules/@nozbe/watermelondb/adapters/lokijs/index.js:33:25)
+      at createTestDatabase (test/db/createTestDatabase.ts:45:19)
+      at Object.<anonymous> (src/features/monobank/state/useMonobankStore.test.ts:51:42)
+      at asyncGeneratorStep (node_modules/@babel/runtime/helpers/asyncToGenerator.js:3:17)
+      at _next (node_modules/@babel/runtime/helpers/asyncToGenerator.js:17:9)
+      at node_modules/@babel/runtime/helpers/asyncToGenerator.js:22:7
+      at Object.<anonymous> (node_modules/@babel/runtime/helpers/asyncToGenerator.js:14:12)
+
+    console.log
+      [🍉] [Loki] Initializing IndexedDB
+
+      at Logger._proto.log (node_modules/@nozbe/watermelondb/utils/common/logger/index.js:23:46)
+
+    console.log
+      [🍉] [Loki] Database loaded
+
+      at Logger._proto.log (node_modules/@nozbe/watermelondb/utils/common/logger/index.js:23:46)
+
+    console.log
+      [🍉] [Loki] Empty database, setting up
+
+      at Logger._proto.log (node_modules/@nozbe/watermelondb/utils/common/logger/index.js:23:46)
+
+    console.log
+      [🍉] [Loki] Database is now reset
+
+      at Logger._proto.log (node_modules/@nozbe/watermelondb/utils/common/logger/index.js:23:46)
+
+    console.log
+      [🍉] [Loki] Initializing IndexedDB
+
+      at Logger._proto.log (node_modules/@nozbe/watermelondb/utils/common/logger/index.js:23:46)
+
+    console.log
+      [🍉] [Loki] Database loaded
+
+      at Logger._proto.log (node_modules/@nozbe/watermelondb/utils/common/logger/index.js:23:46)
+
+    console.log
+      [🍉] [Loki] Setting up schema
+
+      at Logger._proto.log (node_modules/@nozbe/watermelondb/utils/common/logger/index.js:23:46)
+
+    console.log
+      [🍉] [Loki] Database collections set up
+
+      at Logger._proto.log (node_modules/@nozbe/watermelondb/utils/common/logger/index.js:23:46)
+
+    console.log
+      [🍉] [Loki] Database is now reset
+
+      at Logger._proto.log (node_modules/@nozbe/watermelondb/utils/common/logger/index.js:23:46)
+
+    console.log
+      [🍉] [Loki] Initializing IndexedDB
+
+      at Logger._proto.log (node_modules/@nozbe/watermelondb/utils/common/logger/index.js:23:46)
+
+    console.log
+      [🍉] [Loki] Database loaded
+
+      at Logger._proto.log (node_modules/@nozbe/watermelondb/utils/common/logger/index.js:23:46)
+
+    console.log
+      [🍉] [Loki] Setting up schema
+
+      at Logger._proto.log (node_modules/@nozbe/watermelondb/utils/common/logger/index.js:23:46)
+
+    console.log
+      [🍉] [Loki] Database collections set up
+
+      at Logger._proto.log (node_modules/@nozbe/watermelondb/utils/common/logger/index.js:23:46)
+
+    console.warn
+      [🍉] LokiJSAdapter {useIncrementalIndexedDB: false} option is now deprecated. If you rely on this feature, please file an issue
+
+      43 |     ) => DatabaseAdapter;
+      44 |
+    > 45 |   const adapter = new LokiJSAdapter({
+         |                   ^
+      46 |     schema: databaseSchema,
+      47 |     migrations: databaseMigrations,
+      48 |     useWebWorker: false,
+
+      at Logger._proto.warn (node_modules/@nozbe/watermelondb/utils/common/logger/index.js:27:47)
+      at new LokiJSAdapter (node_modules/@nozbe/watermelondb/adapters/lokijs/index.js:33:25)
+      at createTestDatabase (test/db/createTestDatabase.ts:45:19)
+      at Object.<anonymous> (src/features/monobank/state/useMonobankStore.test.ts:51:42)
+      at asyncGeneratorStep (node_modules/@babel/runtime/helpers/asyncToGenerator.js:3:17)
+      at _next (node_modules/@babel/runtime/helpers/asyncToGenerator.js:17:9)
+      at node_modules/@babel/runtime/helpers/asyncToGenerator.js:22:7
+      at Object.<anonymous> (node_modules/@babel/runtime/helpers/asyncToGenerator.js:14:12)
+
+    console.log
+      [🍉] [Loki] Initializing IndexedDB
+
+      at Logger._proto.log (node_modules/@nozbe/watermelondb/utils/common/logger/index.js:23:46)
+
+    console.log
+      [🍉] [Loki] Database loaded
+
+      at Logger._proto.log (node_modules/@nozbe/watermelondb/utils/common/logger/index.js:23:46)
+
+    console.log
+      [🍉] [Loki] Empty database, setting up
+
+      at Logger._proto.log (node_modules/@nozbe/watermelondb/utils/common/logger/index.js:23:46)
+
+    console.log
+      [🍉] [Loki] Database is now reset
+
+      at Logger._proto.log (node_modules/@nozbe/watermelondb/utils/common/logger/index.js:23:46)
+
+    console.log
+      [🍉] [Loki] Initializing IndexedDB
+
+      at Logger._proto.log (node_modules/@nozbe/watermelondb/utils/common/logger/index.js:23:46)
+
+    console.log
+      [🍉] [Loki] Database loaded
+
+      at Logger._proto.log (node_modules/@nozbe/watermelondb/utils/common/logger/index.js:23:46)
+
+    console.log
+      [🍉] [Loki] Setting up schema
+
+      at Logger._proto.log (node_modules/@nozbe/watermelondb/utils/common/logger/index.js:23:46)
+
+    console.log
+      [🍉] [Loki] Database collections set up
+
+      at Logger._proto.log (node_modules/@nozbe/watermelondb/utils/common/logger/index.js:23:46)
+
+    console.log
+      [🍉] [Loki] Database is now reset
+
+      at Logger._proto.log (node_modules/@nozbe/watermelondb/utils/common/logger/index.js:23:46)
+
+    console.log
+      [🍉] [Loki] Initializing IndexedDB
+
+      at Logger._proto.log (node_modules/@nozbe/watermelondb/utils/common/logger/index.js:23:46)
+
+    console.log
+      [🍉] [Loki] Database loaded
+
+      at Logger._proto.log (node_modules/@nozbe/watermelondb/utils/common/logger/index.js:23:46)
+
+    console.log
+      [🍉] [Loki] Setting up schema
+
+      at Logger._proto.log (node_modules/@nozbe/watermelondb/utils/common/logger/index.js:23:46)
+
+    console.log
+      [🍉] [Loki] Database collections set up
+
+      at Logger._proto.log (node_modules/@nozbe/watermelondb/utils/common/logger/index.js:23:46)
+
+    console.log
+      [🍉] [Loki] Database is now reset
+
+      at Logger._proto.log (node_modules/@nozbe/watermelondb/utils/common/logger/index.js:23:46)
+
+    console.log
+      [🍉] [Loki] Initializing IndexedDB
+
+      at Logger._proto.log (node_modules/@nozbe/watermelondb/utils/common/logger/index.js:23:46)
+
+    console.log
+      [🍉] [Loki] Database loaded
+
+      at Logger._proto.log (node_modules/@nozbe/watermelondb/utils/common/logger/index.js:23:46)
+
+    console.log
+      [🍉] [Loki] Setting up schema
+
+      at Logger._proto.log (node_modules/@nozbe/watermelondb/utils/common/logger/index.js:23:46)
+
+    console.log
+      [🍉] [Loki] Database collections set up
+
+      at Logger._proto.log (node_modules/@nozbe/watermelondb/utils/common/logger/index.js:23:46)
+
+PASS src/services/monobank/MonobankTokenService.test.ts
+PASS src/features/cards/state/useCardsStore.test.ts (7.517 s)
+PASS src/features/settings/SettingsScreen.test.tsx (7.536 s)
+PASS src/features/transactions/TransactionsScreen.test.tsx (7.569 s)
+PASS ./App.test.tsx (8.949 s)
+  ● Console
+
+    console.warn
+      [🍉] LokiJSAdapter {useIncrementalIndexedDB: false} option is now deprecated. If you rely on this feature, please file an issue
+
+      43 |     ) => DatabaseAdapter;
+      44 |
+    > 45 |   const adapter = new LokiJSAdapter({
+         |                   ^
+      46 |     schema: databaseSchema,
+      47 |     migrations: databaseMigrations,
+      48 |     useWebWorker: false,
+
+      at Logger._proto.warn (node_modules/@nozbe/watermelondb/utils/common/logger/index.js:27:47)
+      at new LokiJSAdapter (node_modules/@nozbe/watermelondb/adapters/lokijs/index.js:33:25)
+      at createTestDatabase (test/db/createTestDatabase.ts:45:19)
+      at Object.<anonymous> (App.test.tsx:32:42)
+
+    console.log
+      [🍉] [Loki] Initializing IndexedDB
+
+      at Logger._proto.log (node_modules/@nozbe/watermelondb/utils/common/logger/index.js:23:46)
+
+    console.log
+      [🍉] [Loki] Database loaded
+
+      at Logger._proto.log (node_modules/@nozbe/watermelondb/utils/common/logger/index.js:23:46)
+
+    console.log
+      [🍉] [Loki] Empty database, setting up
+
+      at Logger._proto.log (node_modules/@nozbe/watermelondb/utils/common/logger/index.js:23:46)
+
+    console.log
+      [🍉] [Loki] Database is now reset
+
+      at Logger._proto.log (node_modules/@nozbe/watermelondb/utils/common/logger/index.js:23:46)
+
+    console.log
+      [🍉] [Loki] Initializing IndexedDB
+
+      at Logger._proto.log (node_modules/@nozbe/watermelondb/utils/common/logger/index.js:23:46)
+
+    console.log
+      [🍉] [Loki] Database loaded
+
+      at Logger._proto.log (node_modules/@nozbe/watermelondb/utils/common/logger/index.js:23:46)
+
+    console.log
+      [🍉] [Loki] Setting up schema
+
+      at Logger._proto.log (node_modules/@nozbe/watermelondb/utils/common/logger/index.js:23:46)
+
+    console.log
+      [🍉] [Loki] Database collections set up
+
+      at Logger._proto.log (node_modules/@nozbe/watermelondb/utils/common/logger/index.js:23:46)
+
+    console.log
+      [🍉] [Loki] Database is now reset
+
+      at Logger._proto.log (node_modules/@nozbe/watermelondb/utils/common/logger/index.js:23:46)
+
+    console.log
+      [🍉] [Loki] Initializing IndexedDB
+
+      at Logger._proto.log (node_modules/@nozbe/watermelondb/utils/common/logger/index.js:23:46)
+
+    console.log
+      [🍉] [Loki] Database loaded
+
+      at Logger._proto.log (node_modules/@nozbe/watermelondb/utils/common/logger/index.js:23:46)
+
+    console.log
+      [🍉] [Loki] Setting up schema
+
+      at Logger._proto.log (node_modules/@nozbe/watermelondb/utils/common/logger/index.js:23:46)
+
+    console.log
+      [🍉] [Loki] Database collections set up
+
+      at Logger._proto.log (node_modules/@nozbe/watermelondb/utils/common/logger/index.js:23:46)
+
+
+Summary of all failing tests
+FAIL src/services/secret-storage/cryptoKey.test.ts
+  ● cryptoKey.generateKey resolves its random source at call time › AC-010 — draws from the source installed after the module was loaded
+
+    expect(received).toBe(expected) // Object.is equality
+
+    Expected: 1
+    Received: 0
+
+      87 |     generateKey();
+      88 |
+    > 89 |     expect(state.calls).toBe(1);
+         |                         ^
+      90 |   });
+      91 |
+      92 |   it('AC-011 — throws when the source is gone by the time it is called', () => {
+
+      at Object.toBe (src/services/secret-storage/cryptoKey.test.ts:89:25)
+
+  ● cryptoKey.generateKey resolves its random source at call time › AC-011 — throws when the source is gone by the time it is called
+
+    expect(received).toThrow(expected)
+
+    Expected substring: "random source"
+
+    Received function did not throw
+
+       98 |
+       99 |     // Fail closed (AS-015): no source means no key, never a Math.random draw.
+    > 100 |     expect(() => generateKey()).toThrow('random source');
+          |                                 ^
+      101 |   });
+      102 | });
+      103 |
+
+      at Object.toThrow (src/services/secret-storage/cryptoKey.test.ts:100:33)
+
+  ● index.js › AC-012 — imports the random-values polyfill before anything else
+
+    expect(received).toBe(expected) // Object.is equality
+
+    Expected: "react-native-get-random-values"
+    Received: "react-native"
+
+      123 |     const specifier = firstImportSpecifier(readFileSync('index.js', 'utf8'));
+      124 |
+    > 125 |     expect(specifier).toBe('react-native-get-random-values');
+          |                       ^
+      126 |   });
+      127 | });
+      128 |
+
+      at Object.toBe (src/services/secret-storage/cryptoKey.test.ts:125:23)
+
+  ● src/services/secret-storage/CLAUDE.md › AC-015 — records where the random bytes come from on device
+
+    expect(received).toContain(expected) // indexOf
+
+    Expected substring: "react-native-get-random-values"
+    Received string:    "# secret-storage — encrypted secrets at rest·
+    `SecretStore` keeps secrets encrypted at rest in a dedicated MMKV instance, keyed
+    by a 32-byte crypto-secure key held in the device Keychain. Import it through the
+    barrel (`index.ts`) — never the individual backend files.·
+    ```
+    new SecretStore({ keychain, encrypted, generateKey })   // constructor-DI
+      .get(key)    : Promise<string | null>   // stored string, or null if absent
+      .set(key, v) : Promise<void>
+      .delete(key) : Promise<void>            // silent no-op on an absent key
+    ```·
+    The three backends are constructor dependencies with real device defaults, so
+    tests inject fakes (mirrors `MonobankAccountSelectionService`).·
+    ## The two load-bearing rules·
+    1. **The encrypted store is never opened without its Keychain key.** Bootstrap is a
+       single memoized readiness Promise that every `get`/`set`/`delete` awaits. It reads
+       the Keychain key; opens the encrypted MMKV instance only with a real key; and, on
+       any read/write failure, rejects and opens nothing — never a plaintext or keyless
+       store. A rejected readiness is nulled so the next call retries.·
+    2. **Absent vs. transient is classified, not guessed.** `getGenericPassword`
+       resolving `false` is a *genuinely absent* key: mint a new key, write it, and wipe
+       the stale encrypted instance before opening (stale ciphertext under the old key is
+       discarded, not read back). Any *thrown/rejected* Keychain read is *transient*: the
+       stored data is preserved and the caller sees a rejection.·
+    ## Jest vs. device split·
+    - **Keychain** (`keychainKeyStore.ts`) reaches `react-native-keychain` only behind a
+      `typeof jest` guard via a lazy `require` — never a top-level import, so the
+      uninstalled/unmocked native module never loads under Jest (tests inject a fake
+      keychain). If the `require` throws on device, it propagates and bootstrap fails
+      closed — there is no in-memory keychain fallback.
+    - **Encrypted store** (`encryptedStore.ts`) uses `createMMKV({ id, encryptionKey,
+      encryptionType: 'AES-256' })` / `deleteMMKV(id)` on device and an in-memory `Map`
+      under Jest. A device open failure rejects — it never degrades in-memory.
+    - **Key generation** (`cryptoKey.ts`) draws 32 bytes from `crypto.getRandomValues`
+      (never `Math.random`) and base64-encodes them with a hand-rolled encoder (no
+      Buffer/btoa, no new dependency). The 32 is the raw byte count, measured before
+      encoding.·
+    The Keychain service/account names and the secret MMKV instance id are fixed
+    module-level constants.
+    "
+
+      131 |     const doc = readFileSync('src/services/secret-storage/CLAUDE.md', 'utf8');
+      132 |
+    > 133 |     expect(doc).toContain('react-native-get-random-values');
+          |                 ^
+      134 |   });
+      135 | });
+      136 |
+
+      at Object.toContain (src/services/secret-storage/cryptoKey.test.ts:133:17)
+
+  ● package.json › AC-016 — declares the polyfill as a runtime dependency
+
+    expect(received).toContain(expected) // indexOf
+
+    Expected value: "react-native-get-random-values"
+    Received array: ["@anthropic-ai/sdk", "@gorhom/bottom-sheet", "@hookform/resolvers", "@nozbe/watermelondb", "@react-native/new-app-screen", "@react-navigation/native", "@react-navigation/native-stack", "react", "react-hook-form", "react-native", …]
+
+      147 |     };
+      148 |
+    > 149 |     expect(Object.keys(dependencies)).toContain(
+          |                                       ^
+      150 |       'react-native-get-random-values',
+      151 |     );
+      152 |   });
+
+      at Object.toContain (src/services/secret-storage/cryptoKey.test.ts:149:39)
+
+
+Test Suites: 1 failed, 21 passed, 22 total
+Tests:       5 failed, 126 passed, 131 total
+Snapshots:   0 total
+Time:        9.793 s
+Ran all test suites.
