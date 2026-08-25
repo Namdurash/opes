@@ -9,6 +9,7 @@
     "MonobankTokenService.clear",
     "src/services/secret-storage/cryptoKey.ts",
     "index.js",
+    "package.json",
     "src/services/monobank/CLAUDE.md",
     "src/services/secret-storage/CLAUDE.md",
     "npx tsc --noEmit"
@@ -117,6 +118,13 @@
       "given": "the secret-storage layer documentation after this change",
       "when": "the file content is read",
       "then": "the file contains the text react-native-get-random-values",
+      "expect": "react-native-get-random-values" },
+
+    { "id": "AC-016",
+      "surface": "package.json",
+      "given": "the repository root package.json after this change",
+      "when": "its dependencies map, not its devDependencies map, is read",
+      "then": "that map contains the key react-native-get-random-values",
       "expect": "react-native-get-random-values" }
   ],
   "assumptions": [
@@ -141,7 +149,7 @@
   "verification_gaps": [
     { "id": "VG-001", "text": "Under Jest, Node itself supplies globalThis.crypto. A green suite therefore does not establish that a real device can generate a key at all — that the polyfill supplies getRandomValues on iOS and Android is established only by manual device verification: connect Monobank on a simulator and observe a SecItemAdd in the system log plus an MMKV instance opes.secret-storage opened with Encrypted: true." },
     { "id": "VG-002", "text": "Nothing here exercises index.js at runtime. That the polyfill import actually executes before any secret-storage code on device is not established by this suite; AC-012 reads index.js as text." },
-    { "id": "VG-003", "text": "No criterion asserts that the react-native-get-random-values package is installed, that its native module links, or that the iOS pods were reinstalled." },
+    { "id": "VG-003", "text": "AC-016 pins only that react-native-get-random-values is declared in dependencies. Nothing here establishes that the package is actually installed into node_modules, that its native module links on iOS or Android, or that the iOS pods were reinstalled." },
     { "id": "VG-004", "text": "Nothing here runs against device storage. Under Jest the secret store is in-memory and react-native-keychain is mocked, so a green suite would not prove that anything on real device storage is encrypted at rest." },
     { "id": "VG-005", "text": "Nothing here establishes what an already-connected user sees after upgrading; the plaintext copy left on disk and its migration are OPES-63 and are not exercised by this suite." },
     { "id": "VG-006", "text": "Connect/disconnect ordering and how a store surfaces a rejected save or clear are not established by this cycle — that is OPES-64." },
@@ -177,10 +185,13 @@ and a source removed *after* the module is loaded makes the call throw — both 
 against today's module-load capture. That a real device can generate a key at all is VG-001 and
 must be confirmed by hand on a simulator.
 
-Fitting the grown scope under the 15-criterion limit cost four criteria from the approved round,
-none of them silently: the "save returns a Promise" criterion (redundant once every other criterion
-awaits it), the plain "no token stored resolves null" case (absorbed into the strictly stronger
-AC-005, which also forbids the plaintext fallback), and the two `types.ts` signature criteria,
-which are now carried by AS-011 and the type-check in AC-013 — a store whose async implementation
-did not match its interface would fail `tsc`. If the maintainer wants any of those pinned in their
-own right, the limit needs raising rather than something else being dropped.
+Fitting the grown scope under the 15-criterion limit that applied when this spec was rewritten cost
+four criteria from the approved round, none of them silently: the "save returns a Promise" criterion
+(redundant once every other criterion awaits it), the plain "no token stored resolves null" case
+(absorbed into the strictly stronger AC-005, which also forbids the plaintext fallback), and the two
+`types.ts` signature criteria, which are now carried by AS-011 and the type-check in AC-013 — a store
+whose async implementation did not match its interface would fail `tsc`. The maintainer then raised
+the limit to 16 for one specific purpose: to add AC-016 and close the package.json gap, since AC-012
+reads `index.js` as text and all fifteen criteria would have gone green with the dependency missing
+and the app broken on device — which is exactly how this defect reached the simulator past eight
+green gates. That single slot is spent; the four cuts above stand and are not restored.
