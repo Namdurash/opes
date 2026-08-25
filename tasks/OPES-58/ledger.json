@@ -653,6 +653,38 @@
       "seq": 40,
       "at": "2026-08-25T12:43:29Z",
       "prev": "ea1a8bcbf1a0026dcec129d286743a19d14551f9397da63ba5246162b454a5f4"
+    },
+    {
+      "station": "plan-judge",
+      "attempt": 3,
+      "agent": "aif-plan-judge",
+      "agent_id": "a1a0965c0bf62fca8",
+      "model": "claude-sonnet-5",
+      "usage": {
+        "input_tokens": 16,
+        "output_tokens": 209,
+        "cache_read_input_tokens": 225996,
+        "cache_creation_input_tokens": 43253
+      },
+      "num_turns": 8,
+      "cost_usd": null,
+      "cost_source": "tokens-only",
+      "result": "ran",
+      "summary": "Verdict written to `/Users/kyrylokorotych/Desktop/opes/tasks/OPES-58/verdict-plan.json`. Nothing blocks. Summary of the four checks:",
+      "seq": 41,
+      "at": "2026-08-25T12:45:30Z",
+      "prev": "18f38cf49af6f63008c7f4446d9e28e43e73fc037f08831b0bee90af26fb03a8"
+    },
+    {
+      "gate": "plan-judge",
+      "result": "pass",
+      "subject": "verdict-plan.json",
+      "subject_sha256": "cb0f3155cbd937b9e88ed6acff631d103e57ccde22f1026b174da03bd62bdd4a",
+      "gate_sha256": "59675a1bad164f7ab3c03f8c0367a946515f818c47fbd318ef4f6aca3cf6f773",
+      "reason": "plan-judge: nothing left to guess, manifest covers the work",
+      "seq": 42,
+      "at": "2026-08-25T12:45:41Z",
+      "prev": "477def14f6c24ac5d0f813438a5ff4ea3fc1dc8214a201c8644ffbad758a4231"
     }
   ],
   "accepted_at": null
