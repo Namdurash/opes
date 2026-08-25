@@ -706,6 +706,38 @@
       "seq": 43,
       "at": "2026-08-25T12:56:51Z",
       "prev": "bf5fbcc95c08796cc327d42c13de3760050b35c4ab632d47f6759d7de88cdf2e"
+    },
+    {
+      "station": "plan-judge",
+      "attempt": 4,
+      "agent": "aif-plan-judge",
+      "agent_id": "a2477d32088fe7c80",
+      "model": "claude-sonnet-5",
+      "usage": {
+        "input_tokens": 12,
+        "output_tokens": 198,
+        "cache_read_input_tokens": 170338,
+        "cache_creation_input_tokens": 48390
+      },
+      "num_turns": 6,
+      "cost_usd": null,
+      "cost_source": "tokens-only",
+      "result": "ran",
+      "summary": "## Verdict: plan.md passes — no blocking findings",
+      "seq": 44,
+      "at": "2026-08-25T12:59:50Z",
+      "prev": "aa3acab2050f6797b68afe69aaa6df5d24397558a96320bf205e4b6bb725f467"
+    },
+    {
+      "gate": "plan-judge",
+      "result": "pass",
+      "subject": "verdict-plan.json",
+      "subject_sha256": "750c0965ec14a4d4bef02f249f9fd49abb9390808b21d77549b59e19f35a66a9",
+      "gate_sha256": "59675a1bad164f7ab3c03f8c0367a946515f818c47fbd318ef4f6aca3cf6f773",
+      "reason": "plan-judge: nothing left to guess, manifest covers the work",
+      "seq": 45,
+      "at": "2026-08-25T13:00:00Z",
+      "prev": "7b0c57102196b944dfb09c3938d31e07b6b0e1f961df9852ab4043cde2a7d514"
     }
   ],
   "accepted_at": null
