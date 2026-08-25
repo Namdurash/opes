@@ -94,3 +94,25 @@ service reads and writes through the encrypted store.
 
 - Whether `MonobankTokenService` stays a class, a singleton, or becomes a factory — provided the
   observable `get` / `save` / `clear` contract above holds.
+
+## Rework requested at approve
+
+- Ручна перевірка на iOS-симуляторі показала, що після цього тікету Monobank не підключається взагалі — тобто OPES-58 у поточному вигляді перетворює робочу функцію на зламану.
+
+ДОКАЗИ. У системному лозі рівно один SecItemCopyMatching_ios (читання Keychain) і нуль SecItemAdd (запису ключа не було). За весь сеанс створено лише 'Creating MMKV instance "mmkv.default" ... Encrypted: false' — шифрований інстанс opes.secret-storage не відкривався жодного разу. У UI показано загальний fallback 'Failed to connect. Please check your token and try again.', а не MonobankError 'Invalid or missing Monobank token.' — отже getClientInfo() відпрацював, а виняток кинув наступний рядок, monobankTokenService.save().
+
+ПРИЧИНА. src/services/secret-storage/cryptoKey.ts бере випадкові байти з globalThis.crypto.getRandomValues і кидає 'No cryptographically secure random source is available.', якщо джерела немає. У React Native 0.84 / Hermes такого глобала не існує (жодної згадки getRandomValues у node_modules/react-native), а поліфілу в проєкті немає — ні в package.json, ні в index.js. Тобто bootstrap ключа fail-closed падає на будь-якому пристрої при першій спробі зберегти секрет. Дефект належить модулю OPES-42, але саме OPES-58 виводить його на критичний шлях: до цього тікету токен ішов у plaintext MMKV і працював.
+
+ЩО МАЄ ЗМІНИТИСЯ В ЦЬОМУ ТІКЕТІ.
+
+1. Non-goal 'Changing the SecretStore module itself, its key bootstrap, or key rotation' ЧАСТКОВО ЗНІМАЄТЬСЯ: key bootstrap тепер у скоупі. Key rotation і решта модуля лишаються поза скоупом.
+
+2. Додати залежність react-native-get-random-values (узгоджено з мейнтейнером; під капотом SecRandomCopyBytes на iOS і SecureRandom на Android) та імпортувати її ПЕРШИМ рядком index.js, до імпорту App.
+
+3. У cryptoKey.ts читати джерело випадковості ЛІНИВО, у момент виклику, а не захоплювати globalThis.crypto на завантаженні модуля (зараз рядок 45). Поточне захоплення робить коректність залежною від порядку імпортів, що є крихким навіть із поліфілом.
+
+4. Оновити src/services/secret-storage/CLAUDE.md — записати, звідки береться ключ і чому імпорт поліфілу мусить бути першим.
+
+5. Після цього тікету підключення Monobank має реально працювати на симуляторі: save() доходить до SecItemAdd і створює шифрований інстанс opes.secret-storage.
+
+ПОПЕРЕДЖЕННЯ ДЛЯ СТАНЦІЇ SPEC. Під Jest Node сам надає globalThis.crypto, тому тест, який просто викликає generateKey() і бачить успіх, пройде ВАКУУМНО і не доведе нічого про пристрій. Не писати такий критерій як доказ виправлення. Чесні варіанти: пінити відсутність захоплення на module load (лінивий lookup), пінити наявність і позицію імпорту поліфілу в index.js, пінити поведінку при відсутньому джерелі через інʼєкцію. А те, що зелений сьют не доводить роботу на реальному пристрої, записати окремим verification gap.
