@@ -504,6 +504,28 @@
       "seq": 32,
       "at": "2026-08-25T12:12:14Z",
       "prev": "226ec8cc5be43fff1d5c0fffb5c988fa68d964a355c994426e2690fbe76c839e"
+    },
+    {
+      "event": "approve",
+      "subject": "spec.md",
+      "subject_sha256": "5ba2c7551b726ee16a2cce7ef010860e3fef4dcb185a2755f5a40c0f1d5e639f",
+      "approver": "Namdurash",
+      "channel": "chat",
+      "confirmation": "Приймаю як є — нічого не бракує; AS-001…AS-017 прийняті, включно з невпорядкованим save()/clear() (AS-007) та неверифікованим перевстановленням подів (AS-012).",
+      "acknowledged_gaps": [
+        "VG-001",
+        "VG-002",
+        "VG-003",
+        "VG-004",
+        "VG-005",
+        "VG-006",
+        "VG-007",
+        "VG-008"
+      ],
+      "gaps_confirmation": "Приймаю всі вісім розривів, з ручною перевіркою в кінці циклу: після implement повторити перевірку на симуляторі — підключення Monobank, SecItemAdd у лозі, opes.secret-storage з Encrypted: true. Саме вона знайшла баг сьогодні.",
+      "seq": 33,
+      "at": "2026-08-25T12:15:42Z",
+      "prev": "85ccfda1d8d5a9f95906809ea6c771a17616975b7c684cbcb0ca0f0350e256cf"
     }
   ],
   "accepted_at": null
