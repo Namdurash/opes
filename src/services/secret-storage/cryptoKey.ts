@@ -42,14 +42,19 @@ const toBase64 = (bytes: Uint8Array): string => {
 };
 /* eslint-enable no-bitwise */
 
-const cryptoSource = (globalThis as { crypto?: CryptoLike }).crypto;
-
 /**
  * Generate a fresh 32-byte encryption key from a crypto-secure source and its
  * base64 encoding. The raw `Uint8Array` is exactly 32 bytes (AC-007) and no draw
  * ever touches `Math.random` (AC-008).
+ *
+ * The source is resolved here, on every call, and never cached in a module-level
+ * binding (OPES-58, D-001..D-003): a load-time capture is `undefined` forever on
+ * Hermes, where `react-native-get-random-values` installs the global only once
+ * `index.js` runs its first import.
  */
 export const generateKey = (): GeneratedKey => {
+  const cryptoSource = (globalThis as { crypto?: CryptoLike }).crypto;
+
   if (!cryptoSource?.getRandomValues) {
     throw new Error('No cryptographically secure random source is available.');
   }

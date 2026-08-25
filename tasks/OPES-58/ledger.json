@@ -791,6 +791,40 @@
       "seq": 48,
       "at": "2026-08-25T13:07:28Z",
       "prev": "6d6d0d8f16f60307f01b307805966887377346559513211d5db78f9c9edd5c70"
+    },
+    {
+      "gate": "green",
+      "result": "pass",
+      "subject": "plan.md",
+      "subject_sha256": "fac0df692258eaa2f44b218d7c8a6cbecaea25f7ef65bf0be528cd443b2d7bf0",
+      "gate_sha256": "2adf4c252f8af54a0f9d6de7e06fd0c5140b5d68e45d296d94a37fdcb69f020f",
+      "reason": "green: suite passes, and the covering tests depend on the implementation, 1 check(s) green",
+      "seq": 49,
+      "at": "2026-08-25T13:12:47Z",
+      "prev": "fc48b1e198810cbec0636e83653399abb04feccd67840b8eb39015ef2ad799be"
+    },
+    {
+      "gate": "scope",
+      "result": "pass",
+      "subject": "plan.md",
+      "subject_sha256": "fac0df692258eaa2f44b218d7c8a6cbecaea25f7ef65bf0be528cd443b2d7bf0",
+      "gate_sha256": "0c0fc7bafd0adbb0203bd6e3367bebaa3fe1bb9f0ddce9488cba24789b617395",
+      "reason": "scope: change confined to the plan (35 lines)",
+      "seq": 50,
+      "at": "2026-08-25T13:12:47Z",
+      "prev": "29d14f6f929ea3d8924baec0708fa51ff69ed32a99d4b28985ca16ac90420610"
+    },
+    {
+      "event": "check",
+      "check": "lint",
+      "phase": "green",
+      "result": "pass",
+      "exit": 0,
+      "required": true,
+      "reason": "yarn run v1.22.22 $ eslint . && tsx scripts/checkTestConvention.ts Done in 3.03s. ",
+      "seq": 51,
+      "at": "2026-08-25T13:12:47Z",
+      "prev": "63161c74514b6479e078d8a2a872f1bb74d79e3f3f31bd65eb246dc145b4dd04"
     }
   ],
   "accepted_at": null
