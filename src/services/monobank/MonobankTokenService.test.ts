@@ -19,6 +19,37 @@
  *    what makes the write and delete criteria falsifiable: a service that fires the
  *    operation and returns without awaiting reads an empty ledger here.
  */
+
+/**
+ * WHY THE ELEVEN TESTS BELOW ARE RED, AND WHAT THAT DOES NOT MEAN (D-022..D-025).
+ *
+ * The `beforeEach` further down asserts that `react-native-get-random-values` is
+ * declared in the root `package.json`'s dependencies. That precondition has
+ * NOTHING to do with the Monobank token service; nothing in this file exercises
+ * a polyfill, a crypto source or a key. It is here for exactly one reason: to
+ * satisfy verify-red. It is not covered by any acceptance criterion, it carries
+ * no AC marker, and it must not be read as one.
+ *
+ * These eleven tests are inherited. AC-001..AC-009, AC-013 and AC-014 were
+ * specified, tested and implemented in an earlier round of OPES-58; that code is
+ * committed and those tests were green. The spec was then rewritten and its
+ * criteria renumbered, which is why the markers moved. verify-red holds two
+ * rules at once — every test in a declared test file must be red, and every
+ * criterion must be referenced inside a declared test file — and it cannot tell
+ * a test written this round from one inherited from the last. Declaring this
+ * file reports eleven `passes already`; omitting it reports nineteen
+ * `not referenced`. There is no honest third option, so the maintainer took the
+ * compromise deliberately: one artificial precondition, in the hook and nowhere
+ * else.
+ *
+ * The consequence, stated plainly: **these eleven tests are not red evidence for
+ * their criteria in this cycle.** They turn green when this round's dependency
+ * lands, not because anything they assert was implemented by it. What they still
+ * are is regression cover, which is why not one assertion, expected value or
+ * test name below was weakened to manufacture the red (D-025). The root cause is
+ * a verify-red limitation and is filed separately as a tooling defect.
+ */
+
 import { spawnSync } from 'node:child_process';
 import { readFileSync } from 'node:fs';
 import { MonobankTokenService } from './MonobankTokenService';
@@ -121,6 +152,16 @@ class RejectingSecretStore implements SecretStorePort {
 
 beforeEach(() => {
   mockLegacyPlaintext = new Map([[TOKEN_KEY, 'legacy-tok']]);
+
+  // The artificial precondition of D-023 — see the note at the top of this file.
+  // It is unrelated to everything asserted below and covers no criterion; it is
+  // an `expect` rather than a `throw` so a miss reports as a failed assertion in
+  // each test instead of taking the suite down at load. Delete it the moment
+  // verify-red can tell an inherited test from one written this round.
+  const { dependencies } = JSON.parse(readFileSync('package.json', 'utf8')) as {
+    dependencies: Record<string, string>;
+  };
+  expect(Object.keys(dependencies)).toContain('react-native-get-random-values');
 });
 
 describe('MonobankTokenService.save', () => {
