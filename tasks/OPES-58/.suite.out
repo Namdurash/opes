@@ -129,17 +129,17 @@ FAIL src/services/secret-storage/cryptoKey.test.ts
 
       at Object.toContain (src/services/secret-storage/cryptoKey.test.ts:149:39)
 
-PASS src/services/monobank/serviceInstance.test.ts
 PASS src/services/monobank/sandbox/SandboxMonobankService.test.ts
-PASS src/shared/utils/money.test.ts
 PASS src/services/secret-storage/SecretStore.test.ts
+PASS src/shared/utils/money.test.ts
 PASS src/features/donations/utils.test.ts
+PASS src/services/monobank/serviceInstance.test.ts
+PASS src/services/monobank/MonobankAccountSelectionService.test.ts
 PASS scripts/checkTestConvention.test.ts
+PASS scripts/testConventionGuard.test.ts
+PASS src/shared/env/env.test.ts
 PASS src/features/settings/utils.test.ts
 PASS src/features/transactions/state/useTransactionsViewModel.test.tsx
-PASS src/shared/env/env.test.ts
-PASS src/services/monobank/MonobankAccountSelectionService.test.ts
-PASS scripts/testConventionGuard.test.ts
 PASS src/services/database/createSqliteAdapter.test.ts
 PASS src/models/cards/CardsRepository.test.ts
   ● Console
@@ -2652,11 +2652,10 @@ PASS src/features/monobank/state/useMonobankStore.test.ts
 
       at Logger._proto.log (node_modules/@nozbe/watermelondb/utils/common/logger/index.js:23:46)
 
-PASS src/services/monobank/MonobankTokenService.test.ts
-PASS src/features/cards/state/useCardsStore.test.ts (7.517 s)
-PASS src/features/settings/SettingsScreen.test.tsx (7.536 s)
-PASS src/features/transactions/TransactionsScreen.test.tsx (7.569 s)
-PASS ./App.test.tsx (8.949 s)
+PASS src/features/cards/state/useCardsStore.test.ts
+PASS src/features/settings/SettingsScreen.test.tsx
+PASS src/features/transactions/TransactionsScreen.test.tsx
+PASS ./App.test.tsx
   ● Console
 
     console.warn
@@ -2740,6 +2739,7 @@ PASS ./App.test.tsx (8.949 s)
 
       at Logger._proto.log (node_modules/@nozbe/watermelondb/utils/common/logger/index.js:23:46)
 
+PASS src/services/monobank/MonobankTokenService.test.ts
 
 Summary of all failing tests
 FAIL src/services/secret-storage/cryptoKey.test.ts
@@ -2871,5 +2871,5 @@ FAIL src/services/secret-storage/cryptoKey.test.ts
 Test Suites: 1 failed, 21 passed, 22 total
 Tests:       5 failed, 126 passed, 131 total
 Snapshots:   0 total
-Time:        9.793 s
+Time:        3.009 s
 Ran all test suites.
