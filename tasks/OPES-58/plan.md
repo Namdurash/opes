@@ -1,139 +1,115 @@
 <!-- aif:meta
 { "schema": 1,
   "ticket": "OPES-58",
-  "spec_sha256": "ac4f9383c4f362d996e6e02f3d87d39262a8bce47451ea019715a3200b65ef97",
+  "spec_sha256": "5ba2c7551b726ee16a2cce7ef010860e3fef4dcb185a2755f5a40c0f1d5e639f",
   "risk": "high",
   "files": {
     "create": [],
     "change": [
+      "src/services/secret-storage/cryptoKey.ts",
+      "src/services/secret-storage/CLAUDE.md",
+      "index.js",
+      "package.json",
+      "yarn.lock",
       "src/services/monobank/MonobankTokenService.ts",
-      "src/features/monobank/types.ts",
-      "src/features/monobank/state/useMonobankStore.ts",
-      "src/features/transactions/state/useTransactionsStore.ts",
-      "src/services/sandbox/resetSandboxEnvironment.ts",
-      "src/features/monobank/ConnectMonobankScreen.tsx",
-      "src/features/home/HomeScreen.tsx",
-      "src/features/settings/state/useSettingsStore.ts",
-      "src/services/monobank/CLAUDE.md",
-      "src/services/database/CLAUDE.md"
+      "src/services/monobank/CLAUDE.md"
     ],
     "tests": [
-      "src/services/monobank/MonobankTokenService.test.ts",
-      "src/services/sandbox/resetSandboxEnvironment.test.ts",
-      "src/features/monobank/state/useMonobankStore.test.ts",
-      "src/features/transactions/state/useTransactionsStore.test.ts"
+      "src/services/secret-storage/cryptoKey.test.ts",
+      "src/services/monobank/MonobankTokenService.test.ts"
     ] },
   "decisions": [
     { "id": "D-001",
-      "statement": "Declare `export interface SecretStorePort` in MonobankTokenService.ts: get(key): Promise<string | null>, set(key, value): Promise<void>, delete(key): Promise<void>.",
-      "because": "that is SecretStore's public API structurally, so the real store assigns to the seam without a cast" },
+      "statement": "Delete the module-scope `const cryptoSource = (globalThis as { crypto?: CryptoLike }).crypto;` from cryptoKey.ts line 45.",
+      "because": "that load-time capture is the defect — the binding is undefined forever on Hermes" },
 
     { "id": "D-002",
-      "statement": "Delete KeyValueStorage, InMemoryKeyValueStorage and the whole createDefaultStorage MMKV branch from MonobankTokenService.ts; leave no reference to react-native-mmkv in the file.",
-      "because": "AS-005 — there must be no code path left that could read the plaintext copy" },
+      "statement": "Read the global inline as generateKey's first statement: `const cryptoSource = (globalThis as { crypto?: CryptoLike }).crypto;`, then the existing guard and draw.",
+      "because": "AS-014 — every call resolves the source afresh" },
 
     { "id": "D-003",
-      "statement": "Reach the secret-storage barrel only through a lazy require inside the non-Jest branch of createDefaultSecretStore, never a top-level import.",
-      "because": "src/services/secret-storage/index.ts evaluates `new SecretStore()` at module load and that constructor throws under Jest ('react-native-keychain is unavailable under Jest'), which would break every suite that imports monobankTokenService",
-      "rejected": "Do not make the barrel's singleton lazy — the secret-storage module is a declared non-goal." },
+      "statement": "Add no module-level cache, no memoized resolver and no lazily-initialised binding for the crypto source.",
+      "because": "any cache reinstates exactly the load-time capture AC-010 exists to forbid",
+      "rejected": "Do not extract a `getCryptoSource()` helper that stores its result." },
 
     { "id": "D-004",
-      "statement": "Write createDefaultSecretStore as: `if (typeof jest !== 'undefined') return new InMemorySecretStore();` then the lazy require of the device singleton.",
-      "because": "the existing suites drive monobankTokenService with no injected double and must keep working" },
+      "statement": "Keep generateKey exported as `(): GeneratedKey` returning `{ raw, base64 }`, and keep the GeneratedKey interface unchanged.",
+      "because": "AS-014 — SecretStore's `GenerateKey` DI seam and its default binding must not move",
+      "rejected": "Do not add a parameter or an injectable random source to generateKey." },
 
     { "id": "D-005",
-      "statement": "Type the device branch as `const { secretStore } = require('../secret-storage') as { secretStore: SecretStore };` with `import type { SecretStore } from '../secret-storage';`.",
-      "because": "import type is erased, so nothing is evaluated under Jest while tsc still reconciles SecretStore against SecretStorePort",
-      "rejected": "Do not construct a second `new SecretStore()` — the barrel singleton is the app-wide instance." },
+      "statement": "Keep the thrown message byte for byte: 'No cryptographically secure random source is available.'",
+      "because": "AS-015 keeps the text unchanged and AC-011 reads it for the substring `random source`" },
 
     { "id": "D-006",
-      "statement": "Add a module-private `class InMemorySecretStore implements SecretStorePort` backed by a Map: get resolves `this.data.get(key) ?? null`, set and delete resolve void.",
-      "because": "it replaces today's InMemoryKeyValueStorage one-for-one, only async" },
+      "statement": "Leave KEY_BYTE_LENGTH, BASE64_ALPHABET, the CryptoLike interface, toBase64 and its eslint no-bitwise pragmas exactly as they are.",
+      "because": "the only change in this file is where the random source is resolved" },
 
     { "id": "D-007",
-      "statement": "Keep the constructor seam `private readonly storage: SecretStorePort = createDefaultSecretStore()` and the `monobankTokenService` singleton export at its current path.",
-      "because": "AS-001 and AS-008 — the seam and the singleton name are what every call site and test double depend on" },
+      "statement": "Edit no other file in src/services/secret-storage/ — SecretStore.ts, keychainKeyStore.ts, encryptedStore.ts and index.ts are untouched.",
+      "because": "a declared non-goal: only the random-source resolution is in scope",
+      "rejected": "Do not add key rotation, and do not make the barrel's `secretStore` singleton lazy." },
 
     { "id": "D-008",
-      "statement": "Make save async: `await this.storage.set(TOKEN_KEY, token);` then `await this.storage.set(CLIENT_NAME_KEY, clientName);`, in that order.",
-      "rejected": "Do not Promise.all them and do not roll back a partial write — AS-007 leaves that unspecified." },
+      "statement": "Make `import 'react-native-get-random-values';` the first statement of index.js, above the react-native, ./App and ./app.json imports, which keep their present order.",
+      "because": "AS-013 / AC-012" },
 
     { "id": "D-009",
-      "statement": "Make get async: read TOKEN_KEY first and `return null` when it is null or empty, without reading CLIENT_NAME_KEY at all.",
-      "because": "AS-003 — presence is decided by the token key alone" },
+      "statement": "Put the rationale in index.js's existing top docblock and write the string react-native-get-random-values in quotes nowhere in index.js except that one import statement.",
+      "because": "AC-012 reads the file as text and a second quoted occurrence could be matched first" },
 
     { "id": "D-010",
-      "statement": "When the token is present resolve `{ token, clientName: (await this.storage.get(CLIENT_NAME_KEY)) ?? '' }`.",
-      "because": "AS-004 — an absent client name stays the empty string, as today" },
+      "statement": "Install the dependency with `yarn add react-native-get-random-values` from the project root and let yarn resolve the version.",
+      "because": "the build runs through yarn — `lint` in .aif/project.json is `yarn lint`",
+      "rejected": "Do not hand-write a version range into package.json instead of installing." },
 
     { "id": "D-011",
-      "statement": "Make clear async: `await this.storage.delete(TOKEN_KEY);` then `await this.storage.delete(CLIENT_NAME_KEY);`." },
+      "statement": "Commit the resulting yarn.lock; run no `npm install` and leave package-lock.json byte-identical.",
+      "because": "both lockfiles are tracked, which is a pre-existing inconsistency this ticket does not resolve",
+      "rejected": "Do not regenerate or delete package-lock.json." },
 
     { "id": "D-012",
-      "statement": "Give the three methods explicit return types Promise<void>, Promise<MonobankCredentials | null>, Promise<void>, and keep the TOKEN_KEY / CLIENT_NAME_KEY literals byte for byte.",
-      "because": "AS-002 — the two key strings are the storage contract" },
+      "statement": "Land the package in the `dependencies` map, not `devDependencies`.",
+      "because": "AC-016 — it is a runtime polyfill with a native module, shipped in the app bundle" },
 
     { "id": "D-013",
-      "statement": "Put no try/catch anywhere in MonobankTokenService, so a SecretStore rejection reaches the caller as the same value.",
-      "because": "AS-006, pinned by AC-010 and AC-011" },
+      "statement": "Do not run `pod install`, `bundle exec pod install` or any Gemfile command, and do not modify ios/Podfile.lock, ios/Podfile or ios/Pods.",
+      "because": "AS-012's pod reinstall belongs to the maintainer's manual device verification (VG-001, VG-003); no criterion covers it and a regenerated lock would blow the scope and diff gates",
+      "rejected": "Do not add the pod to the Podfile by hand — autolinking picks it up at the maintainer's next install." },
 
     { "id": "D-014",
-      "statement": "In src/features/monobank/types.ts change disconnect to `disconnect(): Promise<void>`." },
+      "statement": "In src/services/secret-storage/CLAUDE.md's `Key generation` bullet, say the 32 bytes come from `globalThis.crypto.getRandomValues`, resolved on every call.",
+      "because": "AC-015" },
 
     { "id": "D-015",
-      "statement": "In src/features/monobank/types.ts change loadSavedToken to `loadSavedToken(): Promise<string | null>`." },
+      "statement": "Say in that bullet that on device the global comes from react-native-get-random-values.",
+      "because": "Hermes on RN 0.84 ships no crypto global of its own, and AC-015 reads the file for that literal package name" },
 
     { "id": "D-016",
-      "statement": "Leave the connect, loadAccounts and toggleAccount signatures in that interface untouched.",
-      "because": "none of the three reaches monobankTokenService, so widening them would be scope the spec did not ask for" },
+      "statement": "Say in that bullet that the polyfill must be index.js's first import so the global exists before any secret-store call.",
+      "because": "the key bootstrap can run from the very first save()" },
 
     { "id": "D-017",
-      "statement": "In useMonobankStore make disconnect and loadSavedToken `async` and await monobankTokenService.clear() / .get(), keeping every other statement in its current order.",
-      "rejected": "Do not move the set() calls, clearMonobankService() or reset() — connect/disconnect ordering is OPES-64." },
+      "statement": "Say in that bullet that under Jest the source is Node's own globalThis.crypto, so a green suite establishes nothing about a device.",
+      "because": "VG-001 — this is the circumstance in which the crypto criteria pass vacuously" },
 
     { "id": "D-018",
-      "statement": "In useMonobankStore.connect insert `await` before monobankTokenService.save(trimmed, clientInfo.name) at its current line inside the try.",
-      "rejected": "Do not touch the fire-and-forget `syncFromMonobank(userId).catch(() => {})` line below it." },
+      "statement": "Keep the fail-closed sentence in that document: with no source at call time generateKey throws and never falls back to Math.random.",
+      "because": "AS-015" },
 
     { "id": "D-019",
-      "statement": "In useTransactionsStore.syncFromMonobank change the credentials read to `const saved = await monobankTokenService.get();` and change nothing else in that action." },
+      "statement": "Leave src/services/monobank/MonobankTokenService.ts and src/services/monobank/CLAUDE.md exactly as the previous round committed them.",
+      "because": "they already satisfy AC-001 through AC-009 and AC-014; they are in the manifest to carry that coverage, not to be edited",
+      "rejected": "Do not re-derive the SecretStorePort seam, the lazy require or the Token storage section." },
 
     { "id": "D-020",
-      "statement": "In resetSandboxEnvironment await monobankTokenService.clear() in place, keeping the wipeAllData -> token -> account-selection order." },
+      "statement": "Add no polyfill entry to test/setup.js and mock react-native-get-random-values nowhere.",
+      "because": "AS-016 — under Jest the source stays Node's own globalThis.crypto",
+      "rejected": "Do not import the polyfill from any test or from any file under src/." },
 
     { "id": "D-021",
-      "statement": "In HomeScreen's loadSavedToken effect call `loadSavedToken().catch(() => {});` and keep the dependency array as it is.",
-      "because": "it is a fire-and-forget effect, and that .catch shape is already this file's idiom two effects below",
-      "rejected": "Do not use the void operator — CLAUDE.md bans it." },
-
-    { "id": "D-022",
-      "statement": "In ConnectMonobankScreen's first useEffect await loadSavedToken() inside a local async arrow and invoke it as `restore().catch(() => {});`; keep the dependency array as it is.",
-      "because": "the effect needs the resolved token to call setValue, so a bare fire-and-forget will not do" },
-
-    { "id": "D-023",
-      "statement": "Leave `onPress={disconnect}` in ConnectMonobankScreen exactly as it is.",
-      "because": "Button's prop is `onPress: () => void` and TypeScript accepts a `() => Promise<void>` there",
-      "rejected": "Do not wrap it in an arrow or add a handler." },
-
-    { "id": "D-024",
-      "statement": "In useSettingsStore.resetSandbox await useMonobankStore.getState().disconnect() inside the existing try block.",
-      "because": "a throw from the synchronous disconnect already surfaced as the Reset Failed sheet, and awaiting is what preserves that" },
-
-    { "id": "D-025",
-      "statement": "Rewrite the Token storage section of src/services/monobank/CLAUDE.md around secret-storage: the three methods are async, with an in-memory port under Jest.",
-      "because": "AC-015 reads that section for the literal text secret-storage" },
-
-    { "id": "D-026",
-      "statement": "Repoint the Jest-vs-device exemplar in src/services/database/CLAUDE.md from MonobankTokenService.ts to MonobankAccountSelectionService.ts.",
-      "because": "the token service no longer carries an MMKV branch for anyone to copy" },
-
-    { "id": "D-027",
-      "statement": "Do not edit src/services/monobank/index.ts.",
-      "because": "MonobankTokenService, monobankTokenService and MonobankCredentials keep their names and their module path" },
-
-    { "id": "D-028",
-      "statement": "Update the three existing suites that drive monobankTokenService to await clear/save/get, making their currently synchronous beforeEach hooks async.",
-      "because": "resetSandboxEnvironment.test.ts asserts `expect(monobankTokenService.get()).toBeNull()`, which a Promise fails" } ],
+      "statement": "Touch no call site of save/get/clear, no file under src/features/, and no plaintext-token migration.",
+      "because": "the await propagation landed in the previous round and the migration is OPES-63" } ],
   "ac_coverage": {
     "AC-001": ["src/services/monobank/MonobankTokenService.ts"],
     "AC-002": ["src/services/monobank/MonobankTokenService.ts"],
@@ -144,82 +120,102 @@
     "AC-007": ["src/services/monobank/MonobankTokenService.ts"],
     "AC-008": ["src/services/monobank/MonobankTokenService.ts"],
     "AC-009": ["src/services/monobank/MonobankTokenService.ts"],
-    "AC-010": ["src/services/monobank/MonobankTokenService.ts"],
-    "AC-011": ["src/services/monobank/MonobankTokenService.ts"],
-    "AC-012": ["src/features/monobank/types.ts", "src/features/monobank/state/useMonobankStore.ts"],
-    "AC-013": ["src/features/monobank/types.ts", "src/features/monobank/state/useMonobankStore.ts"],
-    "AC-014": ["src/services/monobank/MonobankTokenService.ts", "src/features/monobank/types.ts", "src/features/monobank/state/useMonobankStore.ts", "src/features/transactions/state/useTransactionsStore.ts", "src/services/sandbox/resetSandboxEnvironment.ts", "src/features/monobank/ConnectMonobankScreen.tsx", "src/features/home/HomeScreen.tsx", "src/features/settings/state/useSettingsStore.ts"],
-    "AC-015": ["src/services/monobank/CLAUDE.md", "src/services/database/CLAUDE.md"] },
+    "AC-010": ["src/services/secret-storage/cryptoKey.ts"],
+    "AC-011": ["src/services/secret-storage/cryptoKey.ts"],
+    "AC-012": ["index.js"],
+    "AC-013": ["src/services/secret-storage/cryptoKey.ts", "src/services/monobank/MonobankTokenService.ts"],
+    "AC-014": ["src/services/monobank/CLAUDE.md"],
+    "AC-015": ["src/services/secret-storage/CLAUDE.md"],
+    "AC-016": ["package.json", "yarn.lock"] },
   "uncovered": [],
   "surface_map": {
     "MonobankTokenService.save": ["src/services/monobank/MonobankTokenService.ts"],
     "MonobankTokenService.get": ["src/services/monobank/MonobankTokenService.ts"],
     "MonobankTokenService.clear": ["src/services/monobank/MonobankTokenService.ts"],
-    "src/features/monobank/types.ts": ["src/features/monobank/types.ts", "src/features/monobank/state/useMonobankStore.ts"],
-    "src/services/monobank/CLAUDE.md": ["src/services/monobank/CLAUDE.md", "src/services/database/CLAUDE.md"],
-    "npx tsc --noEmit": ["src/services/monobank/MonobankTokenService.ts", "src/features/monobank/types.ts", "src/features/monobank/state/useMonobankStore.ts", "src/features/transactions/state/useTransactionsStore.ts", "src/services/sandbox/resetSandboxEnvironment.ts", "src/features/monobank/ConnectMonobankScreen.tsx", "src/features/home/HomeScreen.tsx", "src/features/settings/state/useSettingsStore.ts"] },
+    "src/services/secret-storage/cryptoKey.ts": ["src/services/secret-storage/cryptoKey.ts"],
+    "index.js": ["index.js"],
+    "package.json": ["package.json", "yarn.lock"],
+    "src/services/monobank/CLAUDE.md": ["src/services/monobank/CLAUDE.md"],
+    "src/services/secret-storage/CLAUDE.md": ["src/services/secret-storage/CLAUDE.md"],
+    "npx tsc --noEmit": ["src/services/secret-storage/cryptoKey.ts", "src/services/monobank/MonobankTokenService.ts"] },
   "external": [
-    { "name": "react-native-keychain — getGenericPassword/setGenericPassword, reached on device only through secret-storage's lazy require; the Jest branch throws by design and is never taken" },
-    { "name": "react-native-mmkv — createMMKV/deleteMMKV; MonobankTokenService stops touching it entirely and reaches it on device only through secret-storage's encrypted backend",
-      "ac": "AC-007" },
-    { "name": "zustand — create() and getState() on useMonobankStore, useTransactionsStore and useSettingsStore, whose action signatures change shape",
-      "ac": "AC-014" },
-    { "name": "react — React.useEffect in HomeScreen and ConnectMonobankScreen, now calling promise-returning store actions",
-      "ac": "AC-014" },
-    { "name": "react-hook-form — setValue in ConnectMonobankScreen's restore effect, now called after an await",
-      "ac": "AC-014" },
-    { "name": "jest — the `typeof jest !== 'undefined'` runtime guard in createDefaultSecretStore that selects the in-memory port" } ] }
+    { "name": "globalThis.crypto.getRandomValues — the Web Crypto global cryptoKey.ts draws its 32 raw bytes from, now resolved inside generateKey on every call",
+      "ac": "AC-010" },
+    { "name": "react-native-get-random-values — bare side-effect import in index.js; installs global.crypto.getRandomValues on Hermes and carries a native module that iOS links through pods" },
+    { "name": "react-native — AppRegistry.registerComponent in index.js, whose import moves down one line and is never executed by this suite" } ] }
 -->
 
 # OPES-58 — plan
 
-`MonobankTokenService` keeps its class, its singleton, its module path and its two key
-strings, and swaps its storage seam. The synchronous `KeyValueStorage` interface and the
-`react-native-mmkv` branch are deleted; in their place a `SecretStorePort` — `get`,
-`set`, `delete`, all promise-returning — is the constructor dependency, and the three
-public methods become `async`. Everything else in this ticket is the `await` that
-follows.
+Round one is committed: `MonobankTokenService` already persists through the encrypted
+`SecretStore`, the call sites already `await`, and both layer documents are already updated.
+This round fixes the defect device verification exposed underneath it. Three edits and an
+install:
 
-**The one non-obvious constraint: never import the secret-storage barrel at the top of
-the file.** `src/services/secret-storage/index.ts` runs `export const secretStore = new
-SecretStore();` at module load, and under Jest that construction throws out of
-`createDefaultKeychainKeyStore()` on purpose. `MonobankTokenService` is imported by both
-Monobank stores, by `resetSandboxEnvironment` and by the monobank barrel, so a top-level
-import would take a large part of the suite down at import time. The device singleton is
-therefore reached by a lazy `require` inside the non-Jest branch, with `import type` for
-the compile-time check — the same shape `keychainKeyStore.ts` already uses for the native
-module. Under Jest the default is a private in-memory port, exactly as today.
+1. `cryptoKey.ts` stops capturing `globalThis.crypto` at module load and reads it inside
+   `generateKey` instead.
+2. `index.js` imports `react-native-get-random-values` first, so that global exists on Hermes
+   by the time anything can call `generateKey`.
+3. `react-native-get-random-values` lands in `dependencies`.
+4. `src/services/secret-storage/CLAUDE.md` records where the randomness comes from.
 
-**No error handling is added.** There is no `try`/`catch` anywhere in the service, so a
-rejection from the store arrives at the caller unchanged. `save` does its two `set`s in
-sequence and `clear` its two `delete`s in sequence; neither is partial-write safe and
-neither pretends to be. `get` reads the token key first and resolves `null` before it
-touches the client-name key, so an orphaned client name is invisible and the plaintext
-copy is unreachable by construction — there is no fallback branch left to take.
+## cryptoKey.ts
 
-**The call-site edits are mechanical and must stay that way.** `connect` gains an `await`
-in front of `save` at its current line; `disconnect` and `loadSavedToken` become `async`
-with their statements in exactly the present order; `syncFromMonobank` awaits `get`;
-`resetSandboxEnvironment` awaits `clear`. Whether the connected status flips before or
-after the store write, and how a rejected save or clear is presented, is OPES-64's
-subject and is not decided here. The plaintext token already on disk is left where it is
-— that is OPES-63 — so between the two tickets a previously connected user reads `null`.
+Line 45 today is `const cryptoSource = (globalThis as { crypto?: CryptoLike }).crypto;` at module
+scope. Delete it and make the identical expression the first statement inside `generateKey`;
+the existing guard (`if (!cryptoSource?.getRandomValues) throw …`) and the existing draw follow
+unchanged. Nothing else in the file moves — same message text, same 32-byte length, same
+hand-rolled base64 encoder, same exported `(): GeneratedKey` signature. That last point is the
+constraint that matters: `SecretStore` takes `generateKey` as a constructor dependency typed
+`GenerateKey = () => GeneratedKey`, and `SecretStore.test.ts` injects a fake through it. Widening
+the signature would break the seam this ticket is explicitly told not to touch.
 
-Two components consume the now-async `loadSavedToken`: `HomeScreen` discards the result
-(`.catch(() => {})`, the idiom already in that file), `ConnectMonobankScreen` needs the
-value and so awaits inside a local async arrow within its effect. `Button`'s
-`onPress: () => void` accepts the async `disconnect` unchanged. `useSettingsStore`
-awaits `disconnect` inside its existing `try`, which keeps a failure landing on the same
-Reset Failed sheet it does today.
+**Do not reintroduce the capture in a nicer shape.** A `let cached` or a resolver that stores its
+first answer is the same bug with a better haircut, and AC-010 — which installs a counting stub
+*after* the module is loaded and demands one call on it — is written precisely to catch it.
 
-**Documentation.** `src/services/monobank/CLAUDE.md`'s *Token storage* section is
-rewritten around `secret-storage`; `src/services/database/CLAUDE.md` currently points at
-`MonobankTokenService.ts` as the MMKV-vs-Jest exemplar and is repointed at
-`MonobankAccountSelectionService.ts`, which still is one.
+## index.js
 
-**What the suite cannot establish.** Nothing here runs on a device: the encrypted store
-is an in-memory `Map` under Jest and the Keychain is never reached, so a green run says
-nothing about encryption at rest (VG-001). `clear`'s rejection path is unexercised
-(VG-004), and AC-014 proves only that the awaited call sites compile — the runtime
-behaviour of the two screens and of `syncFromMonobank` rests on whatever the existing
-suites already assert (VG-005).
+The polyfill's whole job is to run before anything else, so it goes above `react-native`. AC-012
+reads the file as text and takes the specifier of the first import statement, so the docblock may
+explain the ordering but must not put the package name in quotes; the only quoted occurrence in
+the file is the import itself.
+
+## The dependency, the lockfile and the pods
+
+The package manager here is **yarn**, not npm, even though both `yarn.lock` and
+`package-lock.json` are tracked — the configured check is `yarn lint`. Run
+`yarn add react-native-get-random-values`, which writes both `package.json` (into `dependencies`,
+where AC-016 looks) and `yarn.lock`. Both are in the manifest. `package-lock.json` is not, and must
+come out of this byte-identical; resolving that duplication is somebody else's ticket.
+
+**iOS pods are deliberately out of the diff.** AS-012 has the pods reinstalled as part of this
+change, and they do have to be — the polyfill has a native module. But no criterion covers it,
+VG-003 already declares the install unestablished, and a regenerated `ios/Podfile.lock` is both
+outside the manifest and liable to drag unrelated checksum churn past the diff limit. So the
+implementer runs no pod command at all; the reinstall is part of the maintainer's device
+verification, alongside the simulator check VG-001 already schedules.
+
+## What is already done, and stays done
+
+`src/services/monobank/MonobankTokenService.ts` and `src/services/monobank/CLAUDE.md` appear in
+`change` only because AC-001 through AC-009 and AC-014 are theirs and every criterion must point at
+a file. Both already satisfy their criteria. Do not edit them — in particular do not touch the lazy
+`require` of the secret-storage barrel, which is load-bearing: that barrel constructs
+`new SecretStore()` at module load and that construction throws under Jest on purpose.
+
+The one thing that does change on their side is the test file: the spec renumbered its criteria, so
+the markers in `MonobankTokenService.test.ts` no longer match, and the four criteria the rewrite cut
+(the "returns a Promise" case, the plain empty-store null case, and the two `types.ts` signature
+cases) have no criterion left to carry. That is the test station's work, not the implementer's.
+
+`AC-013` is a whole-repository `tsc --noEmit`, and it is mapped to the two type-checked files this
+round can break. The `await` propagation in its `given` is already in the tree from round one, and
+`index.js` is outside `tsconfig`'s `include` altogether — nothing type-checks it.
+
+## What none of this establishes
+
+Under Jest, Node supplies `globalThis.crypto` on its own, so the suite cannot tell you the polyfill
+works — only that the module no longer freezes its source at load time. That the package installs,
+links natively and actually supplies `getRandomValues` on device is VG-001, VG-002 and VG-003, and
+lands on the manual checklist. AC-016 pins a line in `package.json`; it does not pin a working app.
