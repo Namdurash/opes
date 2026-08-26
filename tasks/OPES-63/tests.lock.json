@@ -1,0 +1,46 @@
+{
+  "schema": 1,
+  "plan_sha256": "e605c366bef3e523311443c4d4e52bd4c2d50922114f27b53f3f08c9d4e12528",
+  "mode": "per-test",
+  "at": "2026-08-26T13:45:40Z",
+  "tests": {
+    "src/services/monobank/migrateMonobankSecrets.test.ts": "698517a6c189ede6823b16f495fe679d378fa6113de034a66171eae5b1829ecb",
+    "test/CLAUDE.md": "2239846ae20caf9ce773446592c28676be11ebb10a3eca37e1359bf3827d7b42",
+    "test/db/createTestDatabase.ts": "3980e511bdfadbf7191d2f9aacefe87acf2a1f72664bcf87b0c85c3472f256b9",
+    "test/db/index.ts": "72fd8c0649ae1635bd9d334f06bea079c466e7b34c554b3d6d02f74ce2790005",
+    "test/doubles/cardsRepository.ts": "951c699b99c1ebbf1c1ce804b9bca35352ef2e4273d849bcc324b051d2774195",
+    "test/doubles/index.ts": "2600505446129e2b078a94ebc0011386062c6c29dea8e09d805777baf8baab5a",
+    "test/factories/card.ts": "848ef38faae77d256265132657369a0398784c0bf9ba332de1d52bf2e070a511",
+    "test/factories/index.ts": "bdbfee3add31c224b058f925dd235b65b91ad6989097b9e9e46086e53115cf50",
+    "test/factories/transaction.ts": "8aaa65083d628bd14f5b3711ab860fc131a8d9142a419220b27beb2b93d3eca6",
+    "test/index.ts": "e6cabbb61f2984dcc29c2f16e3b86fef67c01ffb58767c10f063c69a405d43c4",
+    "test/setup.js": "d816ef0a8996f218d7cd0c8830d995613f8f6149eaf61b19bb2eb672e7a6f70e"
+  },
+  "covering": [
+    "migrateMonobankSecrets on a fresh install AC-001 — writes nothing to the encrypted store when no plaintext copy exists::migrateMonobankSecrets on a fresh install AC-001 — writes nothing to the encrypted store when no plaintext copy exists",
+    "migrateMonobankSecrets with a legacy plaintext copy AC-002 — copies the plaintext token into the encrypted store::migrateMonobankSecrets with a legacy plaintext copy AC-002 — copies the plaintext token into the encrypted store",
+    "migrateMonobankSecrets with a legacy plaintext copy AC-003 — copies the plaintext client name into the encrypted store::migrateMonobankSecrets with a legacy plaintext copy AC-003 — copies the plaintext client name into the encrypted store",
+    "migrateMonobankSecrets with a legacy plaintext copy AC-004 — deletes the plaintext token once it is safely across::migrateMonobankSecrets with a legacy plaintext copy AC-004 — deletes the plaintext token once it is safely across",
+    "migrateMonobankSecrets with a legacy plaintext copy AC-005 — deletes the plaintext client name once it is safely across::migrateMonobankSecrets with a legacy plaintext copy AC-005 — deletes the plaintext client name once it is safely across",
+    "migrateMonobankSecrets — the read-back gate before the destructive step AC-006 — deletes the plaintext token immediately after reading it back::migrateMonobankSecrets — the read-back gate before the destructive step AC-006 — deletes the plaintext token immediately after reading it back",
+    "migrateMonobankSecrets — the read-back gate before the destructive step AC-007 — deletes nothing when the read-back differs from what was written::migrateMonobankSecrets — the read-back gate before the destructive step AC-007 — deletes nothing when the read-back differs from what was written",
+    "migrateMonobankSecrets when the encrypted store already holds a value AC-008 — leaves the encrypted token untouched rather than overwriting it::migrateMonobankSecrets when the encrypted store already holds a value AC-008 — leaves the encrypted token untouched rather than overwriting it",
+    "migrateMonobankSecrets when the encrypted store already holds a value AC-009 — still deletes the stale plaintext token::migrateMonobankSecrets when the encrypted store already holds a value AC-009 — still deletes the stale plaintext token",
+    "migrateMonobankSecrets when one key fails AC-010 — migrates the token even though the client name write rejects::migrateMonobankSecrets when one key fails AC-010 — migrates the token even though the client name write rejects",
+    "migrateMonobankSecrets when one key fails AC-011 — leaves the plaintext copy of the failed key where it is::migrateMonobankSecrets when one key fails AC-011 — leaves the plaintext copy of the failed key where it is",
+    "migrateMonobankSecrets when one key fails AC-012 — resolves rather than rejecting when the encrypted store is unusable::migrateMonobankSecrets when one key fails AC-012 — resolves rather than rejecting when the encrypted store is unusable",
+    "migrateMonobankSecrets run more than once AC-013 — retries a key whose earlier run failed::migrateMonobankSecrets run more than once AC-013 — retries a key whose earlier run failed",
+    "migrateMonobankSecrets run more than once AC-014 — writes each key exactly once across two runs::migrateMonobankSecrets run more than once AC-014 — writes each key exactly once across two runs",
+    "migrateMonobankSecrets and its plaintext neighbours AC-015 — leaves the selected-account ids in plaintext untouched::migrateMonobankSecrets and its plaintext neighbours AC-015 — leaves the selected-account ids in plaintext untouched",
+    "src/services/monobank/CLAUDE.md AC-016 — documents the legacy plaintext migration::src/services/monobank/CLAUDE.md AC-016 — documents the legacy plaintext migration"
+  ],
+  "impl_frozen": {
+    "src/services/monobank/MonobankTokenService.ts": "3205c02eaa227e652bcbf376a2bb037b0b959f18ecba45ebfe131b0a87f52552",
+    "src/services/monobank/index.ts": "86c483aeabf10aaed02b02a05ea309dbb0c9dec33de666c49122c5827672535e",
+    "src/services/monobank/CLAUDE.md": "c102e7b04084d7876982187f174ae160e16c2355c2b40e8383d7f4b1d0ec4c9f",
+    "index.js": "17488e37ace0b7d5b8f20dbbcd822d181d5686069235348dd0220330bfabf2df"
+  },
+  "impl_created": [
+    "src/services/monobank/migrateMonobankSecrets.ts"
+  ]
+}
