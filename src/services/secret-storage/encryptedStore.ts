@@ -24,10 +24,15 @@ export interface EncryptedStoreBackend {
   wipe(): void;
 }
 
+// Hand-written because the module is reached through a lazy `require` cast, which tsc
+// cannot reconcile against the real package. Mirror react-native-mmkv's actual surface
+// exactly: the instance method is `remove`, NOT `delete`. Declaring `delete` compiled
+// cleanly and failed on device as "undefined is not a function" — invisible to every
+// gate, because the Jest branch never reaches this code.
 interface MMKVInstance {
   getString(key: string): string | undefined;
   set(key: string, value: string): void;
-  delete(key: string): void;
+  remove(key: string): boolean;
 }
 
 interface MMKVModule {
@@ -36,7 +41,7 @@ interface MMKVModule {
     encryptionKey: string;
     encryptionType: string;
   }): MMKVInstance;
-  deleteMMKV(id: string): void;
+  deleteMMKV(id: string): boolean;
 }
 
 const createInMemoryEncryptedStore = (): EncryptedStoreBackend => {
@@ -72,7 +77,9 @@ const createMMKVEncryptedStore = (): EncryptedStoreBackend => {
       return {
         getString: key => mmkv.getString(key),
         set: (key, value) => mmkv.set(key, value),
-        delete: key => mmkv.delete(key),
+        delete: key => {
+          mmkv.remove(key);
+        },
       };
     },
     wipe: () => deleteMMKV(SECRET_MMKV_ID),
