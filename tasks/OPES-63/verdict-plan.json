@@ -1,0 +1,28 @@
+{ "schema": 1,
+  "gate": "plan-judge",
+  "subject": "plan.md",
+  "subject_sha256": "e605c366bef3e523311443c4d4e52bd4c2d50922114f27b53f3f08c9d4e12528",
+  "judge_agent": "aif-plan-judge",
+  "at": "2026-08-26T14:10:00Z",
+  "checked": [
+    "src/services/monobank/migrateMonobankSecrets.ts (create) — read D-001..D-014 against the file's whole required shape: single async arrow, MonobankSecretMigrationPorts param defaulting to createDefaultPorts(), PlaintextStorePort with only getString/delete, per-key sequence (getString -> return on undefined -> secret.get -> encrypted-wins delete, else set+get+strict-equal-gated delete), per-key try/catch that never rethrows, console.warn naming only the key. Every branch AC-001..AC-015 exercises is pinned to a concrete statement; nothing left to invent.",
+    "Read src/services/monobank/MonobankTokenService.ts in full — confirmed SecretStorePort already has exactly get/set/delete all Promise-returning (matches D-003), and createDefaultSecretStore already exists at module scope with the typeof-jest branch and lazy require (matches D-004's 'add export, change nothing else'); no other symbol in that file needs touching for this plan.",
+    "Read src/services/monobank/index.ts — current barrel exports MonobankTokenService/monobankTokenService/MonobankCredentials/MonobankAccountSelectionService/types; D-015's addition (migrateMonobankSecrets + MonobankSecretMigrationPorts type) is a pure append, no existing export line needs to change.",
+    "Read index.js in full — confirmed the react-native-get-random-values import and AppRegistry.registerComponent call D-016 anchors on; the new import line and the fire-and-forget call are additive, nothing else in the file needs to move.",
+    "Read src/services/monobank/CLAUDE.md's 'Token storage' section — confirmed the exact 'until OPES-63 lands' clause D-017 says to drop, and that no other section references OPES-63 or the migration.",
+    "Read src/services/secret-storage/encryptedStore.ts's MMKVInstance comment — confirmed the remove-not-delete fact D-007 cites is real and already documented there, not something the new file has to rediscover.",
+    "Read src/services/monobank/MonobankAccountSelectionService.ts — confirmed the typeof-jest / lazy-require('react-native-mmkv') / createMMKV() pattern AS-014 and D-006 point at already exists verbatim in this file, so D-006 is reusing an established idiom, not inventing one.",
+    "Grepped 'createDefaultSecretStore' — only defined and used inside MonobankTokenService.ts itself; adding `export` cannot force an edit anywhere else.",
+    "Grepped 'MonobankTokenService|monobankTokenService' and 'migrateMonobankSecrets' repo-wide — no production call site outside the plan's five files references either symbol; the only other monobank-token hits are OPES-58's own test file and other tickets' task records, none of which this plan's changes touch or break.",
+    "Grepped 'react-native-mmkv' and package.json — the package is already a runtime dependency (^4.3.1); D-006's require introduces no new dependency and no package.json/lockfile edit is forced.",
+    "Checked App.tsx and the sandbox reset path (resetSandboxEnvironment.ts, useSettingsStore.ts) for any existing startup-migration hook the plan's wiring would need to join instead of index.js — found none; D-016's index.js placement is the only startup surface in the app.",
+    "Compared ac_coverage[<AC>] against surface_map[<that AC's surface>] for all 16 criteria in spec.md, one by one, to find every surface-drift flag mechanically rather than trusting a summary.",
+    "Read AC-012's given/when/then and the spec-judge's own note on it ('the startup-path half is filed as VG-004, not asserted') to decide whether its narrower file coverage is intended or drift."
+  ],
+  "guesses": [],
+  "missing_files": [],
+  "surface_adjudications": [
+    { "ac": "AC-012",
+      "verdict": "intended",
+      "why": "AC-012's given/when/then only calls the migration with rejecting doubles and asserts the resolved value is undefined — a fact entirely internal to migrateMonobankSecrets.ts's own try/catch, never exercising the index.js wiring, the barrel re-export, or MonobankTokenService.ts that the surface_map's four-file list also covers, and VG-004/the spec-judge's own note confirm the startup-wiring half of that surface is deliberately left unasserted here." }
+  ] }
