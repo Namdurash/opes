@@ -47,7 +47,7 @@ let fetchSpy: jest.Mock;
 let realSyncFromMonobank: SyncAction;
 let triggeredSync: Promise<void>;
 
-beforeEach(() => {
+beforeEach(async () => {
   const testDatabase = createTestDatabase();
   mockDatabase = testDatabase.database;
   teardown = testDatabase.teardown;
@@ -61,7 +61,6 @@ beforeEach(() => {
   global.fetch = fetchSpy as unknown as typeof fetch;
 
   clearMonobankService();
-  monobankTokenService.clear();
   monobankAccountSelectionService.clear();
   useTransactionsStore.getState().reset();
   useMonobankStore.setState({
@@ -85,6 +84,16 @@ beforeEach(() => {
       return triggeredSync;
     },
   });
+
+  // OPES-58 — the token service's storage moves behind the encrypted secret store
+  // and its three methods become promise-returning. This hook is where that lands:
+  // every case below connects, and a connect that writes the token asynchronously
+  // is only isolated from the previous case if the clear this hook performs can be
+  // awaited to completion. Pinned in the hook rather than in a case of its own
+  // because every case here rests on it.
+  const cleared = monobankTokenService.clear();
+  expect(cleared).toBeInstanceOf(Promise);
+  await cleared;
 });
 
 afterEach(async () => {
@@ -92,7 +101,7 @@ afterEach(async () => {
   global.fetch = originalFetch;
   delete config.OPES_ENV;
   clearMonobankService();
-  monobankTokenService.clear();
+  await monobankTokenService.clear();
   monobankAccountSelectionService.clear();
   await teardown();
 });

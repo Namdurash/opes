@@ -14,8 +14,8 @@ export interface MonobankStoreState {
 
 export interface MonobankStoreActions {
   connect(userId: string, token: string): Promise<void>;
-  disconnect(): void;
-  loadSavedToken(): string | null;
+  disconnect(): Promise<void>;
+  loadSavedToken(): Promise<string | null>;
   loadAccounts(userId: string): Promise<void>;
   toggleAccount(accountId: string): void;
 }

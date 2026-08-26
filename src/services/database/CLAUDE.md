@@ -9,7 +9,7 @@ Singleton database wired up here. Schema is versioned; column changes require a 
 - **Jest:** LokiJS adapter (pure JS, no native module). This is why the test suite runs without iOS/Android linkage.
 - **Device:** SQLite (JSI) adapter, built by [createSqliteAdapter.ts](createSqliteAdapter.ts).
 
-Apply the same Jest-vs-device branch pattern when adding any native-backed storage (see [../monobank/MonobankTokenService.ts](../monobank/MonobankTokenService.ts) for the in-memory-vs-MMKV variant). Tests must not require native modules.
+Apply the same Jest-vs-device branch pattern when adding any native-backed storage (see [../monobank/MonobankAccountSelectionService.ts](../monobank/MonobankAccountSelectionService.ts) for the in-memory-vs-MMKV variant). Tests must not require native modules.
 
 **The device branch holds nothing but module resolution — keep it that way.** No test
 ever takes it (jest picks LokiJS above), so anything that lives there is unverifiable by

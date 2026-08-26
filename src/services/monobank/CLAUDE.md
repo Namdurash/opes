@@ -26,12 +26,13 @@ Monobank enforces **1 request / 60s per endpoint**. The shared limiter is in [ra
 
 ## Token storage
 
-[MonobankTokenService.ts](MonobankTokenService.ts) persists `{ token, clientName }`:
+[MonobankTokenService.ts](MonobankTokenService.ts) persists `{ token, clientName }` in the encrypted secret store — [../secret-storage/](../secret-storage/), never plaintext MMKV. Because that store is async, **`save`, `get` and `clear` are all promise-returning**, and every call site awaits them.
 
-- **Device:** MMKV.
-- **Jest:** in-memory map.
-
-Use the same Jest-vs-device branch when adding any new native-backed storage in this codebase.
+- **Device:** the app-wide `secretStore` singleton from the secret-storage barrel.
+- **Jest:** a module-private in-memory port, so no suite touches the Keychain.
+- **Never import the secret-storage barrel at the top of this file.** It evaluates `new SecretStore()` at module load and that construction throws under Jest by design; the device singleton is reached by a lazy `require` inside the non-Jest branch, with `import type` (which erases) for the compile-time check.
+- The storage keys `monobank_personal_token` and `monobank_client_name` are the storage contract and do not move. `get()` decides presence from the token key alone and **has no fallback to the plaintext copy** — until the migration in OPES-63 lands, a user connected before this change reads as disconnected.
+- **No try/catch anywhere in the service:** a rejection from the secret store reaches the caller unchanged.
 
 ## Account-sync selection
 

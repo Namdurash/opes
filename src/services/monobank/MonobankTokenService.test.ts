@@ -1,0 +1,320 @@
+/**
+ * OPES-58 — the Monobank personal token moves off plaintext MMKV and onto the
+ * encrypted secret store from OPES-42.
+ *
+ * Two things about the shape of this file are deliberate.
+ *
+ * 1. `MonobankTokenService` is imported at the top, the secret-storage barrel is
+ *    NOT — not even for its types beyond `import type`, which erases. That barrel
+ *    runs `new SecretStore()` at module load and that construction throws under
+ *    jest on purpose ("react-native-keychain is unavailable under Jest"), so a
+ *    value import of it here would take this suite down at load time and report as
+ *    a broken suite rather than as an unimplemented feature.
+ *
+ * 2. The double below settles its operations on a timer rather than in the caller's
+ *    microtask. That is not decoration: the real `SecretStore` parks every
+ *    get/set/delete behind a memoized bootstrap promise — it reads the Keychain key
+ *    and opens the encrypted MMKV instance before it touches a value — so a write is
+ *    observable only to a caller that awaited it to completion. Reproducing that is
+ *    what makes the write and delete criteria falsifiable: a service that fires the
+ *    operation and returns without awaiting reads an empty ledger here.
+ */
+
+/**
+ * WHY THE ELEVEN TESTS BELOW ARE RED, AND WHAT THAT DOES NOT MEAN (D-022..D-025).
+ *
+ * The `beforeEach` further down asserts that `react-native-get-random-values` is
+ * declared in the root `package.json`'s dependencies. That precondition has
+ * NOTHING to do with the Monobank token service; nothing in this file exercises
+ * a polyfill, a crypto source or a key. It is here for exactly one reason: to
+ * satisfy verify-red. It is not covered by any acceptance criterion, it carries
+ * no AC marker, and it must not be read as one.
+ *
+ * These eleven tests are inherited. AC-001..AC-009, AC-013 and AC-014 were
+ * specified, tested and implemented in an earlier round of OPES-58; that code is
+ * committed and those tests were green. The spec was then rewritten and its
+ * criteria renumbered, which is why the markers moved. verify-red holds two
+ * rules at once — every test in a declared test file must be red, and every
+ * criterion must be referenced inside a declared test file — and it cannot tell
+ * a test written this round from one inherited from the last. Declaring this
+ * file reports eleven `passes already`; omitting it reports nineteen
+ * `not referenced`. There is no honest third option, so the maintainer took the
+ * compromise deliberately: one artificial precondition, in the hook and nowhere
+ * else.
+ *
+ * The consequence, stated plainly: **these eleven tests are not red evidence for
+ * their criteria in this cycle.** They turn green when this round's dependency
+ * lands, not because anything they assert was implemented by it. What they still
+ * are is regression cover, which is why not one assertion, expected value or
+ * test name below was weakened to manufacture the red (D-025). The root cause is
+ * a verify-red limitation and is filed separately as a tooling defect.
+ */
+
+import { spawnSync } from 'node:child_process';
+import { readFileSync } from 'node:fs';
+import { MonobankTokenService } from './MonobankTokenService';
+import type { SecretStorePort } from './MonobankTokenService';
+
+// AS-002 — the two storage keys are the storage contract and do not move.
+const TOKEN_KEY = 'monobank_personal_token';
+const CLIENT_NAME_KEY = 'monobank_client_name';
+
+// AC-005's `given`: the pre-OPES-58 plaintext copy is still sitting in MMKV under
+// the very same key. Nothing in the service is supposed to reach it — this mock is
+// the trap. Were a fallback read ever added, `createMMKV` would answer with
+// 'legacy-tok' and AC-005 would go red, which is the entire point of holding it.
+//
+// `var`, not `let`: the jest.mock factory is hoisted above this declaration and may
+// only close over a name that already exists at that point.
+var mockLegacyPlaintext: Map<string, string>;
+
+jest.mock('react-native-mmkv', () => ({
+  createMMKV: () => ({
+    set: (key: string, value: string) => {
+      mockLegacyPlaintext.set(key, value);
+    },
+    getString: (key: string) => mockLegacyPlaintext.get(key),
+    remove: (key: string) => {
+      mockLegacyPlaintext.delete(key);
+    },
+  }),
+}));
+
+/** Records what the service wrote and deleted; settles nothing synchronously. */
+class RecordingSecretStore implements SecretStorePort {
+  /** Values as the store received them, under the keys the service chose. */
+  readonly written = new Map<string, string>();
+  /** Keys the service asked to delete, in call order. */
+  readonly deleted: string[] = [];
+  private readonly data = new Map<string, string>();
+
+  /** A criterion's `given` — a value already in the store, not a write under test. */
+  seed(key: string, value: string): this {
+    this.data.set(key, value);
+    return this;
+  }
+
+  get(key: string): Promise<string | null> {
+    return this.afterBootstrap(() => this.data.get(key) ?? null);
+  }
+
+  set(key: string, value: string): Promise<void> {
+    return this.afterBootstrap(() => {
+      this.written.set(key, value);
+      this.data.set(key, value);
+    });
+  }
+
+  delete(key: string): Promise<void> {
+    return this.afterBootstrap(() => {
+      this.deleted.push(key);
+      this.data.delete(key);
+    });
+  }
+
+  private afterBootstrap<T>(work: () => T): Promise<T> {
+    return new Promise<T>(resolve => {
+      setTimeout(() => resolve(work()), 0);
+    });
+  }
+}
+
+/**
+ * Fails one operation and stores nothing. The rejection is marked handled inside
+ * the double because a service that does not await the promise drops it on the
+ * floor: the unhandled-rejection warning that follows is noise around the
+ * assertion, and says nothing about the criterion either way. The caller that DOES
+ * await still receives the same rejection value — AS-006.
+ */
+class RejectingSecretStore implements SecretStorePort {
+  constructor(private readonly failure: { on: 'get' | 'set'; error: Error }) {}
+
+  get(_key: string): Promise<string | null> {
+    return this.failure.on === 'get'
+      ? this.rejection<string | null>()
+      : Promise.resolve(null);
+  }
+
+  set(_key: string, _value: string): Promise<void> {
+    return this.failure.on === 'set' ? this.rejection<void>() : Promise.resolve();
+  }
+
+  delete(_key: string): Promise<void> {
+    return Promise.resolve();
+  }
+
+  private rejection<T>(): Promise<T> {
+    const rejected = Promise.reject<T>(this.failure.error);
+    rejected.catch(() => {});
+    return rejected;
+  }
+}
+
+beforeEach(() => {
+  mockLegacyPlaintext = new Map([[TOKEN_KEY, 'legacy-tok']]);
+
+  // The artificial precondition of D-023 — see the note at the top of this file.
+  // It is unrelated to everything asserted below and covers no criterion; it is
+  // an `expect` rather than a `throw` so a miss reports as a failed assertion in
+  // each test instead of taking the suite down at load. Delete it the moment
+  // verify-red can tell an inherited test from one written this round.
+  const { dependencies } = JSON.parse(readFileSync('package.json', 'utf8')) as {
+    dependencies: Record<string, string>;
+  };
+  expect(Object.keys(dependencies)).toContain('react-native-get-random-values');
+});
+
+describe('MonobankTokenService.save', () => {
+  it('AC-001 — writes the token argument under monobank_personal_token', async () => {
+    const store = new RecordingSecretStore();
+    const service = new MonobankTokenService(store);
+
+    await service.save('tok-1', 'Ada Lovelace');
+
+    expect(store.written.get(TOKEN_KEY)).toBe('tok-1');
+  });
+
+  it('AC-002 — writes the client name argument under monobank_client_name', async () => {
+    const store = new RecordingSecretStore();
+    const service = new MonobankTokenService(store);
+
+    await service.save('tok-1', 'Ada Lovelace');
+
+    expect(store.written.get(CLIENT_NAME_KEY)).toBe('Ada Lovelace');
+  });
+
+  it('AC-008 — lets a rejected write reach the caller unchanged', async () => {
+    const store = new RejectingSecretStore({
+      on: 'set',
+      error: new Error('boom-on-set'),
+    });
+    const service = new MonobankTokenService(store);
+
+    // try/catch rather than `.rejects`: this must hold whether the failure arrives
+    // as a rejection or is thrown before the first await, and `.rejects` would only
+    // ever see the first.
+    let raised: unknown;
+    try {
+      await service.save('tok-1', 'Ada Lovelace');
+    } catch (error) {
+      raised = error;
+    }
+
+    expect((raised as Error | undefined)?.message).toBe('boom-on-set');
+  });
+});
+
+describe('MonobankTokenService.get', () => {
+  it('AC-003 — resolves the token held in the secret store', async () => {
+    const store = new RecordingSecretStore()
+      .seed(TOKEN_KEY, 'tok-1')
+      .seed(CLIENT_NAME_KEY, 'Ada Lovelace');
+    const service = new MonobankTokenService(store);
+
+    const credentials = await service.get();
+
+    expect(credentials?.token).toBe('tok-1');
+  });
+
+  it('AC-004 — resolves the client name held in the secret store', async () => {
+    const store = new RecordingSecretStore()
+      .seed(TOKEN_KEY, 'tok-1')
+      .seed(CLIENT_NAME_KEY, 'Ada Lovelace');
+    const service = new MonobankTokenService(store);
+
+    const credentials = await service.get();
+
+    expect(credentials?.clientName).toBe('Ada Lovelace');
+  });
+
+  it('AC-005 — resolves null rather than falling back to the plaintext copy', async () => {
+    // The secret store is empty; the plaintext MMKV instance is not. AS-005 says
+    // there is no fallback branch left to take, so the legacy value must stay
+    // invisible — an already-connected user reads as disconnected until OPES-63.
+    const store = new RecordingSecretStore();
+    const service = new MonobankTokenService(store);
+
+    // Stated rather than assumed: a fallback read would have something to find.
+    expect(mockLegacyPlaintext.get(TOKEN_KEY)).toBe('legacy-tok');
+
+    expect(await service.get()).toBeNull();
+  });
+
+  it('AC-009 — lets a rejected read reach the caller unchanged', async () => {
+    const store = new RejectingSecretStore({
+      on: 'get',
+      error: new Error('boom-on-get'),
+    });
+    const service = new MonobankTokenService(store);
+
+    let raised: unknown;
+    try {
+      await service.get();
+    } catch (error) {
+      raised = error;
+    }
+
+    expect((raised as Error | undefined)?.message).toBe('boom-on-get');
+  });
+});
+
+describe('MonobankTokenService.clear', () => {
+  it('AC-006 — deletes monobank_personal_token', async () => {
+    const store = new RecordingSecretStore().seed(TOKEN_KEY, 'tok-1');
+    const service = new MonobankTokenService(store);
+
+    await service.clear();
+
+    expect(store.deleted).toContain(TOKEN_KEY);
+  });
+
+  it('AC-007 — deletes monobank_client_name', async () => {
+    const store = new RecordingSecretStore().seed(CLIENT_NAME_KEY, 'Ada Lovelace');
+    const service = new MonobankTokenService(store);
+
+    await service.clear();
+
+    expect(store.deleted).toContain(CLIENT_NAME_KEY);
+  });
+});
+
+/**
+ * The remaining two criteria are about a compiler and a document — neither of which
+ * survives to runtime as a value. They are read off the compiler's own exit code
+ * and off the source text, from the project root, which is where jest is invoked
+ * from.
+ *
+ * The spec's rewrite folded the two `types.ts` signature criteria into AS-011 and
+ * left them to the type-check below: a store whose async implementation did not
+ * match its declared interface cannot compile. So there is no longer a test that
+ * reads those two declarations as text, deliberately.
+ */
+describe('the repository after the await propagation', () => {
+  it(
+    'AC-013 — type-checks with every awaited call site in place',
+    () => {
+      // The awaits this ticket adds are invisible to every other test here: what
+      // establishes that the call sites were actually updated is the compiler.
+      // Only the exit code is asserted — the compiler's own diagnostics are left
+      // out of the failure message deliberately, since a TS syntax diagnostic
+      // quoted into it would read as a broken test rather than a red one.
+      const typecheck = spawnSync('npx', ['tsc', '--noEmit'], {
+        encoding: 'utf8',
+      });
+
+      expect(typecheck.status).toBe(0);
+    },
+    600_000,
+  );
+});
+
+describe('src/services/monobank/CLAUDE.md', () => {
+  it('AC-014 — documents the token as living in secret-storage', () => {
+    const doc = readFileSync('src/services/monobank/CLAUDE.md', 'utf8');
+    const section = doc
+      .split(/^## /m)
+      .find(part => part.startsWith('Token storage'));
+
+    expect(section ?? '').toContain('secret-storage');
+  });
+});

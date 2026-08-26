@@ -47,10 +47,13 @@ export const ConnectMonobankScreen = () => {
   });
 
   React.useEffect(() => {
-    const savedToken = loadSavedToken();
-    if (savedToken) {
-      setValue('token', savedToken);
-    }
+    const restore = async (): Promise<void> => {
+      const savedToken = await loadSavedToken();
+      if (savedToken) {
+        setValue('token', savedToken);
+      }
+    };
+    restore().catch(() => {});
   }, [loadSavedToken, setValue]);
 
   React.useEffect(() => {

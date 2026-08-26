@@ -61,7 +61,7 @@ export const useSettingsStore = create<SettingsState>(set => ({
       await resetSandboxEnvironment();
       // Returns the monobank and transactions stores to their defaults, so the
       // in-memory state matches the database the reset just emptied.
-      useMonobankStore.getState().disconnect();
+      await useMonobankStore.getState().disconnect();
     } catch {
       showErrorBottomSheet({
         title: 'Reset Failed',

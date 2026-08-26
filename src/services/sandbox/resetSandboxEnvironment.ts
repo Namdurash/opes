@@ -27,6 +27,6 @@ export const resetSandboxEnvironment = async (): Promise<void> => {
   }
 
   await databaseMaintenanceRepository.wipeAllData();
-  monobankTokenService.clear();
+  await monobankTokenService.clear();
   monobankAccountSelectionService.clear();
 };

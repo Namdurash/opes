@@ -1,0 +1,48 @@
+{
+  "schema": 1,
+  "plan_sha256": "fac0df692258eaa2f44b218d7c8a6cbecaea25f7ef65bf0be528cd443b2d7bf0",
+  "mode": "per-test",
+  "at": "2026-08-25T13:02:16Z",
+  "tests": {
+    "src/services/monobank/MonobankTokenService.test.ts": "859a17dad48a15e31220e20f4e989ecf72af0ca5cb58ebbefc61855d6191a83d",
+    "src/services/secret-storage/cryptoKey.test.ts": "a1ec4f8e7f78fde3beedc5f0d69f621c8e1e00eafe15100621afd81dcaacd33b",
+    "test/CLAUDE.md": "2239846ae20caf9ce773446592c28676be11ebb10a3eca37e1359bf3827d7b42",
+    "test/db/createTestDatabase.ts": "3980e511bdfadbf7191d2f9aacefe87acf2a1f72664bcf87b0c85c3472f256b9",
+    "test/db/index.ts": "72fd8c0649ae1635bd9d334f06bea079c466e7b34c554b3d6d02f74ce2790005",
+    "test/doubles/cardsRepository.ts": "951c699b99c1ebbf1c1ce804b9bca35352ef2e4273d849bcc324b051d2774195",
+    "test/doubles/index.ts": "2600505446129e2b078a94ebc0011386062c6c29dea8e09d805777baf8baab5a",
+    "test/factories/card.ts": "848ef38faae77d256265132657369a0398784c0bf9ba332de1d52bf2e070a511",
+    "test/factories/index.ts": "bdbfee3add31c224b058f925dd235b65b91ad6989097b9e9e46086e53115cf50",
+    "test/factories/transaction.ts": "8aaa65083d628bd14f5b3711ab860fc131a8d9142a419220b27beb2b93d3eca6",
+    "test/index.ts": "e6cabbb61f2984dcc29c2f16e3b86fef67c01ffb58767c10f063c69a405d43c4",
+    "test/setup.js": "d816ef0a8996f218d7cd0c8830d995613f8f6149eaf61b19bb2eb672e7a6f70e"
+  },
+  "covering": [
+    "cryptoKey.generateKey resolves its random source at call time AC-010 — draws from the source installed after the module was loaded::cryptoKey.generateKey resolves its random source at call time AC-010 — draws from the source installed after the module was loaded",
+    "cryptoKey.generateKey resolves its random source at call time AC-011 — throws when the source is gone by the time it is called::cryptoKey.generateKey resolves its random source at call time AC-011 — throws when the source is gone by the time it is called",
+    "index.js AC-012 — imports the random-values polyfill before anything else::index.js AC-012 — imports the random-values polyfill before anything else",
+    "src/services/secret-storage/CLAUDE.md AC-015 — records where the random bytes come from on device::src/services/secret-storage/CLAUDE.md AC-015 — records where the random bytes come from on device",
+    "package.json AC-016 — declares the polyfill as a runtime dependency::package.json AC-016 — declares the polyfill as a runtime dependency",
+    "MonobankTokenService.save AC-001 — writes the token argument under monobank_personal_token::MonobankTokenService.save AC-001 — writes the token argument under monobank_personal_token",
+    "MonobankTokenService.save AC-002 — writes the client name argument under monobank_client_name::MonobankTokenService.save AC-002 — writes the client name argument under monobank_client_name",
+    "MonobankTokenService.save AC-008 — lets a rejected write reach the caller unchanged::MonobankTokenService.save AC-008 — lets a rejected write reach the caller unchanged",
+    "MonobankTokenService.get AC-003 — resolves the token held in the secret store::MonobankTokenService.get AC-003 — resolves the token held in the secret store",
+    "MonobankTokenService.get AC-004 — resolves the client name held in the secret store::MonobankTokenService.get AC-004 — resolves the client name held in the secret store",
+    "MonobankTokenService.get AC-005 — resolves null rather than falling back to the plaintext copy::MonobankTokenService.get AC-005 — resolves null rather than falling back to the plaintext copy",
+    "MonobankTokenService.get AC-009 — lets a rejected read reach the caller unchanged::MonobankTokenService.get AC-009 — lets a rejected read reach the caller unchanged",
+    "MonobankTokenService.clear AC-006 — deletes monobank_personal_token::MonobankTokenService.clear AC-006 — deletes monobank_personal_token",
+    "MonobankTokenService.clear AC-007 — deletes monobank_client_name::MonobankTokenService.clear AC-007 — deletes monobank_client_name",
+    "the repository after the await propagation AC-013 — type-checks with every awaited call site in place::the repository after the await propagation AC-013 — type-checks with every awaited call site in place",
+    "src/services/monobank/CLAUDE.md AC-014 — documents the token as living in secret-storage::src/services/monobank/CLAUDE.md AC-014 — documents the token as living in secret-storage"
+  ],
+  "impl_frozen": {
+    "src/services/secret-storage/cryptoKey.ts": "8eb6b8b61362edd070cac227673a4b728c6f9e9d238fa94663401873142b7647",
+    "src/services/secret-storage/CLAUDE.md": "75c5750de6fcec95186385deb5bc097c8dce0dfa150fec4f9d31daacfbf895be",
+    "index.js": "923f6db3c2996730bcab029422c7b4fe80b3060e5321bba97b7816b783015ddd",
+    "package.json": "b8cecb63b9dc0c10f0bbd6bbee5893b8730e11032cea2c34073196259d9f4784",
+    "yarn.lock": "3757c3d0cdadaf7fe0b700151777e5a61b88ed31b91cc41f760ac96ac9098afb",
+    "src/services/monobank/MonobankTokenService.ts": "3205c02eaa227e652bcbf376a2bb037b0b959f18ecba45ebfe131b0a87f52552",
+    "src/services/monobank/CLAUDE.md": "c102e7b04084d7876982187f174ae160e16c2355c2b40e8383d7f4b1d0ec4c9f"
+  },
+  "impl_created": []
+}

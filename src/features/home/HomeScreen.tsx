@@ -50,7 +50,7 @@ export const HomeScreen = () => {
   }, [currentUserId, loadCardsByUser]);
 
   React.useEffect(() => {
-    loadSavedToken();
+    loadSavedToken().catch(() => {});
   }, [loadSavedToken]);
 
   React.useEffect(() => {

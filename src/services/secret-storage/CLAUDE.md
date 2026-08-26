@@ -38,10 +38,20 @@ tests inject fakes (mirrors `MonobankAccountSelectionService`).
 - **Encrypted store** (`encryptedStore.ts`) uses `createMMKV({ id, encryptionKey,
   encryptionType: 'AES-256' })` / `deleteMMKV(id)` on device and an in-memory `Map`
   under Jest. A device open failure rejects — it never degrades in-memory.
-- **Key generation** (`cryptoKey.ts`) draws 32 bytes from `crypto.getRandomValues`
-  (never `Math.random`) and base64-encodes them with a hand-rolled encoder (no
-  Buffer/btoa, no new dependency). The 32 is the raw byte count, measured before
-  encoding.
+- **Key generation** (`cryptoKey.ts`) draws 32 bytes from
+  `globalThis.crypto.getRandomValues` (never `Math.random`) and base64-encodes them
+  with a hand-rolled encoder (no Buffer/btoa). The 32 is the raw byte count,
+  measured before encoding. The global is resolved **inside `generateKey`, on every
+  call** — never captured in a module-level binding, and never cached in a resolver
+  either: Hermes on RN 0.84 has no crypto global of its own, so a load-time capture
+  is `undefined` forever and the first `save()` throws. On device the global comes
+  from **`react-native-get-random-values`**, which must be the *first* import of the
+  repository-root `index.js` so the global exists before anything can reach the
+  secret store — the key bootstrap can run from the very first `save()`. With no
+  source at call time `generateKey` throws and never falls back to `Math.random`.
+  Under Jest the source is Node's own `globalThis.crypto`, not the polyfill, so a
+  green suite establishes nothing about a device; that a real device can mint a key
+  is confirmed by hand on a simulator.
 
 The Keychain service/account names and the secret MMKV instance id are fixed
 module-level constants.

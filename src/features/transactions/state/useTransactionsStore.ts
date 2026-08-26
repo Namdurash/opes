@@ -51,7 +51,7 @@ export const useTransactionsStore = create<TransactionsState & TransactionsActio
   async syncFromMonobank(userId: string, options?: SyncOptions) {
     const { silent = false } = options ?? {};
 
-    const saved = monobankTokenService.get();
+    const saved = await monobankTokenService.get();
     if (!saved) return;
 
     if (get().syncStatus === 'syncing') return;

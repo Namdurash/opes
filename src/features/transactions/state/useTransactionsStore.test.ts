@@ -42,7 +42,7 @@ let teardown: () => Promise<void>;
 let realSyncFromMonobank: SyncAction;
 let triggeredSync: Promise<void>;
 
-beforeEach(() => {
+beforeEach(async () => {
   const testDatabase = createTestDatabase();
   mockDatabase = testDatabase.database;
   teardown = testDatabase.teardown;
@@ -53,7 +53,6 @@ beforeEach(() => {
   ) as unknown as typeof fetch;
 
   clearMonobankService();
-  monobankTokenService.clear();
   monobankAccountSelectionService.clear();
   useTransactionsStore.getState().reset();
   useMonobankStore.setState({
@@ -75,6 +74,16 @@ beforeEach(() => {
       return triggeredSync;
     },
   });
+
+  // OPES-58 — the token service's storage moves behind the encrypted secret store
+  // and its three methods become promise-returning. This hook is where that lands:
+  // syncFromMonobank reads the credentials back through get(), so the store this
+  // hook empties is the one the cases below depend on being empty — and awaiting a
+  // synchronous `void` guarantees no such thing. Pinned in the hook rather than in
+  // a case of its own because every case here rests on it.
+  const cleared = monobankTokenService.clear();
+  expect(cleared).toBeInstanceOf(Promise);
+  await cleared;
 });
 
 afterEach(async () => {
@@ -82,7 +91,7 @@ afterEach(async () => {
   global.fetch = originalFetch;
   delete config.OPES_ENV;
   clearMonobankService();
-  monobankTokenService.clear();
+  await monobankTokenService.clear();
   monobankAccountSelectionService.clear();
   await teardown();
 });

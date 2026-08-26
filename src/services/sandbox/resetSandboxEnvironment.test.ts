@@ -71,20 +71,29 @@ const countUsers = (): Promise<number> =>
 let resetSandboxEnvironment: ResetSandboxEnvironment;
 let teardown: () => Promise<void>;
 
-beforeEach(() => {
+beforeEach(async () => {
   const testDatabase = createTestDatabase();
   mockDatabase = testDatabase.database;
   teardown = testDatabase.teardown;
   resetSandboxEnvironment = loadResetSandboxEnvironment();
 
   config.OPES_ENV = 'sandbox';
-  monobankTokenService.clear();
   monobankAccountSelectionService.clear();
+
+  // OPES-58 — the token service's storage moves behind the encrypted secret store
+  // and its three methods become promise-returning. This hook is where that lands:
+  // the isolation every case below depends on is a token store emptied BEFORE the
+  // case runs, and awaiting a synchronous `void` guarantees no such thing. Pinned
+  // in the hook rather than in a case of its own because every case here rests on
+  // it — including AC-009, which reads the store back through the same API.
+  const cleared = monobankTokenService.clear();
+  expect(cleared).toBeInstanceOf(Promise);
+  await cleared;
 });
 
 afterEach(async () => {
   delete config.OPES_ENV;
-  monobankTokenService.clear();
+  await monobankTokenService.clear();
   monobankAccountSelectionService.clear();
   await teardown();
 });
@@ -118,12 +127,16 @@ describe('resetSandboxEnvironment wipes the database', () => {
 
 describe('resetSandboxEnvironment clears the key-value storage', () => {
   it('AC-009 — leaves no Monobank token behind', async () => {
-    monobankTokenService.save('token-sandbox', 'Test Client');
-    expect(monobankTokenService.get()).not.toBeNull();
+    await monobankTokenService.save('token-sandbox', 'Test Client');
+    expect(await monobankTokenService.get()).not.toBeNull();
 
     await resetSandboxEnvironment();
 
-    expect(monobankTokenService.get()).toBeNull();
+    // Awaited on both sides now: `expect(monobankTokenService.get()).toBeNull()`
+    // type-checked but could never hold once get() resolves rather than returns —
+    // a pending Promise is not null, and the case would have gone red for a reason
+    // that has nothing to do with the reset.
+    expect(await monobankTokenService.get()).toBeNull();
   });
 
   it('AC-010 — leaves no account selection behind', async () => {

@@ -30,7 +30,7 @@ export const useMonobankStore = create<MonobankStoreState & MonobankStoreActions
     try {
       const service = getMonobankService(trimmed);
       const clientInfo = await service.getClientInfo();
-      monobankTokenService.save(trimmed, clientInfo.name);
+      await monobankTokenService.save(trimmed, clientInfo.name);
 
       await cardsRepository.upsertMonobankCards(userId, clientInfo.accounts);
 
@@ -52,16 +52,16 @@ export const useMonobankStore = create<MonobankStoreState & MonobankStoreActions
     }
   },
 
-  disconnect() {
-    monobankTokenService.clear();
+  async disconnect() {
+    await monobankTokenService.clear();
     monobankAccountSelectionService.clear();
     clearMonobankService();
     useTransactionsStore.getState().reset();
     set({ status: 'idle', clientName: null, errorMessage: null, accounts: [], selectedAccountIds: null });
   },
 
-  loadSavedToken() {
-    const saved = monobankTokenService.get();
+  async loadSavedToken() {
+    const saved = await monobankTokenService.get();
     if (!saved) {
       return null;
     }
