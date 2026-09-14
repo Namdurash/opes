@@ -26,11 +26,15 @@ const createDefaultStorage = (): KeyValueStorage => {
         remove: (key: string) => void;
       };
     };
-    const mmkv = createMMKV();
+    // Resolved per call, never held: the OPES-63 migration deletes and recreates the
+    // default MMKV file on the first launch after an upgrade, and a handle taken before
+    // that point stops working — writes through one are silently dropped rather than
+    // rejected, so the account selection would quietly stop persisting. MMKV caches
+    // live instances by id, so this is a lookup, not a reopen.
     return {
-      set: (key, value) => mmkv.set(key, value),
-      getString: key => mmkv.getString(key),
-      delete: key => mmkv.remove(key),
+      set: (key, value) => createMMKV().set(key, value),
+      getString: key => createMMKV().getString(key),
+      delete: key => createMMKV().remove(key),
     };
   } catch {
     console.warn('[MonobankAccountSelectionService] MMKV unavailable, falling back to in-memory storage.');

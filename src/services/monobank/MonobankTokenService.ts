@@ -44,7 +44,7 @@ class InMemorySecretStore implements SecretStorePort {
   }
 }
 
-const createDefaultSecretStore = (): SecretStorePort => {
+export const createDefaultSecretStore = (): SecretStorePort => {
   if (typeof jest !== 'undefined') {
     return new InMemorySecretStore();
   }

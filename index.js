@@ -11,6 +11,16 @@
 import 'react-native-get-random-values';
 import { AppRegistry } from 'react-native';
 import App from './App';
+import { migrateMonobankSecrets } from './src/services/monobank';
 import { name as appName } from './app.json';
 
 AppRegistry.registerComponent(appName, () => App);
+
+/**
+ * OPES-63 — move any pre-OPES-58 plaintext Monobank token onto the encrypted store,
+ * once per launch. Deliberately not awaited and deliberately after the polyfill above:
+ * the key bootstrap it reaches needs crypto, and nothing that blocks first render may
+ * wait on it. The migration already swallows every per-key failure and resolves; the
+ * terminal .catch is belt-and-braces so an unexpected throw cannot surface here.
+ */
+migrateMonobankSecrets().catch(() => {});
