@@ -44,10 +44,16 @@ const CLIENT_NAME_KEY = 'monobank_client_name';
 // AS-015 — a neighbouring plaintext key that is not a secret and must not move.
 const SELECTED_ACCOUNTS_KEY = 'monobank_selected_account_ids';
 
-/** D-005 — the plaintext port: read and delete, never write. */
+/** D-005 — the plaintext port: read, delete and rebuild, never write. */
 interface PlaintextStorePort {
   getString(key: string): string | undefined;
   delete(key: string): void;
+  /**
+   * AC-017/AC-018 — rebuilds the store so deleted records are physically gone.
+   * MMKV's `remove` only appends a record that shadows the earlier one, so without
+   * this the token is still readable in the file after a "successful" migration.
+   */
+  purgeDeletedRecords(): void;
 }
 
 /** D-002 — named ports, so a test cannot pass the two stores in the wrong order. */
@@ -97,6 +103,14 @@ class RecordingPlaintextStore implements PlaintextStorePort {
     this.deleted.push(key);
     this.data.delete(key);
   }
+
+  purgeDeletedRecords(): void {
+    this.log.push('plaintext:purgeDeletedRecords');
+    this.purges += 1;
+  }
+
+  /** How many times the migration asked for the store to be rebuilt. */
+  purges = 0;
 }
 
 interface SecretStoreOptions {
@@ -412,6 +426,81 @@ describe('migrateMonobankSecrets and its plaintext neighbours', () => {
     await loadMigration()({ plaintext, secret });
 
     expect(plaintext.peek(SELECTED_ACCOUNTS_KEY)).toBe('["acc-1"]');
+  });
+});
+
+describe('migrateMonobankSecrets and the bytes left behind by a delete', () => {
+  // Deleting a key from MMKV appends a zero-length record that shadows the earlier
+  // one; the original bytes are never overwritten. Verified on device: after a
+  // migration that passed every other criterion, `strings mmkv.default` still
+  // printed the token. Neither trim() nor clearAll() erases it. So a delete is only
+  // half the job, and these two criteria pin the other half.
+
+  it('AC-017 — rebuilds the plaintext store once it has deleted something', async () => {
+    const log: string[] = [];
+    const plaintext = new RecordingPlaintextStore(log)
+      .seed(TOKEN_KEY, 'legacy-tok')
+      .seed(CLIENT_NAME_KEY, 'Legacy User');
+    const secret = new RecordingSecretStore(log);
+
+    await loadMigration()({ plaintext, secret });
+
+    expect(plaintext.purges).toBe(1);
+  });
+
+  it('AC-017 — rebuilds only after the last delete, never between the two keys', async () => {
+    // The rebuild drops the backing file and recreates it. Doing that between the
+    // two keys would invalidate the handle the second delete still needs.
+    const log: string[] = [];
+    const plaintext = new RecordingPlaintextStore(log)
+      .seed(TOKEN_KEY, 'legacy-tok')
+      .seed(CLIENT_NAME_KEY, 'Legacy User');
+    const secret = new RecordingSecretStore(log);
+
+    await loadMigration()({ plaintext, secret });
+
+    const purgeAt = log.indexOf('plaintext:purgeDeletedRecords');
+    const lastDeleteAt = log.lastIndexOf(`plaintext:delete:${CLIENT_NAME_KEY}`);
+    expect(purgeAt).toBeGreaterThan(lastDeleteAt);
+  });
+
+  it('AC-018 — rebuilds nothing on a fresh install, where it deleted nothing', async () => {
+    // No residue of ours to clear. Rebuilding regardless would delete and recreate
+    // the file on every single launch, for no gain.
+    const log: string[] = [];
+    const plaintext = new RecordingPlaintextStore(log);
+    const secret = new RecordingSecretStore(log);
+
+    await loadMigration()({ plaintext, secret });
+
+    expect(plaintext.purges).toBe(0);
+  });
+
+  it('AC-018 — rebuilds nothing when the read-back failed and nothing was deleted', async () => {
+    const log: string[] = [];
+    const plaintext = new RecordingPlaintextStore(log).seed(TOKEN_KEY, 'legacy-tok');
+    const secret = new RecordingSecretStore(log, {
+      persistAs: value => `${value}-corrupted`,
+    });
+
+    await loadMigration()({ plaintext, secret });
+
+    expect(plaintext.deleted).toEqual([]);
+    expect(plaintext.purges).toBe(0);
+  });
+
+  it('AC-019 — a rebuild that throws does not fail the migration', async () => {
+    // It runs at launch. A store that cannot be rebuilt leaves the residue behind,
+    // which is no worse than not having run, and must not stop the app starting.
+    const log: string[] = [];
+    const plaintext = new RecordingPlaintextStore(log).seed(TOKEN_KEY, 'legacy-tok');
+    plaintext.purgeDeletedRecords = () => {
+      throw new Error('boom');
+    };
+    const secret = new RecordingSecretStore(log);
+
+    await expect(loadMigration()({ plaintext, secret })).resolves.toBeUndefined();
+    expect(plaintext.deleted).toEqual([TOKEN_KEY]);
   });
 });
 
