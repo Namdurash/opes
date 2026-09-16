@@ -82,9 +82,13 @@ violations="$(
     | ([ $cov[]? ] | flatten) as $covered
     | ($m.uncovered // []) as $unc
     | ($m.surface_map // {}) as $smap
+    | ([ ($m.decisions // [])[]?.id ]) as $d_ids
     | [
-      (if ($m.schema? // null) != 1
-        then "meta.schema must be 1" else empty end),
+      (if ($m.schema? // null) != 2
+        then "meta.schema must be 2 — a schema 1 plan predates decisions.because "
+             + "and decisions.serves and cannot be read as one; re-run the plan "
+             + "station rather than hand-patching the number"
+        else empty end),
       (if ($m.ticket? // "") != $spec_ticket
         then "meta.ticket \"" + ($m.ticket? // "")
              + "\" does not match spec.md (" + $spec_ticket + ")" else empty end),
@@ -143,7 +147,35 @@ violations="$(
             | (hedges | map(select(. as $h | $s | startswith($h))))
             | select(length > 0)
             | ($d.id // "decision") + ".statement hedges (\"" + .[0]
-              + "\") — state the decision, do not weigh it" )
+              + "\") — state the decision, do not weigh it" ),
+
+          # Why it exists, and what it is for. A statement alone crosses the
+          # boundary as a verdict: the implementer obeys it and the human
+          # cannot follow it. These two fields are the whole chain.
+          (if (($d.because // "") | length) == 0
+            then ($d.id // "decision") + ".because is empty — name what forced "
+                 + "this decision, in one clause"
+            else empty end),
+          (if ($d | has("rejected")) and (($d.rejected // "") | length) == 0
+            then ($d.id // "decision") + ".rejected is present but empty — drop "
+                 + "the key or name the alternative"
+            else empty end),
+          (if ($d | has("serves") | not)
+            then ($d.id // "decision") + ".serves is required (may be []) — the "
+                 + "criteria this decision exists for, or the decisions that "
+                 + "rest on it"
+            elif (($d.serves | type) != "array")
+            then ($d.id // "decision") + ".serves must be an array of AC or D ids"
+            else ( $d.serves[]?
+                   | select(. as $x | ($spec_acs | index($x)) == null
+                                  and ($d_ids | index($x)) == null)
+                   | ($d.id // "decision") + ".serves names " + (. | tostring)
+                     + ", which is neither a criterion in spec.md nor a decision "
+                     + "in this plan" ),
+                 ( $d.serves[]?
+                   | select(. == ($d.id // ""))
+                   | ($d.id // "decision") + ".serves names itself" )
+            end)
         )
       ),
 
@@ -237,11 +269,29 @@ violations="$(
   ' 2>&1
 )" || aif_g_error "plan-form: jq failed — $violations"
 
+# --- the manifest may not name what no implementation may touch -------------
+#
+# The same denylist scope later holds against the diff, applied here to the
+# plan's own lists — create, change and tests alike. A plan that names a denied
+# path is wrong NOW, at the cost of a re-plan; caught only by scope it is wrong
+# after the implementation exists and has been paid for, and the two gates
+# disagreeing is exactly how an approved plan once permitted yarn.lock that
+# scope would then have rejected.
+fs_violations=""
+while IFS= read -r p; do
+  [ -n "$p" ] || continue
+  if printf '%s' "$p" | grep -qE "$AIF_G_DENYLIST"; then
+    fs_violations="$fs_violations
+the manifest names \"$p\", which no implementation may touch (pipeline, config, CI, or a dependency lockfile) — scope would reject the very work this plan orders; plan around it"
+  fi
+done <<EOF
+$(printf '%s' "$meta" | jq -r '((.files.create // []) + (.files.change // []) + (.files.tests // []))[]? // empty')
+EOF
+
 # --- checks that need the filesystem, so they cannot live in jq -------------
 #
 # A plan written against an imagined repository is the most common planning
 # failure and it is entirely mechanical to catch.
-fs_violations=""
 while IFS= read -r p; do
   [ -n "$p" ] || continue
   if [ -e "$root/$p" ]; then
@@ -304,6 +354,15 @@ if [ -n "$gaps" ]; then
   printf '  UNVALIDATED EXTERNAL SURFACE — no check and no criterion touches these:\n'
   printf '%s\n' "$gaps" | sed 's/^/    - /'
   printf '  Nothing in this run will establish that they behave as the plan assumes.\n'
+fi
+
+idle="$(printf '%s' "$meta" |
+  jq -r '.decisions[]? | select((.serves // []) | length == 0)
+         | "    - " + .id + ": " + .statement')"
+if [ -n "$idle" ]; then
+  printf '  DECISIONS THAT SERVE NO CRITERION — the spec did not ask for these:\n'
+  printf '%s\n' "$idle"
+  printf '  Each is either scope nobody asked for, or a preference with a decision id.\n'
 fi
 
 drift="$(aif_g_surface_drift "$meta" "$spec_meta")"

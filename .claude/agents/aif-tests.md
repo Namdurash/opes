@@ -9,6 +9,7 @@ model: opus
 { "station": "tests", "tier": "careful", "form_gate": "verify-red", "freezes": "tests.lock.json",
   "requires": ["plan-form", "plan-judge"],
   "tools": "Read Grep Glob Write Edit",
+  "rewrites": "plan.files.tests",
   "expects": "test files under the project's test roots, one per acceptance criterion and marked with its AC id — red, and red because an assertion failed rather than because the suite cannot run. verify-red checks that and freezes the tree into tests.lock.json." }
 -->
 
@@ -62,3 +63,19 @@ one. If you find you cannot write a failing test for a criterion — because the
 criterion is not actually falsifiable — stop and say so, rather than writing a
 test that asserts nothing. That is a defect in the specification, and it is
 better surfaced than papered over.
+
+## A criterion that is already implemented
+
+On a reworked ticket, part of the work may already be in the tree: a criterion
+from an earlier round whose implementation shipped. Your honest test for it
+will pass at freeze time. Write it anyway — assert the criterion's literal
+against the real surface, exactly as for the red ones — and let it pass. The
+gate records it as "green at freeze — never proven red", keeps it out of the
+revert-recheck, and puts it in front of the human on the closing checklist.
+
+What you must NOT do is manufacture red: no artificial precondition, no setup
+hook that breaks the already-built behaviour so the test can fail first. That
+is not evidence, it is a forged transition, and the gate does not ask for it.
+If every test you write turns out green, stop and say so — either the ticket
+is already done, or the criteria assert nothing, and both belong with the
+human rather than in a lock file.
