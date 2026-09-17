@@ -5,10 +5,11 @@ import { monobankTokenService } from '../../../services/monobank/MonobankTokenSe
 import { monobankAccountSelectionService } from '../../../services/monobank/MonobankAccountSelectionService';
 import { CardsRepository } from '../../../models/cards';
 import { useTransactionsStore } from '../../transactions/state/useTransactionsStore';
-import { showErrorBottomSheet } from '../../../shared/ui/bottom-sheet';
+import { showErrorBottomSheet, showGeneralErrorBottomSheet } from '../../../shared/ui/bottom-sheet';
 import type { MonobankStoreState, MonobankStoreActions } from '../types';
 
 const cardsRepository = new CardsRepository();
+const CONNECT_FAILURE_MESSAGE = 'Failed to connect. Please check your token and try again.';
 
 export const useMonobankStore = create<MonobankStoreState & MonobankStoreActions>((set, get) => ({
   status: 'idle',
@@ -30,7 +31,14 @@ export const useMonobankStore = create<MonobankStoreState & MonobankStoreActions
     try {
       const service = getMonobankService(trimmed);
       const clientInfo = await service.getClientInfo();
-      await monobankTokenService.save(trimmed, clientInfo.name);
+
+      try {
+        await monobankTokenService.save(trimmed, clientInfo.name);
+      } catch {
+        set({ status: 'error', errorMessage: CONNECT_FAILURE_MESSAGE });
+        showGeneralErrorBottomSheet();
+        return;
+      }
 
       await cardsRepository.upsertMonobankCards(userId, clientInfo.accounts);
 
@@ -41,7 +49,7 @@ export const useMonobankStore = create<MonobankStoreState & MonobankStoreActions
       const message =
         error instanceof MonobankError
           ? error.message
-          : 'Failed to connect. Please check your token and try again.';
+          : CONNECT_FAILURE_MESSAGE;
       set({ status: 'error', errorMessage: message });
       showErrorBottomSheet({
         title: 'Connection Failed',
@@ -53,7 +61,13 @@ export const useMonobankStore = create<MonobankStoreState & MonobankStoreActions
   },
 
   async disconnect() {
-    await monobankTokenService.clear();
+    try {
+      await monobankTokenService.clear();
+    } catch {
+      showGeneralErrorBottomSheet();
+      return;
+    }
+
     monobankAccountSelectionService.clear();
     clearMonobankService();
     useTransactionsStore.getState().reset();

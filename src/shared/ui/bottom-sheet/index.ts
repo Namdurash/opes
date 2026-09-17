@@ -42,3 +42,12 @@ export const showErrorBottomSheet = ({
     actions: [{ label: buttonTitle, onPress, variant: 'danger' }],
   });
 };
+
+export const showGeneralErrorBottomSheet = (): void => {
+  showErrorBottomSheet({
+    title: 'Something went wrong',
+    message: 'Please try again.',
+    buttonTitle: 'OK',
+    onPress: () => {},
+  });
+};
