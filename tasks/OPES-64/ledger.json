@@ -230,6 +230,39 @@
       "seq": 14,
       "at": "2026-09-17T11:48:14Z",
       "prev": "f62bb150d7b64fc9c64c9c2eebe2d51c1a04434fdf2b3274e12ab6b4d61ebe93"
+    },
+    {
+      "station": "plan-judge",
+      "agent": "aif-plan-judge",
+      "agent_id": "a07606cdad1cdda0b",
+      "model": "claude-sonnet-5",
+      "usage": {
+        "input_tokens": 42,
+        "output_tokens": 1422,
+        "cache_read_input_tokens": 1086843,
+        "cache_creation_input_tokens": 83525
+      },
+      "num_turns": 21,
+      "cost_usd": null,
+      "cost_source": "tokens-only",
+      "result": "ran",
+      "summary": "## Verdict: implementable as written",
+      "attempt": 1,
+      "seq": 15,
+      "at": "2026-09-17T11:53:27Z",
+      "prev": "8f60a028d656172ad6d704c6419ec5a6b6ccc0d69e1bdb5704b2bdf1dabd37af"
+    },
+    {
+      "gate": "plan-judge",
+      "result": "pass",
+      "subject": "verdict-plan.json",
+      "subject_sha256": "9df8f9052ce088373039ff0b86f35385334c08d9be9dad080ef7e90df8276e12",
+      "gate_sha256": "59675a1bad164f7ab3c03f8c0367a946515f818c47fbd318ef4f6aca3cf6f773",
+      "reason": "",
+      "rewrites_sha256": "plan-judge: nothing left to guess, manifest covers the work, 2 surface flag(s) adjudicated as intended",
+      "seq": 16,
+      "at": "2026-09-17T11:53:27Z",
+      "prev": "601b330c18651a9652ec5d537fc86e9b57e1bba508f53b6a5585698ef707586e"
     }
   ],
   "accepted_at": null
