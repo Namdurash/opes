@@ -1,89 +1,85 @@
 <!-- aif:meta
-{ "schema": 1, "ticket": "OPES-64", "lang": "en", "risk": "high" }
+{ "schema": 1, "ticket": "OPES-64", "lang": "en", "risk": "medium" }
 -->
 
-# OPES-64 — Pin the async Monobank connect/disconnect semantics
+# OPES-64 — Make a failed disconnect visible instead of silent
 
 ## Why
 
-OPES-58 makes `MonobankTokenService.get` / `save` / `clear` async and mechanically awaits them
-at every call site. It deliberately does not decide what the Monobank store should do when one
-of those calls **fails**, or in what **order** the store's status may change relative to the
-secret actually being written or removed.
+`useMonobankStore.disconnect` awaits `monobankTokenService.clear()` with no `try`/`catch`:
 
-Those are the security-visible parts. A store that announces `connected` before the token is
-persisted, or `idle` before the token is removed from disk, is lying to the user about where
-their secret is. This ticket pins that behaviour.
+```ts
+async disconnect() {
+  await monobankTokenService.clear();   // if this rejects, everything below is skipped
+  monobankAccountSelectionService.clear();
+  clearMonobankService();
+  useTransactionsStore.getState().reset();
+  set({ status: 'idle', clientName: null, errorMessage: null, accounts: [], selectedAccountIds: null });
+},
+```
 
-It depends on OPES-58.
+The screen hands this straight to `onPress={disconnect}`, so a rejecting `clear` becomes an
+unhandled promise rejection. The user presses Disconnect, nothing happens, and nothing tells
+them anything. Their token is still on disk and they have no way to know.
+
+That is the whole of this ticket. Everything else OPES-58 deferred here is already in place
+and needs no change: `types.ts` already declares `disconnect(): Promise<void>` and
+`loadSavedToken(): Promise<string | null>`, `connect` already awaits `save` before announcing
+`connected`, `HomeScreen` and `ConnectMonobankScreen` already carry their `.catch`, and
+`useTransactionsStore.syncFromMonobank` already awaits the token read.
 
 ## What should be true after
 
-**Connect never announces success ahead of the write.** `useMonobankStore.connect` awaits
-`monobankTokenService.save(...)` before it sets `status: 'connected'`. While the save is still
-pending the status is still the in-flight status (`connecting`) — never `connected`.
+**A failed disconnect changes nothing at all.** If `clear()` rejects, the store is left exactly
+as it was — still `connected`, same `clientName`, same `accounts`, same `selectedAccountIds`,
+same `errorMessage`. There is no half-disconnected state: either the user is disconnected or
+they are not. The three tear-down side effects — `clearMonobankService`, the account-selection
+clear and the transactions reset — do not run, because the secret is still stored.
 
-**A failed save is a failed connection.** If `save(...)` rejects, `connect` surfaces it as a
-connection failure — `status: 'error'` with a message, an existing `MonobankConnectionStatus`
-value — rather than an unhandled promise rejection.
+**A failed disconnect is visible.** The failure raises a bottom sheet. `disconnect` itself
+resolves rather than rejecting, so the Disconnect button keeps handing the action straight to
+`onPress` with no wrapper.
 
-**Disconnect never reports the secret gone before it is gone.** `useMonobankStore.disconnect`
-becomes async (`Promise<void>`) and awaits `monobankTokenService.clear()` before it resets the
-store state. While the clear is still pending the status is still `connected`. Its signature in
-`src/features/monobank/types.ts` and its call site in `ConnectMonobankScreen.tsx` are updated
-accordingly.
+**A successful disconnect is unchanged.** `clear()` resolves, the side effects run, the store
+resets to `idle`.
 
-**A failed clear is surfaced actively, and nothing is torn down.** If `clear()` rejects:
-
-- the store sets `status: 'error'` with a message — the user is **not** presented as
-  disconnected while the token is still on disk;
-- the follow-on side effects are **skipped**: `clearMonobankService`, the account-selection
-  clear, and the transactions reset do not run, because the secret is still stored;
-- the failure is **also raised through the existing error bottom sheet**
-  (`showErrorBottomSheet`), not left to the store status alone. A silent status change is not
-  enough for a security-visible action the user explicitly asked for.
-
-**Saved-token restoration is async end to end.**
-
-- `useMonobankStore.loadSavedToken` becomes `async` returning `Promise<string | null>`; its
-  signature in `src/features/monobank/types.ts` is updated to match.
-- The `HomeScreen.tsx` startup effect calls it fire-and-forget with a `.catch` — its return
-  value is already unused — and produces no unhandled rejection.
-- The `ConnectMonobankScreen.tsx` effect awaits it and then `setValue`s the restored token. On
-  `null` (no saved token) the field is left empty. On a rejection (a transient error) the
-  rejection is caught and the field is left empty rather than blocking the form with an error —
-  this restoration path is the one place a failure is **not** surfaced to the user.
-- `useTransactionsStore.syncFromMonobank` (already an async context) awaits the
-  `monobankTokenService.get()` call and passes the resolved token onward.
+**The sheet for a failed local write is not the network one.** Today `connect`'s catch raises
+`title: 'Connection Failed'` with "check your token and try again". That is a lie when what
+failed was a local write to the secret store — the network was fine and the token was fine.
+A new general error sheet says **"Something went wrong"**, and both a failed `clear` and a
+failed `save` use it. A genuine Monobank API failure keeps the existing "Connection Failed"
+sheet, because for that one the message is true.
 
 ## Surfaces the change is seen through
 
-- `useMonobankStore` — `connect`, `disconnect`, `loadSavedToken`.
-- `src/features/monobank/types.ts` — `loadSavedToken` and `disconnect` signatures.
-- `ConnectMonobankScreen.tsx` — the restore effect and the disconnect call site.
-- `HomeScreen.tsx` — the startup effect.
-- `useTransactionsStore.syncFromMonobank`.
+- `src/shared/ui/bottom-sheet/index.ts` — the new general error sheet, alongside
+  `showErrorBottomSheet` and `showSuccessBottomSheet`.
+- `src/features/monobank/state/useMonobankStore.ts` — `disconnect`, and the save branch of
+  `connect`.
 
 ## Edge cases that matter
 
-- **Save still pending** — status is `connecting`, never `connected`.
-- **Save rejects** — `status: 'error'`, no unhandled rejection.
-- **Clear still pending** — status is still `connected`.
-- **Clear rejects** — `status: 'error'`, side effects skipped, error bottom sheet shown, user not
-  presented as disconnected.
-- **Clear resolves** — status becomes `idle` and the side effects run.
-- **`loadSavedToken` resolves `null`** — the Connect screen field is left empty, no error shown.
-- **`loadSavedToken` rejects** — the field is left empty, no bottom sheet, and no unhandled
-  rejection on Home.
+- **`clear` rejects** — nothing in the store moves, no side effect runs, the general sheet is
+  shown, `disconnect` resolves.
+- **`clear` resolves** — side effects run, status becomes `idle`.
+- **`save` rejects inside `connect`** — the general sheet, not "Connection Failed".
+- **The Monobank API rejects inside `connect`** — still "Connection Failed"; that path is
+  unchanged.
 
 ## Risk
 
-High. Every criterion here is about ordering and failure presentation on a flow that decides
-whether the user is told their secret is stored or gone. Ordering must be pinned as an
-observation of the intermediate state — status while the promise is still pending — not as a
-promise about the final state, which would pass regardless of order.
+Medium. It is one `try`/`catch` and one new sheet variant. The part worth pinning is that a
+failed `clear` leaves the store *untouched* — an implementation that sets a status, or clears
+`clientName`, would produce exactly the half-state this ticket exists to rule out.
 
-## Deliberately left open
+## Non-goals
 
-- The exact wording of the error messages, provided each failure branch sets a message and the
-  disconnect failure also reaches `showErrorBottomSheet`.
+- Retrying a failed `clear` or a failed `save` automatically.
+- Any change to `MonobankTokenService`, its storage keys, or the OPES-63 migration.
+- Any new `MonobankConnectionStatus` value.
+- Changing `loadSavedToken`, `loadAccounts`, `toggleAccount`, or the two screens.
+- The exact copy beyond the sheet's "Something went wrong" title.
+
+## Rework requested at approve
+
+- Тікет роздутий: 28 критеріїв на один відсутній try/catch у disconnect, решта вже працює з OPES-58. Три конкретні правки. (1) Bottom sheet на невдалий локальний запис не може бути мережевим 'Connection Failed' — це не помилка мережі, а помилка звичайної функції. Потрібен окремий загальний тип шита: 'Something went wrong'. (2) Користувач не може бути частково відʼєднаним — це нелогічно і створює проблеми на рівному місці. Або відʼєднується повністю, або не відʼєднується взагалі: при відмові clear() не змінюється НІЧОГО, показується загальний шит. (3) Скоротити обсяг до того, чим тікет є насправді.

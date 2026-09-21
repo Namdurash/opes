@@ -1,0 +1,51 @@
+{
+  "schema": 1,
+  "plan_sha256": "8e2385e8028e42f90783f94ab2911a490d9ed22386cbdc3f01be8098790ca0fa",
+  "mode": "per-test",
+  "at": "2026-09-17T12:11:13Z",
+  "tests": {
+    "src/features/monobank/state/useMonobankStore.connect.test.ts": "8e40144dd67e73fd763b660f1edec2e67585a541c951e652a5c694e517880c7d",
+    "src/features/monobank/state/useMonobankStore.disconnect.test.ts": "a9b224a0c9d524464d9487f8b398754687bb4ad7752a5437b4d6e9bf8778974d",
+    "src/shared/ui/bottom-sheet/index.test.ts": "c250df6ee82b68a961f4701c948d09934fc68319d4e6437f4847d89c8872dd1c",
+    "test/CLAUDE.md": "2239846ae20caf9ce773446592c28676be11ebb10a3eca37e1359bf3827d7b42",
+    "test/db/createTestDatabase.ts": "3980e511bdfadbf7191d2f9aacefe87acf2a1f72664bcf87b0c85c3472f256b9",
+    "test/db/index.ts": "72fd8c0649ae1635bd9d334f06bea079c466e7b34c554b3d6d02f74ce2790005",
+    "test/doubles/cardsRepository.ts": "951c699b99c1ebbf1c1ce804b9bca35352ef2e4273d849bcc324b051d2774195",
+    "test/doubles/index.ts": "2600505446129e2b078a94ebc0011386062c6c29dea8e09d805777baf8baab5a",
+    "test/factories/card.ts": "848ef38faae77d256265132657369a0398784c0bf9ba332de1d52bf2e070a511",
+    "test/factories/index.ts": "bdbfee3add31c224b058f925dd235b65b91ad6989097b9e9e46086e53115cf50",
+    "test/factories/transaction.ts": "8aaa65083d628bd14f5b3711ab860fc131a8d9142a419220b27beb2b93d3eca6",
+    "test/index.ts": "e6cabbb61f2984dcc29c2f16e3b86fef67c01ffb58767c10f063c69a405d43c4",
+    "test/setup.js": "d816ef0a8996f218d7cd0c8830d995613f8f6149eaf61b19bb2eb672e7a6f70e"
+  },
+  "covering": [
+    "showGeneralErrorBottomSheet AC-001 — titles the sheet \"Something went wrong\"::showGeneralErrorBottomSheet AC-001 — titles the sheet \"Something went wrong\"",
+    "showGeneralErrorBottomSheet AC-002 — raises it on the existing error variant::showGeneralErrorBottomSheet AC-002 — raises it on the existing error variant",
+    "useMonobankStore.connect when saving the token rejects AC-017 — raises the general error sheet, not \"Connection Failed\"::useMonobankStore.connect when saving the token rejects AC-017 — raises the general error sheet, not \"Connection Failed\"",
+    "useMonobankStore.disconnect when clearing the token rejects AC-003 — leaves the status at connected::useMonobankStore.disconnect when clearing the token rejects AC-003 — leaves the status at connected",
+    "useMonobankStore.disconnect when clearing the token rejects AC-004 — keeps the client name::useMonobankStore.disconnect when clearing the token rejects AC-004 — keeps the client name",
+    "useMonobankStore.disconnect when clearing the token rejects AC-005 — keeps the error message that was already there::useMonobankStore.disconnect when clearing the token rejects AC-005 — keeps the error message that was already there",
+    "useMonobankStore.disconnect when clearing the token rejects AC-006 — keeps the linked accounts::useMonobankStore.disconnect when clearing the token rejects AC-006 — keeps the linked accounts",
+    "useMonobankStore.disconnect when clearing the token rejects AC-007 — keeps the account selection::useMonobankStore.disconnect when clearing the token rejects AC-007 — keeps the account selection",
+    "useMonobankStore.disconnect when clearing the token rejects AC-008 — does not clear the cached Monobank service::useMonobankStore.disconnect when clearing the token rejects AC-008 — does not clear the cached Monobank service",
+    "useMonobankStore.disconnect when clearing the token rejects AC-009 — does not clear the account selection::useMonobankStore.disconnect when clearing the token rejects AC-009 — does not clear the account selection",
+    "useMonobankStore.disconnect when clearing the token rejects AC-010 — does not reset the transactions store::useMonobankStore.disconnect when clearing the token rejects AC-010 — does not reset the transactions store",
+    "useMonobankStore.disconnect when clearing the token rejects AC-011 — raises the general error sheet::useMonobankStore.disconnect when clearing the token rejects AC-011 — raises the general error sheet",
+    "useMonobankStore.disconnect when clearing the token rejects AC-012 — resolves rather than rejecting::useMonobankStore.disconnect when clearing the token rejects AC-012 — resolves rather than rejecting"
+  ],
+  "green_at_freeze": [
+    "useMonobankStore.connect when saving the token rejects AC-020 — puts the store in the error status::useMonobankStore.connect when saving the token rejects AC-020 — puts the store in the error status",
+    "useMonobankStore.connect when the Monobank API rejects AC-018 — keeps \"Connection Failed\" for a MonobankError::useMonobankStore.connect when the Monobank API rejects AC-018 — keeps \"Connection Failed\" for a MonobankError",
+    "useMonobankStore.connect when the Monobank API rejects AC-019 — keeps \"Connection Failed\" for an error that is not a MonobankError::useMonobankStore.connect when the Monobank API rejects AC-019 — keeps \"Connection Failed\" for an error that is not a MonobankError",
+    "useMonobankStore.disconnect when clearing the token resolves AC-013 — moves the status to idle::useMonobankStore.disconnect when clearing the token resolves AC-013 — moves the status to idle",
+    "useMonobankStore.disconnect when clearing the token resolves AC-014 — clears the cached Monobank service::useMonobankStore.disconnect when clearing the token resolves AC-014 — clears the cached Monobank service",
+    "useMonobankStore.disconnect when clearing the token resolves AC-015 — clears the account selection::useMonobankStore.disconnect when clearing the token resolves AC-015 — clears the account selection",
+    "useMonobankStore.disconnect when clearing the token resolves AC-016 — resets the transactions store::useMonobankStore.disconnect when clearing the token resolves AC-016 — resets the transactions store"
+  ],
+  "impl_frozen": {
+    "src/shared/ui/bottom-sheet/index.ts": "db67d04161d15c52d0cc062233b664b05920527a8670f31a812000e5c6890ad0",
+    "src/features/monobank/state/useMonobankStore.ts": "91469dc3142bb8de55b8f96d81a8f0e06a3c01a6db19d6d36f17c114627a3226",
+    "src/shared/ui/CLAUDE.md": "67d2b2693b41dd6cfbbe4bfce75bdff876a05d3bd9ad5581ac44b67ecfca3bfa"
+  },
+  "impl_created": []
+}

@@ -1,0 +1,23 @@
+{
+  "schema": 1,
+  "subject": "spec.md",
+  "subject_sha256": "5ac9430667e1ca922c63341a4c6a9e0bbbbc0a9f93edbb0ed27ca38e40868ca4",
+  "approver": "Namdurash",
+  "at": "2026-09-17T11:37:47Z",
+  "channel": "chat",
+  "confirmation": "приймаю обидва, продовжуй — сказано у відповідь на обидва питання разом (припущення AS-001..AS-004, включно з AS-003 і AS-004)",
+  "approved_assumptions": [
+    "AS-001",
+    "AS-002",
+    "AS-003",
+    "AS-004"
+  ],
+  "acknowledged_gaps": [
+    "VG-001",
+    "VG-002",
+    "VG-003",
+    "VG-004",
+    "VG-005"
+  ],
+  "gaps_confirmation": "приймаю обидва, продовжуй — та сама відповідь явно покрила і пʼять розривів верифікації, включно з VG-002 і VG-005"
+}

@@ -40,7 +40,7 @@ Sub-components: `HeaderTitle`, `HeaderBackButton`, `HeaderIconButton`. Don't add
 Use these consistently — don't invent ad-hoc loading/error/empty UIs.
 
 - **Loading:** `<LoadingOverlay />` ([LoadingOverlay.tsx](LoadingOverlay.tsx)) — full-screen semi-transparent overlay with centered spinner. Use whenever an async operation blocks the screen.
-- **Errors:** `showErrorBottomSheet` from [bottom-sheet/](bottom-sheet/). **Never** use inline error banners or `Alert` for operation failures — always go through the bottom sheet.
+- **Errors:** two helpers from [bottom-sheet/](bottom-sheet/), picked by whether the failure has its own story. `showErrorBottomSheet({ title, message, buttonTitle, onPress })` is for a failure the caller can describe — e.g. "Connection Failed" with the underlying message. `showGeneralErrorBottomSheet()` takes no arguments and always titles the sheet "Something went wrong" — use it for a failure with no caller-specific copy to show, so two call sites never drift to two words for the same failure. **Never** use inline error banners or `Alert` for operation failures — always go through one of these two.
 - **Empty state:** `<EmptyState />` ([EmptyState.tsx](EmptyState.tsx)) — show this when a screen has no data. Never show a blank screen.
 
 ## Inputs

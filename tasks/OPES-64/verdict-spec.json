@@ -1,0 +1,23 @@
+{ "schema": 1,
+  "gate": "spec-judge",
+  "subject": "spec.md",
+  "subject_sha256": "5ac9430667e1ca922c63341a4c6a9e0bbbbc0a9f93edbb0ed27ca38e40868ca4",
+  "judge_agent": "aif-spec-judge",
+  "at": "2026-09-17T09:41:10Z",
+  "pass": true,
+  "checked": [
+    "All 20 acceptance criteria read for a single assertable `then` plus a concrete `expect`; none bundles two checks, and every `expect` is a literal value or a count a test can compare",
+    "The spec's three surfaces against the ticket's 'Surfaces the change is seen through' section: bottom-sheet/index.ts covered by AC-001/AC-002, disconnect covered by AC-003..AC-016, the save branch of connect covered by AC-017/AC-020",
+    "The ticket's four 'Edge cases that matter' bullets each traced to criteria: clear rejects -> AC-003..AC-012, clear resolves -> AC-013..AC-016, save rejects -> AC-017, Monobank API rejects -> AC-018",
+    "AC-003 through AC-007 against the ticket's 'still `connected`, same `clientName`, same `accounts`, same `selectedAccountIds`, same `errorMessage`' — one preserved field per criterion, which is what rules out the half-disconnected state the ticket exists to prevent",
+    "AC-008, AC-009, AC-010 against the ticket's 'The three tear-down side effects ... do not run' — one call count of 0 per side effect",
+    "AC-012 against the ticket's '`disconnect` itself resolves rather than rejecting'",
+    "AC-018 and AC-019 against the ticket's 'A genuine Monobank API failure keeps the existing \"Connection Failed\" sheet' and the non-goal list",
+    "AC-020 against the ticket, which says nothing about connect's store state on a failed save; AS-004 records the decision rather than leaving it silent",
+    "Every `from` field checked as a substring of ticket.md, or as a pointer to a recorded assumption (AC-002 -> AS-002, AC-019 -> AS-003, AC-020 -> AS-004)",
+    "AS-001..AS-004 read for misfiled verification limits: all four describe system behavior (export name and fixed title, reuse of the `error` variant, step-based sheet routing in connect, connect's save-branch store write), none says a path is unexercised",
+    "VG-001..VG-005 read for content that is really an assumption: all five describe what this cycle will not establish (doubled token service, injected rejection, config observed instead of rendered output, unpinned body copy, no second Disconnect press)",
+    "The ticket's 'Rework requested at approve' three demands against the spec: the separate general sheet (AC-001/AC-002/AC-011/AC-017), the all-or-nothing disconnect (AC-003..AC-010), and the scope cut — the OPES-58 leftovers named in the ticket's Why get no criterion, as the spec body states",
+    "The spec's non_goals against the ticket's Non-goals section"
+  ],
+  "findings": [] }
