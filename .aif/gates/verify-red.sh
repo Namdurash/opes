@@ -50,21 +50,21 @@ work="${1:-}"
 [ -n "$work" ] || aif_g_error "usage: verify-red.sh <work-dir>"
 
 plan="$work/plan.md"
-spec="$work/spec.md"
+spec="$work/ticket.md"
 project="$(aif_g_project "$work")" || exit $?
 root="$(dirname "$(dirname "$project")")"
 
 [ -f "$plan" ] || aif_g_error "plan.md missing"
-[ -f "$spec" ] || aif_g_error "spec.md missing"
+[ -f "$spec" ] || aif_g_error "ticket.md missing"
 
 plan_meta="$(aif_g_meta_or_die "$plan" "plan.md")" || exit $?
-spec_meta="$(aif_g_meta_or_die "$spec" "spec.md")" || exit $?
+spec_meta="$(aif_g_meta_or_die "$spec" "ticket.md")" || exit $?
 plan_hash="$(aif_g_sha256 "$plan")"
 
-# The plan must bind to the current spec, and this gate to the current plan —
+# The plan must bind to the current ticket, and this gate to the current plan —
 # otherwise "red" is measured against a moving target.
-if [ "$(printf '%s' "$plan_meta" | jq -r '.spec_sha256 // ""')" != "$(aif_g_sha256 "$spec")" ]; then
-  aif_g_reject "plan.md is bound to a different spec — re-run the plan station"
+if [ "$(printf '%s' "$plan_meta" | jq -r '.ticket_sha256 // ""')" != "$(aif_g_sha256 "$spec")" ]; then
+  aif_g_reject "plan.md is bound to a different ticket — re-run the plan station"
 fi
 
 test_files="$(printf '%s' "$plan_meta" | jq -r '.files.tests[]? // empty')"
@@ -113,6 +113,7 @@ fi
 
 new_count=0
 new_rows=""
+suite_rows=""
 green_ids=""
 green_count=0
 red_count=0
@@ -139,6 +140,14 @@ if [ "$mode" = "per-test" ]; then
   # tests it does not have.
   new_rows="$(printf '%s' "$results" | jq -r --argjson tf "$local_tf" \
     '.[] | select((.file // "") as $f | $tf | index($f)) | (.file // "") + "\t" + .id + "\t" + .status + "\t" + ((.message // "") | gsub("[\n\t]"; " "))')"
+
+  # And the rest of the suite, as it stands right now. green needs it to tell
+  # a test that was ALREADY skipped before this ticket — a platform guard, an
+  # importorskip, a slow marker — from one the implementation just silenced.
+  # Without it green can only choose between rejecting every project that has
+  # a skipped test anywhere (which it did) and ignoring a real regression.
+  suite_rows="$(printf '%s' "$results" | jq -r --argjson tf "$local_tf" \
+    '.[] | select(((.file // "") as $f | $tf | index($f)) | not) | .id + "\t" + .status')"
 
   # Three kinds of outcome, and they part ways here:
   #   reject (exit 1) — a real test asserting the wrong thing (skipped, since a
@@ -198,7 +207,7 @@ else
 fi
 
 # --- coverage: every criterion has a test, with its literal present ---------
-# A fully-backticked expect is the spec-form convention for a domain literal
+# A fully-backticked expect is the ready gate's convention for a domain literal
 # that collides with the vague-word list (`error` the union value). The
 # backticks are the declaration, not part of the value — strip them, so the
 # tests assert the bare literal.
@@ -211,7 +220,7 @@ while IFS= read -r ac; do
      | if test("^`[^`]+`$") then .[1:-1] else . end')"
   while IFS= read -r f; do
     [ -n "$f" ] || continue
-    grep -qF "$ac" "$root/$f" 2>/dev/null && local_hit=1
+    grep -qF -- "$ac" "$root/$f" 2>/dev/null && local_hit=1
   done <<EOF
 $test_files
 EOF
@@ -220,10 +229,16 @@ $ac is not referenced by any test file"
 
   # The expected literal must appear in some test — the cheap guard against a
   # test that is red now but green against any stub.
+  #
+  # `--` because the pattern is the ticket's own value: an expect of "-1" — what
+  # indexOf returns, what a criterion about a missing item asserts — is an
+  # OPTION to grep, and the search silently answers "not found" about a test
+  # where the literal plainly is. The station cannot fix that; it burns
+  # attempts_max runs and stops the ticket.
   lit_hit=0
   while IFS= read -r f; do
     [ -n "$f" ] || continue
-    grep -qF "$expect" "$root/$f" 2>/dev/null && lit_hit=1
+    grep -qF -- "$expect" "$root/$f" 2>/dev/null && lit_hit=1
   done <<EOF
 $test_files
 EOF
@@ -343,6 +358,7 @@ jq -n \
   --arg at "$(date -u '+%Y-%m-%dT%H:%M:%SZ' 2>/dev/null || echo unknown)" \
   --rawfile tests_raw <(printf '%s' "$tests_json") \
   --rawfile impl_raw <(printf '%s' "$impl_frozen") \
+  --rawfile suite_raw <(printf '%s' "${suite_rows:-}") \
   --argjson create "$(printf '%s' "$create_files" | jq -R . | jq -s 'map(select(length>0))')" \
   --argjson covering "$(printf '%s' "$covering_json" | jq -R . | jq -s 'map(select(length>0))')" \
   --argjson green "$(printf '%s' "$green_ids" | jq -R . | jq -s 'map(select(length>0))')" '
@@ -353,7 +369,8 @@ jq -n \
     covering: $covering,
     green_at_freeze: $green,
     impl_frozen: rows($impl_raw),
-    impl_created: $create }' >"$work/tests.lock.json"
+    impl_created: $create,
+    suite_at_freeze: rows($suite_raw) }' >"$work/tests.lock.json"
 
 # The file was called tests.lock until the content stopped being a secret: it is
 # JSON, editors did not highlight it, jq did not pick it up by glob, and diffs

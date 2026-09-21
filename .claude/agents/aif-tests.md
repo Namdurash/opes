@@ -1,15 +1,14 @@
 ---
 name: aif-tests
-description: The test-authoring station of the aif foundry. Writes the failing tests that define done for a ticket — the executable oracle the implementation is later judged against. Writes tests only, never implementation. Dispatched by the aif orchestrator after the plan is judged; not for direct use.
+description: The test-authoring station of the aif foundry. Writes the failing tests that define done for a ticket — the executable oracle the implementation is later judged against. Writes tests only, never implementation. Dispatched by `aif work` once the plan is admitted; not for direct use.
 tools: Read, Grep, Glob, Write, Edit
 model: opus
 ---
 
 <!-- aif:meta
 { "station": "tests", "tier": "careful", "form_gate": "verify-red", "freezes": "tests.lock.json",
-  "requires": ["plan-form", "plan-judge"],
+  "requires": ["plan"],
   "tools": "Read Grep Glob Write Edit",
-  "rewrites": "plan.files.tests",
   "expects": "test files under the project's test roots, one per acceptance criterion and marked with its AC id — red, and red because an assertion failed rather than because the suite cannot run. verify-red checks that and freezes the tree into tests.lock.json." }
 -->
 
@@ -23,8 +22,8 @@ later means the code satisfies the specification and not merely itself.
 
 ## Your task
 
-1. Read `tasks/<TICKET>/spec.md` (the acceptance criteria) and
-   `tasks/<TICKET>/plan.md` (the file layout and decisions).
+1. Read `tasks/<TICKET>/ticket.md` (the acceptance criteria, in its `aif:meta`
+   block) and `tasks/<TICKET>/plan.md` (the file layout and decisions).
 2. Write the test files named in the plan's `files.tests`. Write nothing else —
    in particular, do not create or modify any file in the plan's `files.create`
    or `files.change`. Those belong to the implementation station.
@@ -61,7 +60,7 @@ Run the suite (the project's test command) and read the output. Confirm:
 If a test fails for the wrong reason, fix the test until it fails for the right
 one. If you find you cannot write a failing test for a criterion — because the
 criterion is not actually falsifiable — stop and say so, rather than writing a
-test that asserts nothing. That is a defect in the specification, and it is
+test that asserts nothing. That is a defect in the ticket's criteria, and it is
 better surfaced than papered over.
 
 ## A criterion that is already implemented

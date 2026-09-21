@@ -1,110 +1,90 @@
 {
   "schema": 1,
-  "aif_version": "0.4.2",
+  "aif_version": "0.5.1",
   "profile": "anthropic",
   "set": "claude",
-  "set_version": "0.4.2",
-  "installed_at": "2026-09-16T18:05:31Z",
+  "set_version": "0.5.1",
+  "installed_at": "2026-09-21T16:59:51Z",
   "files": [
     {
       "path": ".aif/foundry.md",
-      "sha256": "95b325f8036b79aeb8ba0c974353ef7472762b9ce341dd5913d8475eaefc093a"
+      "sha256": "89c75e351ca3eb757b25e725da545c70858ff4b9a9463f5e5337572158574aa9"
     },
     {
-      "path": ".claude/skills/aif-fix/SKILL.md",
-      "sha256": "c194c4fcc5d4724494c719df4f926336ec190ad9074c944aad09e6b6ab922930"
+      "path": ".claude/skills/aif-pjm/SKILL.md",
+      "sha256": "40533b1105d716b728496be5f7e308560bd5eb927a2cec03741b6464cbef30b8"
     },
     {
-      "path": ".claude/skills/aif/SKILL.md",
-      "sha256": "1d2f73214368bda250d97579efcc05e3c50d9a0e6cc69022994c5cfd344652bb"
+      "path": ".claude/skills/aif-po/SKILL.md",
+      "sha256": "4d62b8cd0e9d0991e002e7c731e3efe4ccf0e43ffe6cdfef5f0a6edadd1ea1d4"
     },
     {
-      "path": ".claude/skills/aif-ticket/SKILL.md",
-      "sha256": "171d49e1ac8ea85dcbe46aff08b3a43109686a564fb59c440aa9c61964ddce19"
+      "path": ".claude/skills/aif-setup/SKILL.md",
+      "sha256": "4c6554145bbb1b47760e3ec55defdf50d9fffc5877b88cf235fddc065117207e"
+    },
+    {
+      "path": ".claude/skills/aif-ba/SKILL.md",
+      "sha256": "926adedcc64aeab0fcfea92a41766be15ad2d0caf14a1802b7d4fe61c0eba2c6"
     },
     {
       "path": ".claude/agents/aif-tests.md",
-      "sha256": "bd448ea9c2ebf3347fafaad57dd4a24947692669e102e7d74d6a3440f63a6f64"
-    },
-    {
-      "path": ".claude/agents/aif-spec-judge.md",
-      "sha256": "e156092b65699b32b2e0b8b7817e9f19e33c6d33996874450091e865bd1160c0"
-    },
-    {
-      "path": ".claude/agents/aif-ticket-critic.md",
-      "sha256": "fe9860acf76e93940b3407945585ed9c8990f6cff814e7f1e70424a8bc8b0432"
+      "sha256": "1807aa9232e6cd4e99e7bedd87615a6dd6d468539151d6677a4c5d2d5c67edfc"
     },
     {
       "path": ".claude/agents/aif-plan.md",
-      "sha256": "58c7856b478cf864c3b8b52f136ee686c26c3304446551116c8581711cbca409"
+      "sha256": "1e660804467a317f80006ce185796c4b1db49e63dae40f198600e0b10119cb18"
     },
     {
       "path": ".claude/agents/aif-implement-careful.md",
-      "sha256": "6126b095e99a923aff6640d1eac9ddb42aa8f1fe5eba22fd0d36df41ca7a7b17"
+      "sha256": "b2187c9104dad6e36bdee5803e4680ea661980443b6eee4187b140494a99c1ec"
     },
     {
       "path": ".claude/agents/aif-implement.md",
-      "sha256": "1dded4dec8aa6d660bd1dd8c85a5152eae8c161000c9c6098ed2275b8743db9b"
+      "sha256": "5ae23b789bdaac775fd9b8a1205082a0c0bdccad66fce59df578be8bc56b6d40"
     },
     {
-      "path": ".claude/agents/aif-spec.md",
-      "sha256": "e3ed4fe0d6d0adac8a6caf6f9310d40b18eede204d442b4b9db99f67539883ec"
+      "path": ".claude/commands/aif-setup.md",
+      "sha256": "0754b8db34ec9e2332d70c4052918ee18f9a7d2c05e3429c8a8db823684a1624"
     },
     {
-      "path": ".claude/agents/aif-plan-judge.md",
-      "sha256": "7b3c18fd77517f97b19edae5f7fc23a778b23e5266b694de630a534f56d6956d"
+      "path": ".claude/commands/aif-pjm.md",
+      "sha256": "69daca01a95cef3a9739ac181b1b6734e3a7de6fc7d28bf9011eb06041ce1c07"
     },
     {
-      "path": ".claude/commands/aif-fix.md",
-      "sha256": "1a270aea1678fdbcb1a9e745a1837c37ebcf82e98307faf87ff099801e382459"
+      "path": ".claude/commands/aif-po.md",
+      "sha256": "736e8b139485c1b3b95e25c56bd5e50ccb0588871e39f70f47777cdadc146479"
     },
     {
-      "path": ".claude/commands/aif.md",
-      "sha256": "42d0ae65ea2de6a0ac5a2f2c9542f3cfcc54c081d2f4e59a5234f333f5599b01"
+      "path": ".claude/commands/aif-ba.md",
+      "sha256": "37b178a02d5081806c1403a221ad6fbe4f7b9dfa1a572d6b967bfce83ba7e877"
     },
     {
-      "path": ".claude/commands/aif-ticket.md",
-      "sha256": "5a5e2eb0f8cb05a384f87f1453dedb9df8050051dece0d731dcdeee738471d5c"
-    },
-    {
-      "path": ".aif/gates/spec-judge.sh",
-      "sha256": "512f7f3d5be85b1e0bd5dd488c40d78279b0eae2af132268c8591547e1dfaf35"
-    },
-    {
-      "path": ".aif/gates/spec-approve.sh",
-      "sha256": "23505a43e3afe333dad8f4542d8447fbc1919d013369d2f9d2454d133cc99e88"
+      "path": ".aif/gates/ready.sh",
+      "sha256": "da5ccfb2c15e5f37f098fa5d5e62dce21f2386bec643afe1c6d7ab6c5dfeb19e"
     },
     {
       "path": ".aif/gates/_lib.sh",
-      "sha256": "e83393e45ad16d7b208f954e187c48d2c4127e218964254eadabd69c52ad7927"
+      "sha256": "7ab94c058919c4ec4ba8557dac31b39f404ee72fccc3d43ea978371fea194e5a"
     },
     {
       "path": ".aif/gates/scope.sh",
-      "sha256": "7ae6f07a9f09ddafeb0f01edd6c5d3f927c8af7d40bf49046a8d2a9025dc1523"
-    },
-    {
-      "path": ".aif/gates/plan-form.sh",
-      "sha256": "c5af4cc4c6c2519c52ed3707f6b9866c9a262e6f850eb0685b835fa5c2893963"
+      "sha256": "983cec035c2dad97f36b1de0cce838dc50009056c510e2bef8516b06e7948628"
     },
     {
       "path": ".aif/gates/green.sh",
-      "sha256": "2adf4c252f8af54a0f9d6de7e06fd0c5140b5d68e45d296d94a37fdcb69f020f"
+      "sha256": "5ca4450f7a03600fb784fc3b77c2172895820307cd531650fa517834b85fa3b9"
     },
     {
-      "path": ".aif/gates/plan-judge.sh",
-      "sha256": "59675a1bad164f7ab3c03f8c0367a946515f818c47fbd318ef4f6aca3cf6f773"
+      "path": ".aif/gates/plan.sh",
+      "sha256": "afa1a1a5ebd476ceb2b2d20a0d217735967742186336e3ea969db7721511b251"
     },
     {
       "path": ".aif/gates/junit.py",
-      "sha256": "14af9886a2aeb3ea5ce81758aacad0edb0567ff82a7e8b2c44f81e270c33d3d6"
+      "sha256": "079a2ac73c4bcfc8fa4e1adf1aa756146eadba0ef59e69b8c1f8fecf96936a19"
     },
     {
       "path": ".aif/gates/verify-red.sh",
-      "sha256": "747dee228313ddbcae1241489eb5891d818b2a63fa9e858620ab4f5720407df0"
-    },
-    {
-      "path": ".aif/gates/spec-form.sh",
-      "sha256": "7cf04d5671c2b2a9fe3695db5788bfbf1034052262ede31cdec44c7ce8fa3934"
+      "sha256": "52887ce918c32bca5b0d32e315d7eb491c86d143f49da7a548a92faf00e907f2"
     },
     {
       "path": ".aif/prices.json",
@@ -112,11 +92,11 @@
     },
     {
       "path": ".aif/hooks/guard.sh",
-      "sha256": "2f92250c6892b45545644afbdd650d145725752423c0e7b63572a0e2d745c7b4"
+      "sha256": "5c5015321085a75b5a578f67bf7f45c6e11dbffb1ef8151c9e0fa598141ca8b6"
     },
     {
       "path": ".aif/hooks/meter.sh",
-      "sha256": "f4eadba993ddc1f3dd43e1e2b78a777e5b814604b31716faec1ab34408748dba"
+      "sha256": "d51525f9518d902e7cdf22d600f32b938906a834099b80bef333821cd0e214f8"
     },
     {
       "path": ".aif/profile.local",

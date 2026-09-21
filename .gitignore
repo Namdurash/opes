@@ -79,6 +79,10 @@ yarn-error.log
 .env.*
 !.env.example
 
+
+#docs
+docs/
+
 # aif:begin — managed by ai-foundry; edits inside are overwritten
 # per-developer model choice; the shared set is committed
 .aif/profile.local
@@ -86,8 +90,8 @@ yarn-error.log
 .aif/tmp/
 # session-local pointer for the metering hook
 .aif/state/
+# worker checkouts — one per ticket, disposable (aif work)
+.aif/worktrees/
+# the local board — this machine's, not the team's (aif board)
+.aif/board/
 # aif:end
-
-
-#docs
-docs/
