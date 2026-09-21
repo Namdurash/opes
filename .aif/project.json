@@ -67,5 +67,19 @@
       ],
       "required": true
     }
-  ]
+  ],
+  "board": {
+    "kind": "trello",
+    "board_id": "6a65fd418956002ae6525c32",
+    "key_secret": "TRELLO_KEY",
+    "secret": "TRELLO_TOKEN",
+    "lists": {
+      "backlog": "6a6605b5e22056653f875ba1",
+      "ready": "6ab1718b99f4be004260f2c5",
+      "in_progress": "6a6605b081572cd896a85c2d",
+      "review": "6a66056ebd860281b7a57d45",
+      "done": "6a66055c4724b3ca14b767f1",
+      "needs_human": "6a6605ad45b2f73f844f07c2"
+    }
+  }
 }
