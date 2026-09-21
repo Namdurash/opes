@@ -12,7 +12,12 @@ module.exports = {
   // `.aif/` was added when aif 0.5.x moved worker checkouts there from `.claude/`: the
   // pattern did not follow, and a single `aif work` run was enough to make every root
   // `npm test` collect the whole suite twice and report failures that were not real.
-  modulePathIgnorePatterns: ['/\\.claude/', '/\\.aif/'],
+  // Both patterns are anchored to <rootDir> and must stay that way. Unanchored, they
+  // match anywhere in an absolute path — and since a worker checkout LIVES at
+  // .aif/worktrees/<ID>, jest running inside one would see its own rootDir under
+  // `.aif/` and exclude the entire tree: "No tests found", an empty junit report, and
+  // a green gate that could not render a verdict.
+  modulePathIgnorePatterns: ['<rootDir>/\\.claude/', '<rootDir>/\\.aif/'],
   // One allowed form for a test file, and only one: `<Source>.test.ts(x)`,
   // sitting beside the source it exercises. This constrains the NAME, not the
   // place — the root-level App.test.tsx and the tooling tests under scripts/ are
