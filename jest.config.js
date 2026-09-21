@@ -4,12 +4,15 @@ module.exports = {
   // (pulled in via @gorhom/bottom-sheet) doesn't crash on "Worklets native not initialized".
   resolver: '<rootDir>/node_modules/react-native-worklets/jest/resolver.js',
   setupFiles: ['<rootDir>/test/setup.js'],
-  // Keep git-external trees out of jest entirely. `.claude/worktrees/` holds whole
-  // checkouts that `.git/info/exclude` hides from git but jest happily scanned: their
-  // suites ran beside the real ones, and their package.json / __mocks__ shadowed ours
-  // in the Haste map. modulePathIgnorePatterns rather than testPathIgnorePatterns,
+  // Keep git-external trees out of jest entirely. `.claude/worktrees/` and
+  // `.aif/worktrees/` hold whole checkouts that git hides but jest happily scanned:
+  // their suites ran beside the real ones, and their package.json / __mocks__ shadowed
+  // ours in the Haste map. modulePathIgnorePatterns rather than testPathIgnorePatterns,
   // because two of the three symptoms came from module scanning, not test collection.
-  modulePathIgnorePatterns: ['/\\.claude/'],
+  // `.aif/` was added when aif 0.5.x moved worker checkouts there from `.claude/`: the
+  // pattern did not follow, and a single `aif work` run was enough to make every root
+  // `npm test` collect the whole suite twice and report failures that were not real.
+  modulePathIgnorePatterns: ['/\\.claude/', '/\\.aif/'],
   // One allowed form for a test file, and only one: `<Source>.test.ts(x)`,
   // sitting beside the source it exercises. This constrains the NAME, not the
   // place — the root-level App.test.tsx and the tooling tests under scripts/ are
