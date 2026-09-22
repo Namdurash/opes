@@ -62,7 +62,7 @@
   "checks": [
     {
       "name": "lint",
-      "command": "yarn lint",
+      "command": "npm run lint",
       "phase": [
         "green"
       ],
