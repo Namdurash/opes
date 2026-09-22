@@ -5,8 +5,8 @@
     "roots": [
       "test"
     ],
-    "command": "mkdir -p .aif/tmp && JEST_JUNIT_OUTPUT_FILE=.aif/tmp/report.xml npx jest --ci --reporters=default --reporters=jest-junit",
-    "select": "mkdir -p .aif/tmp && JEST_JUNIT_OUTPUT_FILE=.aif/tmp/report.xml npx jest --ci --reporters=default --reporters=jest-junit {ids}",
+    "command": "JEST_JUNIT_OUTPUT_FILE=.aif/tmp/report.xml npx jest --ci --reporters=default --reporters=jest-junit",
+    "select": "JEST_JUNIT_OUTPUT_FILE=.aif/tmp/report.xml npx jest --ci --reporters=default --reporters=jest-junit {ids}",
     "report": {
       "path": ".aif/tmp/report.xml",
       "format": "junit"
