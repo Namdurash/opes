@@ -1,6 +1,6 @@
 import React, { useCallback, useState } from 'react';
 import { RefreshControl, ScrollView, View } from 'react-native';
-import { useNavigation } from '@react-navigation/native';
+import { useFocusEffect, useNavigation } from '@react-navigation/native';
 import { useShallow } from 'zustand/shallow';
 import { ROOT_ROUTES, HomeScreenNavigationProp } from '../../app/navigation';
 import { CardStack } from '../cards';
@@ -43,11 +43,13 @@ export const HomeScreen = () => {
     })),
   );
 
-  React.useEffect(() => {
+  const loadCardsOnFocus = useCallback(() => {
     if (currentUserId) {
       loadCardsByUser(currentUserId);
     }
   }, [currentUserId, loadCardsByUser]);
+
+  useFocusEffect(loadCardsOnFocus);
 
   React.useEffect(() => {
     loadSavedToken().catch(() => {});

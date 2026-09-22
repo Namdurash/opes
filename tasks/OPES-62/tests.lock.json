@@ -1,0 +1,27 @@
+{
+  "schema": 1,
+  "plan_sha256": "6e240fccae8bef96eb08367a3fe06c391e9e5d531086f0115e6a98ebf4fcb594",
+  "mode": "coarse",
+  "mode_reason": "the suite (exit 1) wrote no report at .aif/tmp/report.xml",
+  "at": "2026-09-22T16:55:50Z",
+  "tests": {
+    "src/features/home/HomeScreen.test.tsx": "2c9c2cf7840edf9031f3fb8684912e9169973dec343773112ff7ee20c9890dad",
+    "test/CLAUDE.md": "ac800e4930195d17ec29479646499bd6f2a00e050d17b05ba59662945003444d",
+    "test/db/createTestDatabase.ts": "3980e511bdfadbf7191d2f9aacefe87acf2a1f72664bcf87b0c85c3472f256b9",
+    "test/db/index.ts": "72fd8c0649ae1635bd9d334f06bea079c466e7b34c554b3d6d02f74ce2790005",
+    "test/doubles/cardsRepository.ts": "951c699b99c1ebbf1c1ce804b9bca35352ef2e4273d849bcc324b051d2774195",
+    "test/doubles/index.ts": "2600505446129e2b078a94ebc0011386062c6c29dea8e09d805777baf8baab5a",
+    "test/factories/card.ts": "848ef38faae77d256265132657369a0398784c0bf9ba332de1d52bf2e070a511",
+    "test/factories/index.ts": "bdbfee3add31c224b058f925dd235b65b91ad6989097b9e9e46086e53115cf50",
+    "test/factories/transaction.ts": "8aaa65083d628bd14f5b3711ab860fc131a8d9142a419220b27beb2b93d3eca6",
+    "test/index.ts": "e6cabbb61f2984dcc29c2f16e3b86fef67c01ffb58767c10f063c69a405d43c4",
+    "test/setup.js": "d816ef0a8996f218d7cd0c8830d995613f8f6149eaf61b19bb2eb672e7a6f70e"
+  },
+  "covering": [],
+  "green_at_freeze": [],
+  "impl_frozen": {
+    "src/features/home/HomeScreen.tsx": "038567d4f9a1c862556fca8721a45735f0b49cdc3989ce3ee9d641f3538479db"
+  },
+  "impl_created": [],
+  "suite_at_freeze": {}
+}

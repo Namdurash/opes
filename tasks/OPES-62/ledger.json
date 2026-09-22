@@ -1,6 +1,140 @@
 {
   "schema": 1,
   "ticket": "OPES-62",
-  "entries": [],
+  "entries": [
+    {
+      "gate": "ready",
+      "result": "pass",
+      "subject": "ticket.md",
+      "subject_sha256": "614b43ac46d7cc07fe71c535b858ddcc6fd5322277437286a116300dd8872478",
+      "gate_sha256": "da5ccfb2c15e5f37f098fa5d5e62dce21f2386bec643afe1c6d7ab6c5dfeb19e",
+      "reason": "ready: 7 criteria · 2 decided · 3 gap(s)",
+      "seq": 1,
+      "at": "2026-09-22T16:46:05Z",
+      "prev": null
+    },
+    {
+      "station": "plan",
+      "agent": "aif-plan",
+      "model": "claude-opus-5",
+      "mode": "headless",
+      "usage": {
+        "input_tokens": 40,
+        "output_tokens": 17076,
+        "cache_read_input_tokens": 838532,
+        "cache_creation_input_tokens": 65021
+      },
+      "num_turns": 34,
+      "cost_usd": null,
+      "cost_source": "tokens-only",
+      "subtype": "success",
+      "result": "ran",
+      "summary": "Plan written to `tasks/OPES-62/plan.md`.",
+      "attempt": 1,
+      "seq": 2,
+      "at": "2026-09-22T16:49:44Z",
+      "prev": "d0b662566ad899a9faed5a898f0c915010eaa2c99906e7796c15dc480a14873a"
+    },
+    {
+      "gate": "plan",
+      "result": "pass",
+      "subject": "plan.md",
+      "subject_sha256": "6e240fccae8bef96eb08367a3fe06c391e9e5d531086f0115e6a98ebf4fcb594",
+      "gate_sha256": "afa1a1a5ebd476ceb2b2d20a0d217735967742186336e3ea969db7721511b251",
+      "reason": "plan: 1 implementation file(s), 1 test file(s), 7 criteria covered",
+      "seq": 3,
+      "at": "2026-09-22T16:49:44Z",
+      "prev": "2a4500264f900e90d199503be7c6d05cd8771c6b86899bd521ac8089880852be"
+    },
+    {
+      "station": "tests",
+      "agent": "aif-tests",
+      "model": "claude-opus-5",
+      "mode": "headless",
+      "usage": {
+        "input_tokens": 54,
+        "output_tokens": 31018,
+        "cache_read_input_tokens": 1580118,
+        "cache_creation_input_tokens": 87431
+      },
+      "num_turns": 42,
+      "cost_usd": null,
+      "cost_source": "tokens-only",
+      "subtype": "success",
+      "result": "ran",
+      "summary": "Tests are written. One thing I have to flag plainly: **I could not run them.**",
+      "attempt": 1,
+      "seq": 4,
+      "at": "2026-09-22T16:55:51Z",
+      "prev": "edc883ef26590936a5abdba67d1cafbe175891e85bfd8e47d6667a8ab0f859b5"
+    },
+    {
+      "gate": "verify-red",
+      "result": "pass",
+      "subject": "tests.lock.json",
+      "subject_sha256": "620dec82174645f1ed7828421500553873a1acc53a191c8e2e040763c261c901",
+      "gate_sha256": "a4835eb1a1d26875a4319184f3bf6963b1c261815f7811e4d0a6072f422c89cb",
+      "reason": "verify-red: red (COARSE mode — no per-test detail)",
+      "seq": 5,
+      "at": "2026-09-22T16:55:51Z",
+      "prev": "b517c87e415350d44efe3b7bdee7db4a58f436f9be5c34e416b6cf73674e2c2e"
+    },
+    {
+      "station": "implement",
+      "agent": "aif-implement",
+      "model": "claude-sonnet-5",
+      "mode": "headless",
+      "usage": {
+        "input_tokens": 28,
+        "output_tokens": 1921,
+        "cache_read_input_tokens": 543423,
+        "cache_creation_input_tokens": 31974
+      },
+      "num_turns": 15,
+      "cost_usd": null,
+      "cost_source": "tokens-only",
+      "subtype": "success",
+      "result": "ran",
+      "summary": "Only `src/features/home/HomeScreen.tsx` was changed (the plan's sole `files.change` entry); `run.json` is pipeline-managed state, not something I touched. Implementation is done: the mount effect was ",
+      "attempt": 1,
+      "seq": 6,
+      "at": "2026-09-22T16:56:54Z",
+      "prev": "ddca476b15abe72ab643a8ca6176e932b6f678134b1339df209ac34089cf64ab"
+    },
+    {
+      "gate": "green",
+      "result": "pass",
+      "subject": "plan.md",
+      "subject_sha256": "6e240fccae8bef96eb08367a3fe06c391e9e5d531086f0115e6a98ebf4fcb594",
+      "gate_sha256": "c6b7897fd9125f0920c1b585b2356623badd8b5a5351151f2975924a841b1cab",
+      "reason": "green: suite passes (revert-recheck NOT done — the lock names no covering test, so there was nothing to revert-recheck (the lock is COARSE: the suite (exit 1) wrote no report at .aif/tmp/report.xml)), 1 check(s) green",
+      "seq": 7,
+      "at": "2026-09-22T16:56:54Z",
+      "prev": "e04b603fa707cbb5cea6155f99f88c02800aabcac7fd0684871cde6fcfd6c74f"
+    },
+    {
+      "gate": "scope",
+      "result": "pass",
+      "subject": "plan.md",
+      "subject_sha256": "6e240fccae8bef96eb08367a3fe06c391e9e5d531086f0115e6a98ebf4fcb594",
+      "gate_sha256": "52e2a49932601f089c9169f7afefac6342aa256901fd899507d62adb6fa4fbb9",
+      "reason": "scope: change confined to the plan (6 lines)",
+      "seq": 8,
+      "at": "2026-09-22T16:56:54Z",
+      "prev": "59775fabf50fe8c208574d2dc6348bafbf5cc1f4a14e440a6ecd5ab532eaaa05"
+    },
+    {
+      "event": "check",
+      "check": "lint",
+      "phase": "green",
+      "result": "pass",
+      "exit": 0,
+      "required": true,
+      "reason": "yarn run v1.22.22 $ eslint . && tsx scripts/checkTestConvention.ts Done in 1.99s. ",
+      "seq": 9,
+      "at": "2026-09-22T16:56:54Z",
+      "prev": "8d0db221a1ec5fe3a318b05a15e29d10cd8bed4134ac6d3cdb1050611eb2b9ca"
+    }
+  ],
   "accepted_at": null
 }
