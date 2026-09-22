@@ -1,6 +1,18 @@
 {
   "schema": 1,
   "ticket": "OPES-62",
-  "entries": [],
+  "entries": [
+    {
+      "gate": "ready",
+      "result": "pass",
+      "subject": "ticket.md",
+      "subject_sha256": "614b43ac46d7cc07fe71c535b858ddcc6fd5322277437286a116300dd8872478",
+      "gate_sha256": "da5ccfb2c15e5f37f098fa5d5e62dce21f2386bec643afe1c6d7ab6c5dfeb19e",
+      "reason": "ready: 7 criteria · 2 decided · 3 gap(s)",
+      "seq": 1,
+      "at": "2026-09-22T16:46:05Z",
+      "prev": null
+    }
+  ],
   "accepted_at": null
 }
