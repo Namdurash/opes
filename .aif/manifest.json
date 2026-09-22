@@ -1,10 +1,10 @@
 {
   "schema": 1,
-  "aif_version": "0.5.3",
+  "aif_version": "0.5.4",
   "profile": "anthropic",
   "set": "claude",
-  "set_version": "0.5.3",
-  "installed_at": "2026-09-22T16:44:35Z",
+  "set_version": "0.5.4",
+  "installed_at": "2026-09-22T19:16:39Z",
   "files": [
     {
       "path": ".aif/foundry.md",
@@ -72,7 +72,7 @@
     },
     {
       "path": ".aif/gates/green.sh",
-      "sha256": "c6b7897fd9125f0920c1b585b2356623badd8b5a5351151f2975924a841b1cab"
+      "sha256": "01c1eb16c6492c30ca34133e4a0b31c6041980cae3ba20f7d07a0566c5534558"
     },
     {
       "path": ".aif/gates/plan.sh",
@@ -84,7 +84,7 @@
     },
     {
       "path": ".aif/gates/verify-red.sh",
-      "sha256": "a4835eb1a1d26875a4319184f3bf6963b1c261815f7811e4d0a6072f422c89cb"
+      "sha256": "c312d6f660b4f4eb9de57880af0809014236c046b41275eb3f00f87d4d53a5a3"
     },
     {
       "path": ".aif/prices.json",

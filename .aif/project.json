@@ -1,6 +1,7 @@
 {
   "schema": 1,
   "ticket_pattern": "^[A-Z]{2,10}-[0-9]+$",
+  "prepare": "npm ci",
   "test": {
     "roots": [
       "test"
