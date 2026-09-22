@@ -26,6 +26,15 @@ test/
   grow without any test being edited. An un-stubbed method rejects and names itself.
 - **Factories return a complete domain object** and take `Partial<T>` overrides. Call
   sites spell out only what they assert on.
+- **`render()` is async — always `await` it.** React Native Testing Library 14 returns
+  a `Promise<RenderResult>`, so a missing `await` leaves a Promise where the queries
+  should be, and the failure surfaces far from its cause: `tsc` complains that
+  `rerender` does not exist on `Promise<…>`, and at runtime the test dies with
+  `… is not a function` — which reads like a broken component rather than a broken
+  test. Both screen suites already do this: `TransactionsScreen.test.tsx` awaits
+  `render` directly, `SettingsScreen.test.tsx` wraps it in a helper **typed**
+  `(): Promise<RenderResult>` so the compiler catches a forgotten `await` at every
+  call site. Prefer the typed helper — it is the only form that fails early.
 
 `test.roots` in [../.aif/project.json](../.aif/project.json) points here: the foundry
 freezes this tree so an implementation cannot quietly edit the harness it is judged
