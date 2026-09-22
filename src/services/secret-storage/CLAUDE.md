@@ -9,12 +9,13 @@ new SecretStore({ keychain, encrypted, generateKey })   // constructor-DI
   .get(key)    : Promise<string | null>   // stored string, or null if absent
   .set(key, v) : Promise<void>
   .delete(key) : Promise<void>            // silent no-op on an absent key
+  .purgeDeletedRecords() : Promise<void>  // rebuild the store so deleted bytes are gone
 ```
 
 The three backends are constructor dependencies with real device defaults, so
 tests inject fakes (mirrors `MonobankAccountSelectionService`).
 
-## The two load-bearing rules
+## The three load-bearing rules
 
 1. **The encrypted store is never opened without its Keychain key.** Bootstrap is a
    single memoized readiness Promise that every `get`/`set`/`delete` awaits. It reads
@@ -28,6 +29,37 @@ tests inject fakes (mirrors `MonobankAccountSelectionService`).
    discarded, not read back). Any *thrown/rejected* Keychain read is *transient*: the
    stored data is preserved and the caller sees a rejection.
 
+3. **`delete` alone does not erase anything — the rebuild does.** MMKV is an
+   append-only log in an mmap: `remove` appends a zero-length record that shadows the
+   earlier one and overwrites no original byte. Verified on device (OPES-67): a
+   disconnect grew `Documents/mmkv/opes.secret-storage` from 81 to 128 bytes and the
+   77-byte payload was still readable at offset 8 under the untouched Keychain key.
+   So `purgeDeletedRecords()` snapshots every surviving key through
+   `getAllKeys`/`getString`, calls `wipe()` (`deleteMMKV(id)`), reopens with the same
+   key and writes the snapshot back into the fresh file. Three rules hold it together:
+   - **It is called explicitly, by the caller that finished deleting** — once, after
+     the last delete. `MonobankTokenService.clear()` is the one such caller today.
+     `delete` never triggers it: that would rebuild twice per disconnect, each rebuild
+     dropping the file the next delete still needs. "Only when the store went empty"
+     is not the rule either — it would keep a deleted token's bytes forever whenever a
+     third-party secret sits beside it.
+   - **It fails closed and does not swallow.** A surviving value that will not read
+     back as a string abandons the purge before the wipe: leaving the residue is no
+     worse than not having run, while losing a live secret is. A throw from the wipe,
+     the reopen or a restore propagates to the caller — a failed erase must not be
+     reported as a clean disconnect.
+   - **Nothing may hold an instance across the wipe.** `deleteMMKV` silently
+     invalidates every handle taken before it — writes through a stale one are dropped,
+     not rejected. So `encryptedStore.ts` resolves `createMMKV(...)` per operation
+     instead of capturing the handle `open()` created, and the purge replaces the
+     memoized `readiness` with the reopened instance *before* restoring the survivors
+     through it. Same rule as
+     [migrateMonobankSecrets.ts](../monobank/migrateMonobankSecrets.ts) one layer down.
+
+   Under Jest the encrypted backend is a `Map` with no append log, so no test above the
+   native boundary can show a byte leaving the disk. That the file actually shrinks back
+   is settled by a byte comparison on a device, and by nothing in the suite.
+
 ## Jest vs. device split
 
 - **Keychain** (`keychainKeyStore.ts`) reaches `react-native-keychain` only behind a
@@ -37,7 +69,8 @@ tests inject fakes (mirrors `MonobankAccountSelectionService`).
   closed — there is no in-memory keychain fallback.
 - **Encrypted store** (`encryptedStore.ts`) uses `createMMKV({ id, encryptionKey,
   encryptionType: 'AES-256' })` / `deleteMMKV(id)` on device and an in-memory `Map`
-  under Jest. A device open failure rejects — it never degrades in-memory.
+  under Jest. A device open failure rejects — it never degrades in-memory. Instances
+  also expose `getAllKeys()`, which is what the rebuild enumerates.
 - **Key generation** (`cryptoKey.ts`) draws 32 bytes from
   `globalThis.crypto.getRandomValues` (never `Math.random`) and base64-encodes them
   with a hand-rolled encoder (no Buffer/btoa). The 32 is the raw byte count,

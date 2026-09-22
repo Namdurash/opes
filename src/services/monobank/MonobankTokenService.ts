@@ -25,6 +25,12 @@ export interface SecretStorePort {
   get(key: string): Promise<string | null>;
   set(key: string, value: string): Promise<void>;
   delete(key: string): Promise<void>;
+  /**
+   * OPES-67 — the rebuild that makes deleted records physically gone rather than
+   * shadowed by a tombstone. Required, not optional: called with `?.` a store that
+   * forgot to implement it would leave the residue silently (D-007).
+   */
+  purgeDeletedRecords(): Promise<void>;
 }
 
 /** Jest-only stand-in: the suite never reaches the Keychain or MMKV. */
@@ -42,6 +48,9 @@ class InMemorySecretStore implements SecretStorePort {
   async delete(key: string): Promise<void> {
     this.data.delete(key);
   }
+
+  // A Map has no append log and no residue, so the rebuild is already true of it.
+  async purgeDeletedRecords(): Promise<void> {}
 }
 
 export const createDefaultSecretStore = (): SecretStorePort => {
@@ -80,6 +89,12 @@ export class MonobankTokenService {
   async clear(): Promise<void> {
     await this.storage.delete(TOKEN_KEY);
     await this.storage.delete(CLIENT_NAME_KEY);
+    // OPES-67 — deleting the keys only tombstones them; the ciphertext stays in the
+    // file until the store is rebuilt. Once, after both deletes: the rebuild drops the
+    // backing file, so between them it would invalidate the handle the second delete
+    // needs. Not caught — a failed erase leaves the residue, which is survivable, but
+    // must not be reported to the user as a clean disconnect (D-008).
+    await this.storage.purgeDeletedRecords();
   }
 }
 
