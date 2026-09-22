@@ -5,7 +5,7 @@
   "branch": "aif/OPES-62",
   "base": "5beab3eb33d55bfc08d49a36b3acd3170a625877",
   "worktree": ".aif/worktrees/OPES-62",
-  "stage": "implement",
+  "stage": "done",
   "attempts": {
     "plan": 1,
     "tests": 1,
@@ -14,8 +14,8 @@
   "dispatches": 3,
   "spent_usd": 4.3205,
   "started_at": "2026-09-22T16:46:05Z",
-  "finished_at": null,
-  "status": "running",
+  "finished_at": "2026-09-22T16:56:55Z",
+  "status": "built",
   "why": null,
   "dispatch_base": "9d995eaddc359a4535b004d3e13be2d9fa5f15b7"
 }
