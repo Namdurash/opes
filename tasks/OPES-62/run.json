@@ -5,15 +5,16 @@
   "branch": "aif/OPES-62",
   "base": "5beab3eb33d55bfc08d49a36b3acd3170a625877",
   "worktree": ".aif/worktrees/OPES-62",
-  "stage": "plan",
+  "stage": "tests",
   "attempts": {
-    "plan": 1
+    "plan": 1,
+    "tests": 1
   },
-  "dispatches": 1,
-  "spent_usd": 1.4966,
+  "dispatches": 2,
+  "spent_usd": 3.9367,
   "started_at": "2026-09-22T16:46:05Z",
   "finished_at": null,
   "status": "running",
   "why": null,
-  "dispatch_base": "14c8ac6cf7ab302846ca5d588c30f3f6d13bb0a5"
+  "dispatch_base": "059e2c50d77d4b2e8285fe298109c22f928b4941"
 }
