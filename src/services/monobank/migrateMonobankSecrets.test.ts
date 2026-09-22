@@ -185,6 +185,15 @@ class RecordingSecretStore implements SecretStorePort {
     });
   }
 
+  /**
+   * OPES-67 added this to `SecretStorePort`: the encrypted store has the same
+   * append-log residue the plaintext one had, and `MonobankTokenService.clear()`
+   * asks it to rebuild after the deletes. This migration never calls it — it deletes
+   * from plaintext, not from the secret store — so the double is an empty no-op, and
+   * a Map has no residue for it to clear anyway. It is here to satisfy the port.
+   */
+  async purgeDeletedRecords(): Promise<void> {}
+
   private settle<T>(work: () => T): Promise<T> {
     const pending = new Promise<T>((resolve, reject) => {
       setTimeout(() => {

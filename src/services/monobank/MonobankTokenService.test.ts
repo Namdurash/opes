@@ -50,6 +50,22 @@
  * a verify-red limitation and is filed separately as a tooling defect.
  */
 
+/**
+ * OPES-67 ADDS THREE TESTS TO THIS FILE, AND THEY ARE NOT INHERITED.
+ *
+ * `MonobankTokenService.clear` now owes one more thing: deleting the two keys from
+ * the encrypted store leaves their ciphertext recoverable in the file, so `clear()`
+ * has to ask the store to rebuild itself afterwards. The three tests in the last
+ * describe block below — OPES-67's AC-001, AC-002 and AC-004 — are red against the
+ * tree they were written on, on their own assertions, for want of that call. They
+ * share the `AC-00N` numbering with OPES-58's inherited tests above only because a
+ * new spec renumbers from one; the note above does not apply to them.
+ *
+ * The two doubles also gain a `purgeDeletedRecords`. `SecretStorePort` does not
+ * declare it yet, and a class may carry more than the interface it implements, so
+ * both compile today and satisfy the port once the member is declared.
+ */
+
 import { spawnSync } from 'node:child_process';
 import { readFileSync } from 'node:fs';
 import { MonobankTokenService } from './MonobankTokenService';
@@ -86,6 +102,15 @@ class RecordingSecretStore implements SecretStorePort {
   readonly written = new Map<string, string>();
   /** Keys the service asked to delete, in call order. */
   readonly deleted: string[] = [];
+  /** OPES-67 — how many times the service asked for the store to be rebuilt. */
+  purges = 0;
+  /**
+   * OPES-67 — how many deletes the shared log held at each purge. The rebuild drops
+   * the backing file and every handle to it, so a purge that ran before the second
+   * delete would be a delete issued through a dead handle — recorded here as a 1
+   * rather than a 2.
+   */
+  readonly deletesAtPurge: number[] = [];
   private readonly data = new Map<string, string>();
 
   /** A criterion's `given` — a value already in the store, not a write under test. */
@@ -112,6 +137,19 @@ class RecordingSecretStore implements SecretStorePort {
     });
   }
 
+  /**
+   * OPES-67 — the rebuild that makes the deleted records physically gone rather than
+   * shadowed by a tombstone. Settled on the same timer as everything else, so a
+   * `clear()` that fired it without awaiting is observable: nothing it recorded would
+   * be there when the assertion runs.
+   */
+  purgeDeletedRecords(): Promise<void> {
+    return this.afterBootstrap(() => {
+      this.purges += 1;
+      this.deletesAtPurge.push(this.deleted.length);
+    });
+  }
+
   private afterBootstrap<T>(work: () => T): Promise<T> {
     return new Promise<T>(resolve => {
       setTimeout(() => resolve(work()), 0);
@@ -127,7 +165,9 @@ class RecordingSecretStore implements SecretStorePort {
  * await still receives the same rejection value — AS-006.
  */
 class RejectingSecretStore implements SecretStorePort {
-  constructor(private readonly failure: { on: 'get' | 'set'; error: Error }) {}
+  constructor(
+    private readonly failure: { on: 'get' | 'set' | 'purge'; error: Error },
+  ) {}
 
   get(_key: string): Promise<string | null> {
     return this.failure.on === 'get'
@@ -141,6 +181,11 @@ class RejectingSecretStore implements SecretStorePort {
 
   delete(_key: string): Promise<void> {
     return Promise.resolve();
+  }
+
+  /** OPES-67 — the rebuild after the two deletes; rejects when it is the failing op. */
+  purgeDeletedRecords(): Promise<void> {
+    return this.failure.on === 'purge' ? this.rejection<void>() : Promise.resolve();
   }
 
   private rejection<T>(): Promise<T> {
@@ -306,6 +351,70 @@ describe('the repository after the await propagation', () => {
     },
     600_000,
   );
+});
+
+/**
+ * OPES-67 — clear() rebuilds the encrypted store once the two keys are gone.
+ *
+ * Deleting a key from the secret store leaves its ciphertext in the file: MMKV
+ * appends a zero-length record that shadows the earlier one and overwrites nothing.
+ * Measured on device on 2026-09-17 — a disconnect grew `opes.secret-storage` from 81
+ * to 128 bytes and the 77-byte payload was still there, verbatim, at offset 8. So
+ * `clear()` owes one explicit rebuild after both deletes: once, not per delete, and
+ * not conditional on the store having gone empty.
+ *
+ * The rebuild is counted through the port, not observed in a file. Under Jest the
+ * encrypted backend is a Map with no append log, so no test here can show a byte
+ * leaving the disk (VG-001) — what these three establish is that the call is made,
+ * made once, made after both deletes, and that its failure is not swallowed.
+ */
+describe('MonobankTokenService.clear and the residue a delete leaves', () => {
+  it('AC-001 — rebuilds the secret store exactly once', async () => {
+    // Once per disconnect. Inside `delete` it would fire twice for one disconnect,
+    // each rebuild dropping the backing file the next delete still needs.
+    const store = new RecordingSecretStore()
+      .seed(TOKEN_KEY, 'tok-1')
+      .seed(CLIENT_NAME_KEY, 'Ada Lovelace');
+    const service = new MonobankTokenService(store);
+
+    await service.clear();
+
+    expect(store.purges).toBe(1);
+  });
+
+  it('AC-002 — rebuilds only after both deletes have gone through', async () => {
+    // The ordering is load-bearing rather than tidy: the rebuild invalidates every
+    // handle to the store, so a delete issued after it is a write into a dead file.
+    const store = new RecordingSecretStore()
+      .seed(TOKEN_KEY, 'tok-1')
+      .seed(CLIENT_NAME_KEY, 'Ada Lovelace');
+    const service = new MonobankTokenService(store);
+
+    await service.clear();
+
+    expect(store.deletesAtPurge[0]).toBe(2);
+  });
+
+  it('AC-004 — lets a failed rebuild reject rather than swallowing it', async () => {
+    // The service carries no try/catch anywhere by rule, and disconnect awaits
+    // `clear()` without one either. A failed erase is not fatal — the residue simply
+    // stays — but it must not be reported to the user as a clean disconnect.
+    const store = new RejectingSecretStore({
+      on: 'purge',
+      error: new Error('boom-on-purge'),
+    });
+    const service = new MonobankTokenService(store);
+
+    // The asserted value is whether `clear()` settled cleanly, and it must not have.
+    let resolvedCleanly = true;
+    try {
+      await service.clear();
+    } catch {
+      resolvedCleanly = false;
+    }
+
+    expect(resolvedCleanly).toBe(false);
+  });
 });
 
 describe('src/services/monobank/CLAUDE.md', () => {
