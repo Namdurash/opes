@@ -6,11 +6,14 @@
   "base": "5beab3eb33d55bfc08d49a36b3acd3170a625877",
   "worktree": ".aif/worktrees/OPES-62",
   "stage": "plan",
-  "attempts": {},
-  "dispatches": 0,
-  "spent_usd": 0,
+  "attempts": {
+    "plan": 1
+  },
+  "dispatches": 1,
+  "spent_usd": 1.4966,
   "started_at": "2026-09-22T16:46:05Z",
   "finished_at": null,
   "status": "running",
-  "why": null
+  "why": null,
+  "dispatch_base": "14c8ac6cf7ab302846ca5d588c30f3f6d13bb0a5"
 }
