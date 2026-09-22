@@ -1,10 +1,10 @@
 {
   "schema": 1,
-  "aif_version": "0.5.1",
+  "aif_version": "0.5.3",
   "profile": "anthropic",
   "set": "claude",
-  "set_version": "0.5.1",
-  "installed_at": "2026-09-21T16:59:51Z",
+  "set_version": "0.5.3",
+  "installed_at": "2026-09-22T16:44:35Z",
   "files": [
     {
       "path": ".aif/foundry.md",
@@ -64,15 +64,15 @@
     },
     {
       "path": ".aif/gates/_lib.sh",
-      "sha256": "7ab94c058919c4ec4ba8557dac31b39f404ee72fccc3d43ea978371fea194e5a"
+      "sha256": "2bf73f2f698a8fbd503579a5d238521098aab2a922e44172f6f7ea125811525d"
     },
     {
       "path": ".aif/gates/scope.sh",
-      "sha256": "983cec035c2dad97f36b1de0cce838dc50009056c510e2bef8516b06e7948628"
+      "sha256": "52e2a49932601f089c9169f7afefac6342aa256901fd899507d62adb6fa4fbb9"
     },
     {
       "path": ".aif/gates/green.sh",
-      "sha256": "5ca4450f7a03600fb784fc3b77c2172895820307cd531650fa517834b85fa3b9"
+      "sha256": "c6b7897fd9125f0920c1b585b2356623badd8b5a5351151f2975924a841b1cab"
     },
     {
       "path": ".aif/gates/plan.sh",
@@ -84,7 +84,7 @@
     },
     {
       "path": ".aif/gates/verify-red.sh",
-      "sha256": "52887ce918c32bca5b0d32e315d7eb491c86d143f49da7a548a92faf00e907f2"
+      "sha256": "a4835eb1a1d26875a4319184f3bf6963b1c261815f7811e4d0a6072f422c89cb"
     },
     {
       "path": ".aif/prices.json",
@@ -92,7 +92,7 @@
     },
     {
       "path": ".aif/hooks/guard.sh",
-      "sha256": "5c5015321085a75b5a578f67bf7f45c6e11dbffb1ef8151c9e0fa598141ca8b6"
+      "sha256": "a1a7479e0eaacf5c0759528e662c8bbb326fe3cf360224523cdcd3263670f489"
     },
     {
       "path": ".aif/hooks/meter.sh",
