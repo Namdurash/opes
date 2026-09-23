@@ -260,3 +260,215 @@ describe('package.json', () => {
     expect(Object.keys(pkg.dependencies)).toContain('react-native-keychain');
   });
 });
+
+/**
+ * OPES-67 — `SecretStore.purgeDeletedRecords()`: the rebuild that makes a deleted
+ * secret's bytes gone from the file rather than merely shadowed by a tombstone.
+ *
+ * Three things about the shape of the section below are deliberate.
+ *
+ * 1. `makeEncrypted` above is not reused. Its `open` hands back the same instance
+ *    forever and its `wipe` only empties a Map, so an implementation that kept the
+ *    handle it opened before the wipe would pass every test written against it —
+ *    and that handle is exactly the trap the ticket names. `makeRebuildableEncrypted`
+ *    models what MMKV actually does: `wipe()` drops the backing file, every handle
+ *    taken before it goes stale, and a write through a stale handle is SILENTLY
+ *    DROPPED rather than rejected. So a store that restores the survivors through
+ *    the pre-wipe instance loses them here, which is the point.
+ *
+ * 2. Each test asserts that the method it exercises is a function before calling it.
+ *    That is the criterion's own surface — `purgeDeletedRecords` does not exist yet —
+ *    and asserting it keeps the red an assertion failure instead of a TypeError
+ *    thrown mid-test. It is not a precondition borrowed from elsewhere, and nothing
+ *    below is weakened by it: the criterion's own expected value is asserted straight
+ *    after, and stays falsifiable once the method lands.
+ *
+ * 3. AC-003 and AC-005 reach `MonobankTokenService.clear()`, because that is the
+ *    caller the criteria name, but what they exercise is this store's rebuild — a
+ *    survivor sitting beside the two Monobank keys must still be readable after it.
+ *    Both `require` the service rather than importing it: that module's only import
+ *    is an `import type` of the secret-storage barrel, which erases, so requiring it
+ *    never evaluates the barrel's `new SecretStore()` (which throws under Jest).
+ *
+ * What none of this establishes — VG-001 — is that any byte left the disk. Under
+ * Jest the encrypted backend is a Map with no append log, so there is no residue in
+ * it to erase by construction. These tests prove the rebuild is invoked, invoked
+ * once, invoked in the right order, and survived by the neighbouring secrets. That
+ * the file on an iPhone actually shrinks back is settled by a byte comparison on a
+ * device, and by nothing here.
+ */
+
+/** AS — the two Monobank keys, by the literal names that are the storage contract. */
+const MONOBANK_TOKEN_KEY = 'monobank_personal_token';
+const MONOBANK_CLIENT_NAME_KEY = 'monobank_client_name';
+/** A secret belonging to nobody in this ticket. It must survive the rebuild. */
+const THIRD_PARTY_KEY = 'third_party_secret';
+
+const makeRebuildableEncrypted = (initial: Record<string, string> = {}) => {
+  const data = new Map<string, string>(Object.entries(initial));
+  // Which generation of the backing file is live. `wipe()` deletes the file, so every
+  // instance opened before it is dead from that moment: reads answer `undefined` and
+  // writes go nowhere, without raising anything.
+  let generation = 0;
+  const unreadable = new Set<string>();
+
+  const openInstance = () => {
+    const mine = generation;
+    const live = () => mine === generation;
+    return {
+      getString: jest.fn((key: string) =>
+        live() && !unreadable.has(key) ? data.get(key) : undefined,
+      ),
+      set: jest.fn((key: string, value: string) => {
+        if (live()) data.set(key, value);
+      }),
+      delete: jest.fn((key: string) => {
+        if (live()) data.delete(key);
+      }),
+      getAllKeys: jest.fn(() => (live() ? [...data.keys()] : [])),
+    };
+  };
+
+  return {
+    open: jest.fn(() => openInstance()),
+    wipe: jest.fn(() => {
+      data.clear();
+      generation += 1;
+    }),
+    /** AC-006's `given` — a key the enumeration lists but whose value won't read. */
+    hide: (key: string): void => {
+      unreadable.add(key);
+    },
+  };
+};
+
+/**
+ * A store over the rebuildable backend, opened with an existing Keychain key so that
+ * bootstrap itself never wipes (the genuine-absence branch does, and a wipe from
+ * there would be indistinguishable from the purge's).
+ */
+const makeRebuildStore = (encrypted: ReturnType<typeof makeRebuildableEncrypted>) => {
+  const { SecretStore } = require('./SecretStore');
+  const keychain = makeKeychain({ read: async () => 'existing-key-base64' });
+  const store = new SecretStore({
+    keychain,
+    encrypted,
+    generateKey: makeGenerateKey('never-used-key-base64'),
+  });
+  return { store, keychain, encrypted };
+};
+
+/** See note 3 — required, never imported. */
+const makeTokenService = (storage: unknown) => {
+  const { MonobankTokenService } = require('../monobank/MonobankTokenService');
+  return new MonobankTokenService(storage);
+};
+
+describe('SecretStore.purgeDeletedRecords', () => {
+  afterEach(() => {
+    jest.restoreAllMocks();
+  });
+
+  it('AC-006 — wipes nothing when a surviving value cannot be read for the snapshot', async () => {
+    // Fail closed, exactly as OPES-63 does one layer down: a value the rebuild could
+    // not write back is a value the rebuild would destroy, so the residue stays and
+    // the file is left alone. The enumeration still lists the key — it is the value
+    // that will not come back, which is the case a device can actually produce.
+    const encrypted = makeRebuildableEncrypted({
+      [THIRD_PARTY_KEY]: 'survivor',
+      unreadable_secret: 'unreadable',
+    });
+    encrypted.hide('unreadable_secret');
+    const { store } = makeRebuildStore(encrypted);
+
+    expect(typeof store.purgeDeletedRecords).toBe('function');
+    await store.purgeDeletedRecords();
+
+    expect(encrypted.wipe).toHaveBeenCalledTimes(0);
+  });
+
+  it('AC-007 — is not reached by delete on an absent key', async () => {
+    // A rebuild inside `delete` would run twice per disconnect, which is the option
+    // the ticket rules out. `delete` stays a bare delete — on an absent key and on a
+    // present one alike.
+    const encrypted = makeRebuildableEncrypted();
+    const { store } = makeRebuildStore(encrypted);
+
+    expect(typeof store.purgeDeletedRecords).toBe('function');
+    const purge = jest.spyOn(store, 'purgeDeletedRecords');
+
+    await store.delete('missing');
+
+    expect(purge).toHaveBeenCalledTimes(0);
+  });
+
+  it('AC-008 — reads back a value written after the rebuild', async () => {
+    // The trap from the ticket: `readiness` memoizes the instance the wipe just
+    // killed. Write through that one and MMKV drops it on the floor — no throw, no
+    // rejection, just a value that is not there afterwards. So the read-back is the
+    // only thing that catches it.
+    const encrypted = makeRebuildableEncrypted({ [THIRD_PARTY_KEY]: 'survivor' });
+    const { store } = makeRebuildStore(encrypted);
+
+    expect(typeof store.purgeDeletedRecords).toBe('function');
+    await store.purgeDeletedRecords();
+    await store.set('written_after', 'after-purge');
+
+    expect(await store.get('written_after')).toBe('after-purge');
+  });
+});
+
+describe('SecretStore rebuilt by MonobankTokenService.clear', () => {
+  afterEach(() => {
+    jest.restoreAllMocks();
+  });
+
+  it('AC-003 — keeps a third-party secret readable across a purging clear()', async () => {
+    // "Erase the whole store on any delete" is not an acceptable fix: the neighbour
+    // is somebody else's secret and has to come out the other side intact.
+    const encrypted = makeRebuildableEncrypted({
+      [MONOBANK_TOKEN_KEY]: 'tok-1',
+      [MONOBANK_CLIENT_NAME_KEY]: 'Ada Lovelace',
+      [THIRD_PARTY_KEY]: 'survivor',
+    });
+    const { store } = makeRebuildStore(encrypted);
+    const service = makeTokenService(store);
+
+    await service.clear();
+
+    // The criterion's `when`, stated rather than assumed: clear() must actually have
+    // rebuilt the store. Without the rebuild the survivor was never in any danger and
+    // the assertion below would describe nothing this ticket changed.
+    expect(encrypted.wipe).toHaveBeenCalledTimes(1);
+    expect(await store.get(THIRD_PARTY_KEY)).toBe('survivor');
+  });
+
+  it('AC-005 — keeps a third-party secret readable when the rebuild throws', async () => {
+    // A failed erase is not fatal and not silent: the rejection reaches the caller,
+    // the residue stays, and the neighbouring secret is still there to be read. The
+    // one unacceptable outcome is a survivor that exists in no copy anywhere.
+    const encrypted = makeRebuildableEncrypted({
+      [MONOBANK_TOKEN_KEY]: 'tok-1',
+      [MONOBANK_CLIENT_NAME_KEY]: 'Ada Lovelace',
+      [THIRD_PARTY_KEY]: 'survivor',
+    });
+    encrypted.wipe.mockImplementation(() => {
+      throw new Error('the backing file could not be deleted');
+    });
+    const { store } = makeRebuildStore(encrypted);
+    const service = makeTokenService(store);
+
+    // The criterion's `given` — the purge really did throw inside clear(). Asserted
+    // for the same reason as in AC-003: it is what makes the survivor's readability
+    // a statement about the rebuild rather than about an untouched store.
+    let resolvedCleanly = true;
+    try {
+      await service.clear();
+    } catch {
+      resolvedCleanly = false;
+    }
+    expect(resolvedCleanly).toBe(false);
+
+    expect(await store.get(THIRD_PARTY_KEY)).toBe('survivor');
+  });
+});
