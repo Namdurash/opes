@@ -23,113 +23,95 @@
   "decisions": [
     {
       "id": "D-001",
-      "statement": "Derive inactivity in CardStack as `monobankStatus !== 'connected' && card.type === 'monobank'`, reading status from useMonobankStore.",
-      "because": "the human decided the state is derived at render with no cards column, and CardStack is the one place that already owns press and drag",
+      "statement": "Wrap CardItem's header and its type-tile block in one `<View testID=\"card-content\">`, and render the Disconnected badge and the delete control as siblings after it, outside that view.",
+      "because": "AC-004 measures opacity on the group holding name, amount and type tile, and the decided answer keeps badge and Delete at full opacity on top of it",
       "serves": [
-        "AC-003",
         "AC-004",
-        "AC-005",
-        "AC-006",
-        "AC-008",
         "AC-014"
       ]
     },
     {
       "id": "D-002",
-      "statement": "Import the store deep in CardStack: `import { useMonobankStore } from '../../monobank/state/useMonobankStore'`.",
-      "because": "the monobank barrel re-exports ConnectMonobankScreen, which imports app/navigation and cycles back into the cards barrel",
+      "statement": "Style that view `[styles.cardContent, inactive ? styles.cardContentInactive : null]`, with `cardContent: { flex: 1, opacity: 1 }` and `cardContentInactive: { opacity: 0.5 }`.",
+      "because": "AC-014 expects the literal number 1 on the connected render, so the base style must declare opacity instead of leaving it undefined",
       "serves": [
-        "D-001"
+        "AC-004",
+        "AC-014"
       ],
-      "rejected": "Import useMonobankStore from the '../../monobank' barrel."
+      "rejected": "Write the opacity inline in CardItem.tsx as `{ opacity: inactive ? 0.5 : 1 }`."
     },
     {
       "id": "D-003",
-      "statement": "Give CardItem two new optional props, `inactive?: boolean` (default false) and `onDelete?: () => void`, and keep it free of any store import.",
-      "because": "CardItem also renders inside CardDetailScreen, where no Monobank status applies, and the features layer rule keeps it presentational",
+      "statement": "Build that group inside CardItem's shared `content` element, so the ImageBackground branch and the plain View branch both return it unchanged.",
+      "because": "the type tile lives in `imageContent` on one branch and in `body` on the other, and AC-004 names the tile either way",
       "serves": [
-        "D-001",
-        "AC-004"
+        "AC-004",
+        "D-001"
       ]
     },
     {
       "id": "D-004",
-      "statement": "When `inactive`, render `<View testID=\"card-inactive\" pointerEvents=\"none\" style={styles.inactiveOverlay} />` as the first child of CardItem's content, before badge and delete control.",
-      "because": "AC-004 needs one queryable node, and both render branches (ImageBackground and plain View) must grey identically; later siblings paint above the wash",
+      "statement": "Delete the `testID=\"card-inactive\"` View from CardItem and the `inactiveOverlay` entry from CardItem.styles.ts.",
+      "because": "that wash is the defect the ticket sent back — #FAFAFA at 0.75 over a #FFFFFF card, painted under the very content it was meant to dim",
       "serves": [
         "AC-004"
-      ]
+      ],
+      "rejected": "Keep the overlay node alongside the new opacity group."
     },
     {
       "id": "D-005",
-      "statement": "When `inactive`, render a pill holding `<AppText testID=\"card-disconnected-badge\">Disconnected</AppText>` — that literal string, no other copy.",
-      "because": "AC-003 asserts the text and AC-014 counts the badge by testID",
+      "statement": "Drop the now-unused `import { StyleSheet } from 'react-native'` from CardItem.styles.ts.",
+      "because": "`inactiveOverlay` was its only consumer and the required `lint` check fails the green phase on an unused import",
       "serves": [
-        "AC-003",
-        "AC-014"
+        "D-004"
       ]
     },
     {
       "id": "D-006",
-      "statement": "Render the delete control as `<Pressable testID=\"card-delete\" accessibilityLabel=\"Delete card\">` with an AppText label 'Delete', whenever `inactive` is true and regardless of whether onDelete was passed.",
-      "because": "AC-008 counts controls by testID and AC-009 taps one, so presence must depend on `inactive` alone",
+      "statement": "Keep the badge as `<AppText testID=\"card-disconnected-badge\">Disconnected</AppText>` in its pill and the control as `<Pressable testID=\"card-delete\">`, both rendered only while `inactive`.",
+      "because": "AC-003, AC-008 and AC-009 already hold on this shape and the ticket confines this round to the greying",
       "serves": [
+        "AC-003",
         "AC-008",
         "AC-009"
-      ],
-      "rejected": "Add a trash icon to src/shared/ui/icons/registry.ts — it needs a new SVG asset."
+      ]
     },
     {
       "id": "D-007",
-      "statement": "On delete-control press CardItem calls showBottomSheet with variant 'error', title 'Delete card?', a Delete action (variant 'danger') invoking `onDelete?.()` and a Cancel action.",
-      "because": "the ticket reuses CardDetailScreen's existing confirmation and names reworking that screen a non-goal, so the config is copied, not extracted",
+      "statement": "Keep CardItem's `confirmDelete` calling showBottomSheet with title 'Delete card?' and a Delete action invoking `onDelete?.()`, which CardStack routes to useCardsStore.deleteCard.",
+      "because": "the decided answer reuses CardDetailScreen's confirmation and names reworking that screen a non-goal",
       "serves": [
-        "AC-009"
+        "AC-009",
+        "AC-010"
       ],
       "rejected": "Extract a shared confirm helper and repoint CardDetailScreen at it."
     },
     {
       "id": "D-008",
-      "statement": "CardStack passes `onDelete={() => deleteCard(card.id)}`, taking deleteCard from useCardsStore beside the existing reorderCards selector.",
-      "because": "useCardsStore.deleteCard already owns the optimistic removal and its rollback sheet",
+      "statement": "Leave CardStack as it stands: derived `inactive = monobankStatus !== 'connected' && card.type === 'monobank'`, `onPress={inactive ? undefined : onCardPress}`, long-press and PanResponder untouched.",
+      "because": "AC-005, AC-006 and AC-007 were confirmed on the live build and only the presentation came back from Review",
       "serves": [
-        "AC-010",
-        "AC-011"
+        "AC-005",
+        "AC-006",
+        "AC-007",
+        "D-001"
       ]
     },
     {
       "id": "D-009",
-      "statement": "Block the tap by handing DraggableCardItem `onPress={inactive ? undefined : onCardPress}`; leave onLongPress, delayLongPress and the PanResponder byte-unchanged.",
-      "because": "the human kept long-press reorder for tombstones, so only the press path may be gated",
-      "serves": [
-        "AC-005",
-        "AC-006",
-        "AC-007"
-      ]
-    },
-    {
-      "id": "D-010",
-      "statement": "Cascade inside CardsRepository.deleteCard: in one database.write, fetch the card and its transactions, then database.batch(...transactions.map(t => t.prepareDestroyPermanently()), card.prepareDestroyPermanently()).",
-      "because": "the ticket requires one models-layer operation, and a store gluing two repositories cannot share a writer without leaking WatermelonDB models out of the layer",
+      "statement": "Leave CardsRepository.deleteCard's single `database.write` cascade and its exact `Q.where('card_id', cardId)` predicate byte-unchanged.",
+      "because": "destroyPermanently has no undo, AC-012 guards the neighbouring card's rows, and the manual sandbox run already closed VG-003 on this code",
       "serves": [
         "AC-010",
         "AC-011",
         "AC-012"
       ],
-      "rejected": "Add deleteByCardId to TransactionsRepository and call it from useCardsStore before deleteCard."
+      "rejected": "Move the cascade into useCardsStore or widen the predicate to the user's monobank cards."
     },
     {
-      "id": "D-011",
-      "statement": "Query the cascaded rows with exactly `Q.where('card_id', cardId)` on the 'transactions' collection — no user-wide, type-wide or monobank-wide predicate.",
-      "because": "destroyPermanently has no backup and AC-012 guards the neighbouring card's rows",
-      "serves": [
-        "AC-012"
-      ]
-    },
-    {
-      "id": "D-012",
-      "statement": "Leave useMonobankStore.connect, useMonobankStore.disconnect and useCardsStore.deleteCard unchanged.",
-      "because": "AC-001, AC-002, AC-013 and AC-015 pin behaviour that is already correct — disconnect must keep touching no table at all",
+      "id": "D-010",
+      "statement": "Leave useMonobankStore.connect and useMonobankStore.disconnect unchanged — disconnect must still touch no table at all.",
+      "because": "AC-001, AC-002, AC-013 and AC-015 pin behaviour that is already correct, and AC-015 is the OPES-64 guarantee",
       "serves": [
         "AC-001",
         "AC-002",
@@ -138,12 +120,12 @@
       ]
     },
     {
-      "id": "D-013",
-      "statement": "Style the grey with existing tokens — surface for the overlay, border for its edge, textMuted for the badge text — and add no token and no schema migration.",
-      "because": "a new token must be declared in both palettes in tokens.ts, and the human ruled out a stored flag",
+      "id": "D-011",
+      "statement": "Add no column to the cards schema and no migration; inactivity stays derived at render from useMonobankStore.status.",
+      "because": "a stored flag would survive a failed clear() and grey a card whose status never changed, breaking AC-015",
       "serves": [
-        "AC-004",
-        "D-004"
+        "AC-014",
+        "AC-015"
       ]
     }
   ],
@@ -160,8 +142,7 @@
     ],
     "AC-004": [
       "src/features/cards/components/CardItem.tsx",
-      "src/features/cards/components/CardItem.styles.ts",
-      "src/features/cards/components/CardStack.tsx"
+      "src/features/cards/components/CardItem.styles.ts"
     ],
     "AC-005": [
       "src/features/cards/components/CardStack.tsx"
@@ -193,7 +174,7 @@
     ],
     "AC-014": [
       "src/features/cards/components/CardItem.tsx",
-      "src/features/cards/components/CardStack.tsx"
+      "src/features/cards/components/CardItem.styles.ts"
     ],
     "AC-015": [
       "src/features/monobank/state/useMonobankStore.ts"
@@ -202,12 +183,16 @@
   "uncovered": [],
   "external": [
     {
-      "name": "@nozbe/watermelondb",
-      "ac": "AC-011"
+      "name": "react-native",
+      "ac": "AC-004"
     },
     {
-      "name": "react-native",
-      "ac": "AC-005"
+      "name": "react",
+      "ac": "AC-003"
+    },
+    {
+      "name": "@nozbe/watermelondb",
+      "ac": "AC-011"
     },
     {
       "name": "zustand",
@@ -217,30 +202,30 @@
       "name": "react-native-reanimated"
     }
   ],
-  "ticket_sha256": "07abfa58d41b5fc96872c81b57209a5c3face0c6f50ae7121b7d54b7e8e763b4"
+  "ticket_sha256": "5f05b29a7acc3e81aa16c60bf5621369854d84f59d90f18f5ba4815d44defd08"
 }
 -->
 
 # OPES-68 — plan
 
-Картка Monobank лишається в базі після відключення; змінюється лише її подання й з'являється
-явне видалення.
+Тікет повернувся з Review з однією претензією: картка не сіріє. Каскад, жести, реконект
+і гарантія OPES-64 підтверджені на живому білді, тож цей прогін міняє рівно подання
+`CardItem` — решта файлів у маніфесті стоїть, щоб її поведінку стерегли ті самі критерії.
 
-`CardStack` додатково підписується на `useMonobankStore.status` і рахує на рендері
-`inactive = status !== 'connected' && card.type === 'monobank'`. Цей прапорець іде пропом у
-`CardItem`, і він же вимикає `onPress` (D-009) — довгий натиск і `PanResponder` лишаються як є,
-тож перетягування надгробка працює.
+`CardItem` дістає одну нову групу: `<View testID="card-content">`, всередині якої лежать
+`header` (назва і сума) та гілка з плиткою типу — `body` або `imageContent`. Стиль групи —
+масив `[styles.cardContent, inactive ? styles.cardContentInactive : null]`, де базовий
+`cardContent` явно несе `opacity: 1`, а `cardContentInactive` — `opacity: 0.5`. Явна
+одиниця в базі обов'язкова: AC-014 міряє саме число, а не `undefined`. Група будується
+в спільному `content`, тож обидві гілки рендеру (`ImageBackground` і звичайний `View`)
+гаснуть однаково.
 
-`CardItem` при `inactive` малює три речі поверх наявного вмісту: сіру заливку
-`testID="card-inactive"`, пілюлю з текстом `Disconnected` (`testID="card-disconnected-badge"`) і
-контрол видалення `testID="card-delete"`. Тап по контролу відкриває копію наявного
-підтвердження `Delete card?`, чия дія Delete викликає проп `onDelete`, який `CardStack` веде в
-`useCardsStore.deleteCard`. Екран деталей картки не чіпаємо.
+Заливка-оверлей `card-inactive` і стиль `inactiveOverlay` видаляються разом із
+`StyleSheet`-імпортом, який більше нікому не потрібен (інакше падає `lint`). Бейдж
+`Disconnected` і контрол `card-delete` лишаються там, де вони є, — сиблінгами **після**
+групи, на повній непрозорості: це живі елементи керування на мертвій картці.
 
-Каскад живе в `CardsRepository.deleteCard`: один `database.write`, у ньому вибірка транзакцій
-рівно за `Q.where('card_id', cardId)` і єдиний `database.batch` із
-`prepareDestroyPermanently()` для транзакцій та для самої картки. Це закриває і другий вхід —
-видалення з `CardDetailScreen`.
-
-`useMonobankStore` і `useCardsStore` не змінюються: AC-001, AC-002, AC-013 і AC-015 стережуть
-уже наявну поведінку, і головне з неї — `disconnect` не звертається до бази взагалі.
+`CardStack`, `CardsRepository.deleteCard` і `useMonobankStore` не змінюються. Каскад
+лишається одним `database.write` із предикатом рівно `Q.where('card_id', cardId)`,
+`disconnect` і далі не звертається до бази, а неактивність лишається похідним станом на
+рендері — без колонки й без міграції.
