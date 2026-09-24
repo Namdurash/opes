@@ -41,39 +41,44 @@ export const CardItem = ({
 
   const content = (
     <View style={styles.containerContent}>
-      {/* First child so the badge and the delete control below paint above the wash. */}
-      {inactive ? (
-        <View testID="card-inactive" pointerEvents="none" style={styles.inactiveOverlay} />
-      ) : null}
+      {/* The name, the amount and the type tile are what dims on a tombstone; the
+          badge and the delete control below stay outside it, at full opacity. */}
+      <View
+        testID="card-content"
+        style={[styles.cardContent, inactive ? styles.cardContentInactive : null]}
+      >
+        <View style={styles.header}>
+          <AppText numberOfLines={1} style={styles.title}>
+            {card.title}
+          </AppText>
+          <AppText numberOfLines={1} variant={collapsed ? 'body' : 'h2'} style={styles.amount}>
+            {formatMoney(card.moneyAmount, {
+              code: card.currencyCode,
+              symbol: card.currencySymbol,
+            })}
+          </AppText>
+        </View>
 
-      <View style={styles.header}>
-        <AppText numberOfLines={1} style={styles.title}>
-          {card.title}
-        </AppText>
-        <AppText numberOfLines={1} variant={collapsed ? 'body' : 'h2'} style={styles.amount}>
-          {formatMoney(card.moneyAmount, { code: card.currencyCode, symbol: card.currencySymbol })}
-        </AppText>
+        {collapsed ? null : !hasImage ? (
+          <View style={styles.body}>
+            <View style={styles.placeholder}>
+              <AppText variant="caption" tone="inverse">
+                {card.type.slice(0, 1).toUpperCase()}
+              </AppText>
+            </View>
+
+            <View style={styles.details}>
+              <AppText tone="secondary">{card.type}</AppText>
+            </View>
+          </View>
+        ) : (
+          <View style={styles.imageContent}>
+            <View style={styles.typeBadge}>
+              <AppText tone="inverse">{card.type}</AppText>
+            </View>
+          </View>
+        )}
       </View>
-
-      {collapsed ? null : !hasImage ? (
-        <View style={styles.body}>
-          <View style={styles.placeholder}>
-            <AppText variant="caption" tone="inverse">
-              {card.type.slice(0, 1).toUpperCase()}
-            </AppText>
-          </View>
-
-          <View style={styles.details}>
-            <AppText tone="secondary">{card.type}</AppText>
-          </View>
-        </View>
-      ) : (
-        <View style={styles.imageContent}>
-          <View style={styles.typeBadge}>
-            <AppText tone="inverse">{card.type}</AppText>
-          </View>
-        </View>
-      )}
 
       {inactive ? (
         <>

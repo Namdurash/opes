@@ -1,4 +1,3 @@
-import { StyleSheet } from 'react-native';
 import { makeStyles } from '../../../shared/theme';
 
 export const useCardItemStyles = makeStyles(theme => ({
@@ -12,6 +11,14 @@ export const useCardItemStyles = makeStyles(theme => ({
   },
   containerContent: {
     flex: 1,
+  },
+  /** Explicit `opacity: 1` — a live card reports the number, not `undefined`. */
+  cardContent: {
+    flex: 1,
+    opacity: 1,
+  },
+  cardContentInactive: {
+    opacity: 0.5,
   },
   header: {
     paddingHorizontal: theme.spacing.md,
@@ -69,14 +76,6 @@ export const useCardItemStyles = makeStyles(theme => ({
   },
   details: {
     flex: 1,
-  },
-  inactiveOverlay: {
-    ...StyleSheet.absoluteFillObject,
-    backgroundColor: theme.colors.surface,
-    borderColor: theme.colors.border,
-    borderWidth: 1,
-    borderRadius: theme.radii.md,
-    opacity: 0.75,
   },
   disconnectedBadge: {
     alignSelf: 'flex-start',
