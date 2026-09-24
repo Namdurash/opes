@@ -1,0 +1,16 @@
+{
+  "schema": 2,
+  "ticket": "OPES-68",
+  "ticket_sha256": "07abfa58d41b5fc96872c81b57209a5c3face0c6f50ae7121b7d54b7e8e763b4",
+  "branch": "aif/OPES-68",
+  "base": "5d0ac1b60b2823ebf39dfae08fc80cb4eccb4b64",
+  "worktree": ".aif/worktrees/OPES-68",
+  "stage": "plan",
+  "attempts": {},
+  "dispatches": 0,
+  "spent_usd": 0,
+  "started_at": "2026-09-24T13:31:07Z",
+  "finished_at": null,
+  "status": "running",
+  "why": null
+}
