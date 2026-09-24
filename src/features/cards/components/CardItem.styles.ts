@@ -1,3 +1,4 @@
+import { StyleSheet } from 'react-native';
 import { makeStyles } from '../../../shared/theme';
 
 export const useCardItemStyles = makeStyles(theme => ({
@@ -68,5 +69,35 @@ export const useCardItemStyles = makeStyles(theme => ({
   },
   details: {
     flex: 1,
+  },
+  inactiveOverlay: {
+    ...StyleSheet.absoluteFillObject,
+    backgroundColor: theme.colors.surface,
+    borderColor: theme.colors.border,
+    borderWidth: 1,
+    borderRadius: theme.radii.md,
+    opacity: 0.75,
+  },
+  disconnectedBadge: {
+    alignSelf: 'flex-start',
+    marginHorizontal: theme.spacing.md,
+    marginBottom: theme.spacing.sm,
+    borderRadius: theme.radii.pill,
+    borderColor: theme.colors.border,
+    borderWidth: 1,
+    backgroundColor: theme.colors.surface,
+    paddingHorizontal: theme.spacing.md,
+    paddingVertical: theme.spacing.xs,
+  },
+  deleteControl: {
+    alignSelf: 'flex-start',
+    marginHorizontal: theme.spacing.md,
+    marginBottom: theme.spacing.md,
+    borderRadius: theme.radii.pill,
+    borderColor: theme.colors.border,
+    borderWidth: 1,
+    backgroundColor: theme.colors.background,
+    paddingHorizontal: theme.spacing.md,
+    paddingVertical: theme.spacing.xs,
   },
 }));

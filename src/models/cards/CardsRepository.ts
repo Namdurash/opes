@@ -2,7 +2,7 @@ import { Q } from '@nozbe/watermelondb';
 import type { Card, CardType } from '../../domain/cards';
 import type { MonobankAccount } from '../../services/monobank/types';
 import { database } from '../../services/database';
-import { CardModel } from '../../services/database/models';
+import { CardModel, TransactionModel } from '../../services/database/models';
 
 export interface CreateCardInput {
   userId: string;
@@ -116,11 +116,20 @@ export class CardsRepository implements CardsRepositoryContract {
 
   async deleteCard(cardId: string): Promise<void> {
     const collection = database.get<CardModel>('cards');
+    const transactionsCollection = database.get<TransactionModel>('transactions');
 
     await database.write(async () => {
       const record = await collection.find(cardId);
-      // Offline-only DB: there is no remote to sync a soft-delete to.
-      await record.destroyPermanently();
+      // Exactly this card's rows — a wider predicate would destroy a neighbouring
+      // card's imported history, and destroyPermanently has no undo.
+      const transactions = await transactionsCollection.query(Q.where('card_id', cardId)).fetch();
+
+      // Offline-only DB: there is no remote to sync a soft-delete to. One batch so
+      // the card and the history it owns leave together.
+      await database.batch(
+        ...transactions.map(transaction => transaction.prepareDestroyPermanently()),
+        record.prepareDestroyPermanently(),
+      );
     });
   }
 

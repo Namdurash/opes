@@ -1,24 +1,51 @@
 import React from 'react';
-import { ImageBackground, View } from 'react-native';
+import { ImageBackground, Pressable, View } from 'react-native';
 import { Card } from '../../../domain/cards';
 import { AppText } from '../../../shared/ui';
+import { showBottomSheet } from '../../../shared/ui/bottom-sheet';
 import { formatMoney } from '../../../shared/utils';
 import { useCardItemStyles } from './CardItem.styles';
 
 interface CardItemProps {
   card: Card;
   collapsed?: boolean;
+  /** The card is a tombstone: greyed, badged, and carrying the delete control. */
+  inactive?: boolean;
+  onDelete?: () => void;
 }
 
 const canRenderImage = (image: string | null): image is string =>
   Boolean(image && /^(https?:|file:|data:|content:)/.test(image));
 
-export const CardItem = ({ card, collapsed = false }: CardItemProps) => {
+export const CardItem = ({
+  card,
+  collapsed = false,
+  inactive = false,
+  onDelete,
+}: CardItemProps) => {
   const styles = useCardItemStyles();
   const hasImage = canRenderImage(card.image);
   const imageUri: string | undefined = hasImage ? card.image ?? undefined : undefined;
+
+  const confirmDelete = () => {
+    showBottomSheet({
+      variant: 'error',
+      title: 'Delete card?',
+      message: `"${card.title}" will be permanently removed. This cannot be undone.`,
+      actions: [
+        { label: 'Delete', variant: 'danger', onPress: () => onDelete?.() },
+        { label: 'Cancel', variant: 'secondary', onPress: () => {} },
+      ],
+    });
+  };
+
   const content = (
     <View style={styles.containerContent}>
+      {/* First child so the badge and the delete control below paint above the wash. */}
+      {inactive ? (
+        <View testID="card-inactive" pointerEvents="none" style={styles.inactiveOverlay} />
+      ) : null}
+
       <View style={styles.header}>
         <AppText numberOfLines={1} style={styles.title}>
           {card.title}
@@ -47,6 +74,25 @@ export const CardItem = ({ card, collapsed = false }: CardItemProps) => {
           </View>
         </View>
       )}
+
+      {inactive ? (
+        <>
+          <View style={styles.disconnectedBadge}>
+            <AppText testID="card-disconnected-badge" variant="caption" tone="tertiary">
+              Disconnected
+            </AppText>
+          </View>
+
+          <Pressable
+            testID="card-delete"
+            accessibilityLabel="Delete card"
+            style={styles.deleteControl}
+            onPress={confirmDelete}
+          >
+            <AppText variant="caption">Delete</AppText>
+          </Pressable>
+        </>
+      ) : null}
     </View>
   );
 

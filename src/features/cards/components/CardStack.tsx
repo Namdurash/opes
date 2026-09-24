@@ -8,6 +8,9 @@ import Animated, {
   withSpring,
 } from 'react-native-reanimated';
 import { Card } from '../../../domain/cards';
+// Deep import, not the monobank barrel: the barrel re-exports ConnectMonobankScreen,
+// which imports app/navigation and cycles back into the cards barrel.
+import { useMonobankStore } from '../../monobank/state/useMonobankStore';
 import { useCardsStore } from '../state/useCardsStore';
 import { CardItem } from './CardItem';
 import { CARD_STEP, useCardStackStyles } from './CardStack.styles';
@@ -23,6 +26,8 @@ interface DraggableCardItemProps {
   dragOffsetY: SharedValue<number>;
   onLongPress: (index: number) => void;
   onPress?: (card: Card) => void;
+  inactive: boolean;
+  onDelete: () => void;
 }
 
 const DraggableCardItem = ({
@@ -34,6 +39,8 @@ const DraggableCardItem = ({
   dragOffsetY,
   onLongPress,
   onPress,
+  inactive,
+  onDelete,
 }: DraggableCardItemProps) => {
   const shiftY = useSharedValue(0);
 
@@ -86,7 +93,7 @@ const DraggableCardItem = ({
       delayLongPress={400}
     >
       <Animated.View style={animatedStyle}>
-        <CardItem card={card} collapsed={collapsed} />
+        <CardItem card={card} collapsed={collapsed} inactive={inactive} onDelete={onDelete} />
       </Animated.View>
     </Pressable>
   );
@@ -101,6 +108,8 @@ interface CardStackProps {
 export const CardStack = ({ cards, onDragStateChange, onCardPress }: CardStackProps) => {
   const styles = useCardStackStyles();
   const reorderCards = useCardsStore(state => state.reorderCards);
+  const deleteCard = useCardsStore(state => state.deleteCard);
+  const monobankStatus = useMonobankStore(state => state.status);
 
   const lastIndex = cards.length - 1;
   const [draggingIndex, setDraggingIndex] = useState<number | null>(null);
@@ -197,6 +206,9 @@ export const CardStack = ({ cards, onDragStateChange, onCardPress }: CardStackPr
       {cards.map((card, index) => {
         const isDragging = draggingIndex === index;
         const layerStyle = { zIndex: isDragging ? 100 : index + 1 };
+        // Derived at render — there is no stored flag: a monobank card is a
+        // tombstone exactly while Monobank is not connected.
+        const inactive = monobankStatus !== 'connected' && card.type === 'monobank';
         return (
           <View
             key={card.id}
@@ -215,7 +227,11 @@ export const CardStack = ({ cards, onDragStateChange, onCardPress }: CardStackPr
               draggingTargetIndex={draggingTargetIndex}
               dragOffsetY={dragOffsetY}
               onLongPress={handleLongPress}
-              onPress={onCardPress}
+              // Only the press path is gated: long-press reorder stays on a
+              // tombstone, so it can still be pushed down the pile.
+              onPress={inactive ? undefined : onCardPress}
+              inactive={inactive}
+              onDelete={() => deleteCard(card.id)}
             />
           </View>
         );
