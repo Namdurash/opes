@@ -5,15 +5,33 @@
   "branch": "aif/OPES-68",
   "base": "5d0ac1b60b2823ebf39dfae08fc80cb4eccb4b64",
   "worktree": ".aif/worktrees/OPES-68",
-  "stage": "plan",
+  "stage": "tests",
   "attempts": {
-    "plan": 1
+    "plan": 1,
+    "tests": 3
   },
-  "dispatches": 1,
-  "spent_usd": 2.3012,
+  "dispatches": 4,
+  "spent_usd": 11.1356,
   "started_at": "2026-09-24T13:31:07Z",
   "finished_at": null,
   "status": "running",
   "why": null,
-  "dispatch_base": "4d64895ae0638d24d91a4ef00e41ad20545bf4d7"
+  "dispatch_base": "da002e85866f62fdc6ff960a3e06dbaadd77e71a",
+  "station_errors": [
+    {
+      "stage": "tests",
+      "attempt": 1,
+      "error": "no result field"
+    },
+    {
+      "stage": "tests",
+      "attempt": 2,
+      "error": "no result field"
+    },
+    {
+      "stage": "tests",
+      "attempt": 3,
+      "error": "no result field"
+    }
+  ]
 }

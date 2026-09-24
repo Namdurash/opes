@@ -18,18 +18,56 @@
  *     under jest — App.test.tsx already renders GlobalBottomSheet through it.
  *   - No test database. Importing the store pulls in CardsRepository and the
  *     database barrel, which opens a live LokiJS instance with a 500 ms autosave
- *     that outlives the suite; no criterion here reaches a repository call, so the
- *     singleton is a bare object (D-018).
+ *     that outlives the suite; no OPES-64 criterion reaches a repository call, so
+ *     the singleton is a bare object for all of them (D-018).
  *
  * The failure is injected as a rejected promise from a double, and every criterion
  * runs against a doubled MonobankTokenService. So nothing here establishes that a
  * real Keychain delete ever fails (VG-002), that a resolved clear actually removed
  * the secret on a device (VG-001), or that the sheet is something a user can see
  * (VG-003). Those are device checks.
+ *
+ * ---
+ *
+ * OPES-68 adds the last describe: disconnect does not touch the database at all.
+ *
+ * That is the whole decision of the ticket — the app never deletes a user's data on
+ * its own — and it is a claim no stand-in object can carry, so those two cases run
+ * against a real throwaway database with a card and three transactions already in
+ * it. They are expected to be GREEN the day they are written: `disconnect` reaches
+ * no repository today, and OPES-68 (D-012) leaves it that way. They are here as the
+ * regression guard that makes "leaves the data alone" falsifiable, not as a
+ * description of work to be done.
+ *
+ * Their honest limit is VG-003: a handful of Loki rows is not months of imported
+ * history on a device.
  */
-import { makeCard } from '../../../../test/factories';
+import type { Database } from '@nozbe/watermelondb';
+import { makeCard, makeTransaction } from '../../../../test/factories';
+import { createTestDatabase } from '../../../../test/db';
+import type { MonobankAccount } from '../../../services/monobank/types';
 
-jest.mock('../../../services/database/database', () => ({ database: {} }));
+/**
+ * OPES-68 needs the opposite of D-018 for two of its criteria: AC-001 and AC-002
+ * are claims about ROWS — that a successful disconnect leaves the Monobank card and
+ * its imported history where they are — and a bare stand-in object has no rows to
+ * leave. So the singleton becomes a getter: every OPES-64 case below keeps the bare
+ * object it has always had, and the one describe that counts rows swaps in a real
+ * throwaway database for the length of its case.
+ *
+ * `var`, not `let`: the jest.mock factory is hoisted above this declaration, and
+ * jest only lets a factory close over names beginning with `mock`.
+ */
+var mockDatabase: Database;
+
+jest.mock('../../../services/database/database', () => ({
+  get database() {
+    return mockDatabase;
+  },
+}));
+
+/** What the singleton is for every case that never reaches a repository (D-018). */
+const NO_DATABASE = {} as Database;
 
 // The store imports `clearMonobankService` as a named binding and offers no seam,
 // so counting it means replacing the module it comes from (D-017).
@@ -42,6 +80,8 @@ import { clearMonobankService } from '../../../services/monobank/serviceInstance
 import { monobankTokenService } from '../../../services/monobank/MonobankTokenService';
 import { monobankAccountSelectionService } from '../../../services/monobank/MonobankAccountSelectionService';
 import { useBottomSheetStore } from '../../../stores/useBottomSheetStore';
+import { CardsRepository } from '../../../models/cards';
+import { TransactionsRepository } from '../../../models/transactions';
 import { useTransactionsStore } from '../../transactions/state/useTransactionsStore';
 import { useMonobankStore } from './useMonobankStore';
 
@@ -55,6 +95,7 @@ let selectionClearSpy: jest.SpyInstance;
 beforeEach(() => {
   jest.clearAllMocks();
 
+  mockDatabase = NO_DATABASE;
   useBottomSheetStore.setState({ visible: false, config: null });
 
   // The `given` shared by AC-003 to AC-016: a connected store with one account, an
@@ -211,5 +252,82 @@ describe('useMonobankStore.disconnect when clearing the token resolves', () => {
     await disconnectToCompletion();
 
     expect(resetTransactions).toHaveBeenCalledTimes(1);
+  });
+});
+
+/**
+ * OPES-68 AC-001 and AC-002 — a successful disconnect deletes nothing.
+ *
+ * Both criteria are counts of rows that are still there afterwards, so both run
+ * against a real database: the card is written by the same `upsertMonobankCards`
+ * that `connect` uses, and the three transactions by the same `upsertBatch` the
+ * sync writes through. Each case asserts the count BEFORE disconnecting as well —
+ * an empty table would satisfy "nothing was deleted" without proving anything, and
+ * the seeding is the only thing standing between these cases and that.
+ */
+const MONOBANK_ACCOUNT: MonobankAccount = {
+  id: 'acc-1',
+  sendId: 'send-1',
+  balance: 1200,
+  creditLimit: 0,
+  type: 'black',
+  currencyCode: 980,
+  currencySymbol: '₴',
+  maskedPan: ['537541******1234'],
+  iban: 'UA000000000000000000000000000',
+};
+
+const USER_ID = 'user-1';
+
+describe('useMonobankStore.disconnect against a database holding the imported card', () => {
+  let cardsRepository: CardsRepository;
+  let transactionsRepository: TransactionsRepository;
+  let monobankCardId: string;
+  let teardown: () => Promise<void>;
+
+  beforeEach(async () => {
+    const testDatabase = createTestDatabase();
+    mockDatabase = testDatabase.database;
+    teardown = testDatabase.teardown;
+
+    cardsRepository = new CardsRepository();
+    transactionsRepository = new TransactionsRepository();
+
+    jest.spyOn(monobankTokenService, 'clear').mockResolvedValue(undefined);
+
+    const [card] = await cardsRepository.upsertMonobankCards(USER_ID, [MONOBANK_ACCOUNT]);
+    monobankCardId = card.id;
+
+    await transactionsRepository.upsertBatch(
+      ['tx-1', 'tx-2', 'tx-3'].map((id, index) =>
+        makeTransaction({
+          id,
+          cardId: monobankCardId,
+          occurredAtIso: `2026-05-0${index + 1}T10:00:00.000Z`,
+        }),
+      ),
+    );
+  });
+
+  afterEach(async () => {
+    await teardown();
+  });
+
+  it('AC-001 — leaves the monobank card in the database', async () => {
+    expect(await cardsRepository.getMonobankCards(USER_ID)).toHaveLength(1);
+
+    await disconnectToCompletion();
+
+    // The row survives the disconnect. Home stops treating it as live (that is
+    // CardStack's job), but nothing removes it — only the user can.
+    expect(await cardsRepository.getMonobankCards(USER_ID)).toHaveLength(1);
+  });
+
+  it('AC-002 — leaves the three imported transactions on that card', async () => {
+    expect(await transactionsRepository.getByCardId(monobankCardId)).toHaveLength(3);
+
+    await disconnectToCompletion();
+
+    expect(await transactionsRepository.getByCardId(monobankCardId)).toHaveLength(3);
   });
 });
