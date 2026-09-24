@@ -331,3 +331,40 @@ describe('useMonobankStore.disconnect against a database holding the imported ca
     expect(await transactionsRepository.getByCardId(monobankCardId)).toHaveLength(3);
   });
 });
+
+/**
+ * OPES-68 AC-015 — a failed clear() greys nothing, because it moves nothing.
+ *
+ * This is the OPES-64 guarantee read back as OPES-68's own precondition, and it is
+ * why the tombstone state is derived from `status` rather than stored on the card
+ * (D-011). A column would have to be written by `disconnect`, and a `disconnect`
+ * that writes it before the token is actually gone greys every Monobank card while
+ * the token is still on disk and the sync still works. Deriving it makes that
+ * failure unreachable: nothing greys unless the status moved, and the status does
+ * not move here.
+ *
+ * The id is prefixed with its ticket on purpose. This file also carries OPES-64's
+ * own AC-015 ("clears the account selection"), inherited and unrelated — same
+ * number, different criterion, different ticket.
+ */
+describe('useMonobankStore.disconnect as the source of the tombstone state', () => {
+  it('OPES-68 AC-015 — leaves the status at connected when clearing the token rejects', async () => {
+    jest
+      .spyOn(monobankTokenService, 'clear')
+      .mockRejectedValue(new Error('Keychain delete failed'));
+
+    await disconnectToCompletion();
+
+    expect(useMonobankStore.getState().status).toBe('connected');
+
+    // Control. The seed IS 'connected', so the assertion above is also what a
+    // `disconnect` that never touched the status at all would produce. Running the
+    // same call with a clear that resolves shows the status is genuinely this
+    // function's to move — and that the tombstone state it drives can switch on.
+    jest.spyOn(monobankTokenService, 'clear').mockResolvedValue(undefined);
+
+    await disconnectToCompletion();
+
+    expect(useMonobankStore.getState().status).toBe('idle');
+  });
+});
