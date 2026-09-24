@@ -200,6 +200,17 @@
       "seq": 13,
       "at": "2026-09-24T14:16:23Z",
       "prev": "89e85cea27d47b2c1bb9b49ba44493c87d28f5ae20caaa28ea7c323f230066f6"
+    },
+    {
+      "gate": "ready",
+      "result": "pass",
+      "subject": "ticket.md",
+      "subject_sha256": "5f05b29a7acc3e81aa16c60bf5621369854d84f59d90f18f5ba4815d44defd08",
+      "gate_sha256": "da5ccfb2c15e5f37f098fa5d5e62dce21f2386bec643afe1c6d7ab6c5dfeb19e",
+      "reason": "ready: 15 criteria · 13 decided · 4 gap(s)",
+      "seq": 14,
+      "at": "2026-09-24T16:09:26Z",
+      "prev": "4b0770af5768fb641bf2a923407c230b976c42c1e13ea47ff6795822193015ac"
     }
   ],
   "accepted_at": null

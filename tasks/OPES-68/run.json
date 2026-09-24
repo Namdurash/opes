@@ -1,38 +1,16 @@
 {
   "schema": 2,
   "ticket": "OPES-68",
-  "ticket_sha256": "07abfa58d41b5fc96872c81b57209a5c3face0c6f50ae7121b7d54b7e8e763b4",
+  "ticket_sha256": "5f05b29a7acc3e81aa16c60bf5621369854d84f59d90f18f5ba4815d44defd08",
   "branch": "aif/OPES-68",
-  "base": "5d0ac1b60b2823ebf39dfae08fc80cb4eccb4b64",
+  "base": "1eb90f219fe91aca6cf06a5d447adeb707f0a354",
   "worktree": ".aif/worktrees/OPES-68",
-  "stage": "done",
-  "attempts": {
-    "plan": 1,
-    "tests": 3,
-    "implement": 1
-  },
-  "dispatches": 5,
-  "spent_usd": 12.9239,
-  "started_at": "2026-09-24T13:31:07Z",
-  "finished_at": "2026-09-24T14:16:24Z",
-  "status": "built",
-  "why": null,
-  "dispatch_base": "2c31fa4a522390dc85a46a76abeba383d59a5b9d",
-  "station_errors": [
-    {
-      "stage": "tests",
-      "attempt": 1,
-      "error": "no result field"
-    },
-    {
-      "stage": "tests",
-      "attempt": 2,
-      "error": "no result field"
-    },
-    {
-      "stage": "tests",
-      "attempt": 3,
-      "error": "no result field"
-    }
-  ]
+  "stage": "plan",
+  "attempts": {},
+  "dispatches": 0,
+  "spent_usd": 0,
+  "started_at": "2026-09-24T16:09:26Z",
+  "finished_at": null,
+  "status": "running",
+  "why": null
 }
