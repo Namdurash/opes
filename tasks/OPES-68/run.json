@@ -5,7 +5,7 @@
   "branch": "aif/OPES-68",
   "base": "5d0ac1b60b2823ebf39dfae08fc80cb4eccb4b64",
   "worktree": ".aif/worktrees/OPES-68",
-  "stage": "implement",
+  "stage": "done",
   "attempts": {
     "plan": 1,
     "tests": 3,
@@ -14,8 +14,8 @@
   "dispatches": 5,
   "spent_usd": 12.9239,
   "started_at": "2026-09-24T13:31:07Z",
-  "finished_at": null,
-  "status": "running",
+  "finished_at": "2026-09-24T14:16:24Z",
+  "status": "built",
   "why": null,
   "dispatch_base": "2c31fa4a522390dc85a46a76abeba383d59a5b9d",
   "station_errors": [
