@@ -1,6 +1,7 @@
 import type { Database } from '@nozbe/watermelondb';
 import type { MonobankAccount } from '../../services/monobank/types';
 import { createTestDatabase } from '../../../test/db';
+import { makeTransaction } from '../../../test/factories';
 
 // The repository reaches WatermelonDB through a module singleton rather than an
 // injected handle, so the only way to point it at a throwaway database is to
@@ -18,8 +19,10 @@ jest.mock('../../services/database/database', () => ({
 }));
 
 import { CardsRepository } from './CardsRepository';
+import { TransactionsRepository } from '../transactions';
 
 let repository: CardsRepository;
+let transactions: TransactionsRepository;
 let teardown: () => Promise<void>;
 
 beforeEach(() => {
@@ -27,6 +30,7 @@ beforeEach(() => {
   mockDatabase = testDatabase.database;
   teardown = testDatabase.teardown;
   repository = new CardsRepository();
+  transactions = new TransactionsRepository();
 });
 
 afterEach(async () => {
@@ -176,6 +180,88 @@ describe('CardsRepository monobank cards', () => {
     const monobankCards = await repository.getMonobankCards('user-1');
 
     expect(monobankCards.map(card => card.monobankAccountId)).toEqual(['acc-1']);
+  });
+});
+
+/**
+ * OPES-68 AC-010 to AC-012 — deleting a card takes its transactions with it.
+ *
+ * Disconnecting deletes nothing; deleting is the user's own, explicit act, and when
+ * they ask for it the card's imported history has to go too. Today `deleteCard`
+ * destroys the card row alone, so every transaction carrying its `card_id` is left
+ * orphaned — AC-011 is the criterion that says so, and it is the red one here.
+ *
+ * The other two are guards on either side of it, and they hold today:
+ *
+ *   - AC-010 counts what the user asked to remove. It would also be satisfied by
+ *     today's code, which is the point — the cascade must not cost the card its own
+ *     deletion.
+ *   - AC-012 counts the card nobody touched. `destroyPermanently` has no backup and
+ *     no undo, so a cascade with a predicate one field too wide (user-wide,
+ *     type-wide, monobank-wide) destroys history this whole ticket exists to keep.
+ *     A green AC-011 with a red AC-012 is a worse outcome than a red AC-011.
+ *
+ * Asserted at the repository rather than at `useCardsStore.deleteCard`, the surface
+ * the criteria name: the store delegates to this method verbatim and owns only the
+ * optimistic list and its rollback (D-008), and rows are only countable here.
+ *
+ * The honest limit is VG-003. Two cards and five rows in LokiJS are not months of
+ * imported history on a device, and a green run below is not the sandbox check that
+ * the ticket still asks for.
+ */
+describe('CardsRepository delete cascade', () => {
+  let cardAId: string;
+  let cardBId: string;
+
+  beforeEach(async () => {
+    // Card A is the tombstone the user asked to remove: a monobank card with three
+    // imported transactions. Card B is the bystander, with two of its own.
+    const [cardA] = await repository.upsertMonobankCards('user-1', [account()]);
+    const cardB = await repository.createCard({
+      userId: 'user-1',
+      title: 'Cash',
+      moneyAmount: 500,
+      type: 'storage',
+    });
+
+    cardAId = cardA.id;
+    cardBId = cardB.id;
+
+    await transactions.upsertBatch([
+      makeTransaction({ id: 'a-1', cardId: cardAId, occurredAtIso: '2026-05-01T10:00:00.000Z' }),
+      makeTransaction({ id: 'a-2', cardId: cardAId, occurredAtIso: '2026-05-02T10:00:00.000Z' }),
+      makeTransaction({ id: 'a-3', cardId: cardAId, occurredAtIso: '2026-05-03T10:00:00.000Z' }),
+      makeTransaction({ id: 'b-1', cardId: cardBId, occurredAtIso: '2026-04-01T10:00:00.000Z' }),
+      makeTransaction({ id: 'b-2', cardId: cardBId, occurredAtIso: '2026-04-02T10:00:00.000Z' }),
+    ]);
+  });
+
+  it('AC-010 — leaves the user no monobank cards once the disconnected one is deleted', async () => {
+    expect(await repository.getMonobankCards('user-1')).toHaveLength(1);
+
+    await repository.deleteCard(cardAId);
+
+    expect(await repository.getMonobankCards('user-1')).toHaveLength(0);
+  });
+
+  it('AC-011 — destroys the deleted card\'s transactions with it', async () => {
+    // The precondition, spelled out: three rows exist and carry this card_id, so
+    // the zero below is the cascade removing them rather than a query that never
+    // matched anything.
+    expect(await transactions.getByCardId(cardAId)).toHaveLength(3);
+
+    await repository.deleteCard(cardAId);
+
+    expect(await transactions.getByCardId(cardAId)).toHaveLength(0);
+  });
+
+  it('AC-012 — leaves the other card and its transactions untouched', async () => {
+    await repository.deleteCard(cardAId);
+
+    expect(await transactions.getByCardId(cardBId)).toHaveLength(2);
+    // Its rows surviving would mean little if the card they hang off were gone —
+    // a too-wide cascade takes the row and the card, or either one alone.
+    expect(await repository.findById(cardBId)).not.toBeNull();
   });
 });
 

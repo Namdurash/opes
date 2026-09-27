@@ -17,10 +17,49 @@
  * The sheet is only ever observed as a config object, never as rendered output
  * (VG-003), and the save failure is injected as a rejected promise from a double —
  * nothing here establishes that a real Keychain write ever fails (VG-002).
+ *
+ * ---
+ *
+ * OPES-68 adds the last describe: reconnecting the same account picks the surviving
+ * card back up rather than adding a second one.
+ *
+ * That is the other half of "disconnect deletes nothing" — a row left behind is only
+ * a kindness if reconnecting adopts it, and a second card for the same account would
+ * split one account's history into two strips on Home. The criterion is a count of
+ * ROWS, so it runs against a real throwaway database rather than a stand-in object,
+ * and it is expected to be GREEN the day it is written: `upsertMonobankCards`
+ * already matches on `monobank_account_id`, and OPES-68 leaves it alone (D-010). It
+ * is the regression guard that makes the claim falsifiable, not work to be done.
+ *
+ * Its honest limit is VG-002: the account comes from a doubled Monobank service, so
+ * nothing here establishes that a real account comes back from the live API with the
+ * same id after a disconnect.
  */
+import type { Database } from '@nozbe/watermelondb';
 import type { MonobankClientInfo } from '../../../services/monobank';
+import type { MonobankAccount } from '../../../services/monobank/types';
+import { createTestDatabase } from '../../../../test/db';
 
-jest.mock('../../../services/database/database', () => ({ database: {} }));
+/**
+ * The database singleton is a getter so the two halves of this file can disagree
+ * about it: every OPES-64 case keeps the bare stand-in it has always had (no
+ * criterion there reaches a repository call, and a live LokiJS instance brings a
+ * 500 ms autosave that outlives the suite), while the OPES-68 case that counts rows
+ * swaps in a real throwaway database for the length of its case.
+ *
+ * `var`, not `let`: the jest.mock factory is hoisted above this declaration, and
+ * jest only lets a factory close over names beginning with `mock`.
+ */
+var mockDatabase: Database;
+
+jest.mock('../../../services/database/database', () => ({
+  get database() {
+    return mockDatabase;
+  },
+}));
+
+/** What the singleton is for every case that never reaches a repository. */
+const NO_DATABASE = {} as Database;
 
 // `var`, not `let`: the jest.mock factory below is hoisted above this declaration,
 // and a factory may only close over a name that already exists at that point.
@@ -37,6 +76,7 @@ jest.mock('../../../services/monobank/serviceInstance', () => ({
 import { MonobankError } from '../../../services/monobank';
 import { monobankTokenService } from '../../../services/monobank/MonobankTokenService';
 import { useBottomSheetStore } from '../../../stores/useBottomSheetStore';
+import { CardsRepository } from '../../../models/cards';
 import { useTransactionsStore } from '../../transactions/state/useTransactionsStore';
 import { useMonobankStore } from './useMonobankStore';
 
@@ -59,6 +99,7 @@ let saveSpy: jest.SpyInstance<Promise<void>, [string, string]>;
 beforeEach(() => {
   jest.clearAllMocks();
 
+  mockDatabase = NO_DATABASE;
   useBottomSheetStore.setState({ visible: false, config: null });
   useMonobankStore.setState({
     status: 'idle',
@@ -133,5 +174,76 @@ describe('useMonobankStore.connect when the Monobank API rejects', () => {
 
     expect(saveSpy).toHaveBeenCalledTimes(0);
     expect(useBottomSheetStore.getState().config?.title).toBe('Connection Failed');
+  });
+});
+
+/**
+ * OPES-68 AC-013 — reconnecting account A adopts the card account A left behind.
+ *
+ * The `given` is the state disconnect leaves: the card is still in the database,
+ * carrying `monobank_account_id = acc-1` and whatever balance it last synced.
+ */
+const ACCOUNT_A: MonobankAccount = {
+  id: 'acc-1',
+  sendId: 'send-1',
+  balance: 1200,
+  creditLimit: 0,
+  type: 'black',
+  currencyCode: 980,
+  currencySymbol: '₴',
+  maskedPan: ['537541******1234'],
+  iban: 'UA000000000000000000000000000',
+};
+
+/** What the API returns on the reconnect: the same account, same id. */
+const CLIENT_INFO_WITH_ACCOUNT_A: MonobankClientInfo = {
+  ...CLIENT_INFO,
+  accounts: [ACCOUNT_A],
+};
+
+describe('useMonobankStore.connect reconnecting the account a disconnect left behind', () => {
+  let cardsRepository: CardsRepository;
+  let survivingCardId: string;
+  let teardown: () => Promise<void>;
+
+  const cardsForAccountA = async (): Promise<string[]> => {
+    const cards = await cardsRepository.getMonobankCards(USER_ID);
+
+    return cards.filter(card => card.monobankAccountId === ACCOUNT_A.id).map(card => card.id);
+  };
+
+  beforeEach(async () => {
+    const testDatabase = createTestDatabase();
+    mockDatabase = testDatabase.database;
+    teardown = testDatabase.teardown;
+
+    cardsRepository = new CardsRepository();
+
+    // Written by the same method `connect` writes through, so the surviving row is
+    // the row a previous connect would actually have left.
+    const [survivor] = await cardsRepository.upsertMonobankCards(USER_ID, [ACCOUNT_A]);
+    survivingCardId = survivor.id;
+
+    mockGetClientInfo = jest.fn(async () => CLIENT_INFO_WITH_ACCOUNT_A);
+  });
+
+  afterEach(async () => {
+    await teardown();
+  });
+
+  it('AC-013 — leaves one card for the account instead of adding a second', async () => {
+    // The precondition spelled out: exactly one row carries this account id going
+    // in, so the one coming out is an adoption rather than a table that was empty.
+    expect(await cardsForAccountA()).toHaveLength(1);
+
+    await useMonobankStore.getState().connect(USER_ID, TOKEN);
+
+    expect(useMonobankStore.getState().status).toBe('connected');
+    expect(await cardsForAccountA()).toHaveLength(1);
+
+    // …and it is the SAME row. A connect that destroyed the survivor and created a
+    // replacement would also leave one card, while orphaning every transaction that
+    // pointed at the old id — the continuous history is the whole point.
+    expect(await cardsForAccountA()).toEqual([survivingCardId]);
   });
 });
