@@ -42,7 +42,8 @@
     "attempts_max": 3,
     "plan_amendments_max": 3,
     "revisions_max": 5,
-    "station_max_turns": 30
+    "station_max_turns": 30,
+    "run_budget_usd": null
   },
   "risk_rules": [
     {
