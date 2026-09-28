@@ -1,128 +1,107 @@
 ---
 name: trello-card
-description: Create or update a card on the OPES Trello board in the board's own format — name, labels, description sections, checklists, and cross-ticket links. Use whenever a ticket is put on the board, an existing card is brought up to standard, or a ticket number needs allocating. Not for writing the ticket itself — that is aif-ticket.
+description: Label a card on the OPES board and link it to the cards it depends on — the board-level metadata that the ticket format does not carry. Use right after `aif board create` puts a card up, when a card's labels are wrong or missing, when a dependency between cards changes, or when a ticket number needs allocating. Not for writing the ticket or the card's description — that is /aif-ba.
 license: MIT
-compatibility: Requires the Trello MCP connector.
+compatibility: Requires the Trello MCP connector for removing labels; everything else goes through `aif board`.
 metadata:
   author: opes
-  version: "1.0"
+  version: "2.0"
 ---
 
-Put a ticket on the OPES board in the board's own shape. A card is the board-facing view of a
-ticket that already exists at `tasks/<ID>/ticket.md` — it never invents scope the ticket does not
-have, and it never silently decides something the ticket left open.
+The card's **description is the ticket** — `aif board create` writes `tasks/<ID>/ticket.md` into it
+verbatim, `aif:meta` block and all, and `aif work` reads it back at intake. So this skill never
+touches the description, the name, or the column: those belong to aif, and anything written over
+them is overwritten on the next push.
 
-**Board**: [Opes](https://trello.com/b/OpgSv5wd/opes) · id `6a65fd418956002ae6525c32`
+What aif does **not** do is everything else on the card. That is this skill.
+
+## Run it after the card exists, not before
+
+`aif board create` sets four things: list, name, description, position. It never sets labels.
+
+- On an **existing** card it issues a `PUT`, so the card keeps whatever labels it already had.
+- On a **new** card it issues a `POST`, and the card comes out bare.
+
+That asymmetry is why reformulated cards look fine and freshly created ones look empty. So the
+order is: `aif board create` first, this skill second. A card created and left unlabelled is a card
+nobody can triage without opening it.
 
 ## Allocate the number from the board, never from git log
 
 **The board is the source of truth for ticket numbers.** It runs ahead of the commit history,
-because cards are created for work long before any of it is committed — at the time of writing the
-board reached OPES-60 while `git log` only knew OPES-48.
+because cards exist long before any of their code is committed — at the time of writing the board
+reached OPES-60 while `git log` only knew OPES-48.
 
-So: read every list, take the highest `OPES-NN` across **all** of them, add one. Deriving the next
-number from `git log` produces a collision with an unrelated card that already owns that number.
+Read every list, take the highest `OPES-NN` across **all** of them, add one:
 
-## Name and placement
-
-```
-OPES-NN · kebab-slug
+```bash
+aif board status --json | jq -r '[.[].ticket | ltrimstr("OPES-") | tonumber] | max'
 ```
 
-The slug is the ticket's short name, lowercase, hyphenated — `test-build-isolation`, not a
-sentence. Lists are workflow phase, not category: **Todo → In Progress → Blocked → Review / QA →
-Done**. New cards go to Todo unless the ticket is blocked by unfinished work, in which case Blocked.
+Deriving the next number from `git log` collides with a card that already owns it.
 
 ## Labels — four axes
 
+```bash
+aif board label <ID> "<label>"     # adds; creates the label on the board if new
+```
+
 Apply one from each axis that applies. Area and size are effectively always known; priority is a
-judgement call; the domain axis is optional and only for user-facing value.
+judgement call; the domain axis is optional.
 
 | Axis | Labels | Pick by |
 |---|---|---|
-| Area | `🧩 features` · `⚙️ services` · `🔧 shared` · `🗄 models` · `📐 domain` | Which `src/` layer the work lands in. More than one is fine and common. |
+| Area | `🧩 features` · `⚙️ services` · `🔧 shared` · `🗄 models` · `📐 domain` | Which `src/` layer the work lands in. More than one is fine and common. Tooling and config work outside `src/` is `🔧 shared`. |
 | Size | `🟢 XS` · `🔵 S` · `🟡 M` · `🟣 L` | Effort, not risk. Native config on both platforms is L; a contained service change is M. |
-| Priority | `🔴 Critical` · `🟠 High` · `🟡 Medium` · `⚪ Low` | Urgency against other work. **Not the same as the ticket's `risk`** — a high-risk internal tool can be Medium priority. |
+| Priority | `🔴 Critical` · `🟠 High` · `🟡 Medium` · `⚪ Low` | Urgency against other work. **Not the same as the ticket's `risk`** — a high-risk internal tool can be Medium priority, and an XS ticket that unblocks three others can be High. |
 | Domain | `👤 User` · `💰 Money` · `💳 Card` · `🤖 AI` | Only when the card delivers user-facing value in that domain. Omit for tooling. |
 
-Never invent a label. If none fits, say so rather than creating one.
+**Never invent a label.** If none fits, say so rather than creating one — `aif board label` will
+happily create a typo as a new board label.
 
-## Description — the standard shape
+**Priority is the one you must surface.** Area and size are readable off the ticket; priority is a
+claim about what matters next, and it is yours, not the ticket's. Say which priority you assigned
+and why, in the conversation — not only on the card.
 
-Cards written for the aif pipeline use `##` headings in this order. Everything is derived from
-`tasks/<ID>/ticket.md`; nothing here is new information.
+## Dependencies between cards
 
-```markdown
-<One line: what this card is, and which half of a larger initiative if it is one.>
-
-Source ticket: `tasks/OPES-NN/ticket.md`
-Risk: **<low|medium|high>** · **Depends on: OPES-MM · <slug>** — <what must be true first>
-
-## Why
-## What should be true after
-## Surfaces
-## Risk
-## Non-goals
-## Deliberately left open
+```bash
+aif board label <ID> "depends-on-OPES-NN"
 ```
 
-- **Why** — the problem in the present tense, and what is different afterwards. State the cost of
-  the status quo concretely.
-- **What should be true after** — observable behaviour, bold lead-in per property. Not tasks.
-- **Surfaces** — the actual files and areas touched, as a bullet list. Use real paths, verified to
-  exist. Include `CLAUDE.md` files that must be updated.
-- **Risk** — restate the ticket's `risk` and say *why a green suite is not sufficient evidence* when
-  it is not. This is the part reviewers read.
-- **Non-goals** — what a reader would reasonably expect and will not get, each with where it went
-  instead if it went somewhere.
-- **Deliberately left open** — carried across from the ticket verbatim in substance. Naming
-  decisions belong here, not invented in the card.
+Label only the **open** blockers. A card whose two blockers are one done and one outstanding gets
+one label, for the outstanding one — otherwise the board shows a dependency that no longer exists.
 
-Older cards (OPES-48, OPES-55) use `**bold**` headings and an OpenSpec-era section set
-(`What Changes` / `Capabilities` / `Impact`, plus a `---` footer block with `Source:` /
-`OpenSpec:` / `Commit scope:`). Leave them as they are — they are history, not a template.
+**`aif board label` can only add.** There is no unlabel command, so a dependency that has been
+resolved must be removed through the Trello MCP: read the card's current labels, then set them
+again without the stale one (`update_card_details` with the remaining label ids). Check for stale
+`depends-on-` labels whenever a card moves to Done.
 
-### Variant: decision card
+Distinguish the two cases before labelling:
 
-Some cards carry no implementation at all — their deliverable is a decision recorded in another
-ticket's spec. Mark them at the very top so nobody starts a branch:
+- **Blocked** — cannot be built until the other card lands. Belongs in the Blocked column.
+- **Ordered** — builds fine, but cannot be *verified* until the other lands. Stays in Ready; say so
+  in the ticket's `verification_gaps`, not with a `depends-on` label that overstates it.
 
-> 🧭 **Decision card, not implementation work.** Its deliverable is a fixed contract written into
-> OPES-MM's `spec.md`. It closes when that spec is approved.
+## What this skill does not do
 
-Then: **Why** / **What must be decided** (numbered) / **Constraints already fixed** (do not
-re-open) / **Impact** / **Non-goals**, and a footer naming `Source:`, `Resolve in:`, and
-`Commit scope: none of its own`.
+- **Checklists.** The `plan` station produces the authoritative work breakdown in
+  `tasks/<ID>/plan.md`, with the file manifest the scope gate enforces. A checklist on the card is
+  read by nothing, duplicates the acceptance criteria, and is stale minutes after `aif work` starts.
+  Older cards still carry them; leave them as history.
+- **The description, the name, or the column.** All three are aif's, and all three are overwritten
+  on the next `aif board create`.
+- **Deciding anything the ticket left open.** If a card would need it, the ticket is not ready —
+  send it to `/aif-ba`, which is where open questions get answered.
 
-## Checklists
-
-The card carries the work breakdown; the aif `plan` station later produces the authoritative one.
-Keep items at the ticket's altitude — never name a file, flag or label the ticket deliberately left
-open.
-
-1. **`Edge cases that matter`** — first, unnumbered. The cases where a plausible implementation
-   goes wrong: empty, duplicate, interrupted, boundary, both-builds-installed, already-done. Each
-   states the case *and* the expected outcome.
-2. **`1. <group>`, `2. <group>`, …** — task groups in dependency order, items prefixed `1.1`, `1.2`.
-   One coherent concern per group.
-3. **`N. Tests`** — always last, always its own group.
-
-Include a docs item whenever the change alters something a layer `CLAUDE.md` documents.
-
-## Cross-ticket links
-
-State dependencies in both directions and link them:
-
-- On the dependency: `**Blocks: OPES-MM · <slug>**`
-- On the dependent: `**Depends on: OPES-NN · <slug>**` plus the card URL, and a note on what must
-  be true before starting.
-
-When a ticket is split, each resulting card says which half it is and what the other half covers.
+Cards from before aif (OPES-41 through OPES-56) use an OpenSpec-era shape: `**bold**` headings,
+`What Changes` / `Capabilities` / `Impact`, and a `---` footer with `Source:` / `OpenSpec:` /
+`Commit scope:`. They are history. Do not retrofit them — reformulating one means running it
+through `/aif-ba`, which replaces the description wholesale.
 
 ## Before finishing
 
-- Every path named in **Surfaces** actually exists — check, do not recall.
-- Priority and size are stated, and any judgement call you made is surfaced to the user rather than
-  buried in the card.
-- Nothing in the card decides something the ticket lists under *Deliberately left open*.
-- The card was not created by guessing the number from `git log`.
+- Every new card carries area, size and priority. A card with no labels is invisible to triage.
+- Priority calls were said out loud to the user, with the reason.
+- No `depends-on-` label points at a card that is already Done.
+- The number came from the board, not from `git log`.

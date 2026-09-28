@@ -90,12 +90,14 @@ Run `/sdlc:commit` to commit the current phase — it resolves the ticket from `
 
 ## Trello board
 
-Work is tracked on the [Opes board](https://trello.com/b/OpgSv5wd/opes). Two rules bind here; the full card format lives in the `trello-card` skill, which loads when you actually need it.
+Work is tracked on the [Opes board](https://trello.com/b/OpgSv5wd/opes). Two rules bind here; the rest lives in the `trello-card` skill, which loads when you actually need it.
 
-- **Every card follows the board's format** — `OPES-NN · kebab-slug`, labels on the area / size / priority axes, the standard description sections, and checklists ending in a `Tests` group. Invoke the `trello-card` skill before creating or updating a card; do not improvise a shape.
+- **A card's text belongs to aif; its labels do not.** `aif board create` writes the ticket into the description and sets the name, column and position — never edit those by hand, they are overwritten on the next push. It sets **no labels at all** on a new card, so every card needs area / size / priority applied afterwards. Invoke the `trello-card` skill right after `aif board create`; do not improvise.
 - **Ticket numbers come from the board, never from `git log`.** The board runs ahead of the commit history because cards exist long before code does. Take the highest `OPES-NN` across *all* lists and add one — deriving it from `git log` collides with a card that already owns that number.
 
-Lists are workflow phase: **Todo → In Progress → Blocked → Review / QA → Done**.
+Lists are workflow phase. The board's own names map onto aif's columns, and the two differ:
+**Todo** (`backlog`) → **Ready** (`ready`) → **In Progress** (`in_progress`) → **Review** (`review`) → **Done** (`done`),
+plus **Blocked**, which aif calls `needs_human` — one list under two names.
 
 ## Commands
 
@@ -223,7 +225,7 @@ if it finds no tests at all.
 | Validation | [src/shared/validation/CLAUDE.md](src/shared/validation/CLAUDE.md) | Yup schema location |
 | Global stores | [src/stores/CLAUDE.md](src/stores/CLAUDE.md) | Cross-feature Zustand stores |
 | AI SDLC / OpenSpec | [openspec/config.yaml](openspec/config.yaml) · `/sdlc:commit` | Spec-driven workflow, per-artifact rules, per-phase commit convention |
-| Trello board | [.claude/skills/trello-card/SKILL.md](.claude/skills/trello-card/SKILL.md) | Card name, labels, description sections, checklists, ticket numbering |
+| Trello board | [.claude/skills/trello-card/SKILL.md](.claude/skills/trello-card/SKILL.md) | Labels on four axes, cross-card dependencies, ticket numbering |
 
 <!-- aif:begin — managed by ai-foundry; edits inside are overwritten -->
 @.aif/foundry.md
