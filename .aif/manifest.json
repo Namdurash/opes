@@ -1,22 +1,26 @@
 {
   "schema": 1,
-  "aif_version": "0.5.4",
+  "aif_version": "0.9.0",
   "profile": "anthropic",
   "set": "claude",
-  "set_version": "0.5.4",
-  "installed_at": "2026-09-22T19:16:39Z",
+  "set_version": "0.9.0",
+  "installed_at": "2026-09-28T20:09:18Z",
   "files": [
     {
       "path": ".aif/foundry.md",
-      "sha256": "89c75e351ca3eb757b25e725da545c70858ff4b9a9463f5e5337572158574aa9"
+      "sha256": "86628380db654977d75507f168d26eaeefe2261640c8ea1d69bf762d4f260cb7"
     },
     {
       "path": ".claude/skills/aif-pjm/SKILL.md",
-      "sha256": "40533b1105d716b728496be5f7e308560bd5eb927a2cec03741b6464cbef30b8"
+      "sha256": "e4aeb54f1fdf0d43e2e7502bd3e958c54b985e9cf7072401810ca061c1e4e4f7"
+    },
+    {
+      "path": ".claude/skills/aif-review/SKILL.md",
+      "sha256": "70e97e95cbeb2b993f429ee573b8c295f3c5e52b34ceff649cebd2932a9b2437"
     },
     {
       "path": ".claude/skills/aif-po/SKILL.md",
-      "sha256": "4d62b8cd0e9d0991e002e7c731e3efe4ccf0e43ffe6cdfef5f0a6edadd1ea1d4"
+      "sha256": "fe4f59c5d979d6d58b459fc3a060e0f24b9bf3a5f99ad6bfb927c008ac18adf6"
     },
     {
       "path": ".claude/skills/aif-setup/SKILL.md",
@@ -24,7 +28,7 @@
     },
     {
       "path": ".claude/skills/aif-ba/SKILL.md",
-      "sha256": "926adedcc64aeab0fcfea92a41766be15ad2d0caf14a1802b7d4fe61c0eba2c6"
+      "sha256": "9be22d982a07d8daa585a368708a049e2f328bb8be65f31d0ebda88334684b91"
     },
     {
       "path": ".claude/agents/aif-tests.md",
@@ -51,12 +55,16 @@
       "sha256": "69daca01a95cef3a9739ac181b1b6734e3a7de6fc7d28bf9011eb06041ce1c07"
     },
     {
+      "path": ".claude/commands/aif-review.md",
+      "sha256": "2de18607fc22639a04ee55ebfbad01e56e17bdd6312e9475e6628c4140e5ef3d"
+    },
+    {
       "path": ".claude/commands/aif-po.md",
-      "sha256": "736e8b139485c1b3b95e25c56bd5e50ccb0588871e39f70f47777cdadc146479"
+      "sha256": "2d1c2fd0c3f0cd0bb1abafea26a928528bde462da8ddb692640f20a58d61f19c"
     },
     {
       "path": ".claude/commands/aif-ba.md",
-      "sha256": "37b178a02d5081806c1403a221ad6fbe4f7b9dfa1a572d6b967bfce83ba7e877"
+      "sha256": "3817dd459e89b1024c7b612ee5da093e8be680fe7660d6d0b0336d1288a80262"
     },
     {
       "path": ".aif/gates/ready.sh",
@@ -72,7 +80,7 @@
     },
     {
       "path": ".aif/gates/green.sh",
-      "sha256": "01c1eb16c6492c30ca34133e4a0b31c6041980cae3ba20f7d07a0566c5534558"
+      "sha256": "e0421c15438baea37dc76f2fc0d3f6d4e21eac3662ca81a292736a7027b83c06"
     },
     {
       "path": ".aif/gates/plan.sh",
