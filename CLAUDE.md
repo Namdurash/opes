@@ -194,6 +194,13 @@ Because a misnamed file is silently *not collected* rather than red, `npm run li
 also runs a guard that fails on a test outside the allowed form or place, and fails
 if it finds no tests at all.
 
+Repo-wide commands are not tests. `npx tsc --noEmit` and `npm run lint` run as
+`checks` in [.aif/project.json](.aif/project.json), which the foundry's green gate
+runs after every implementation — never from inside jest. The tests a ticket writes
+first import modules that do not exist yet, so a jest test that type-checks the tree
+goes red on every ticket, and `verify-red` stops the run as "the pre-existing suite
+is not green".
+
 ## Definition of Done
 
 - `npx tsc --noEmit` passes (strict).

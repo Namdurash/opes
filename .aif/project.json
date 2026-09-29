@@ -68,6 +68,14 @@
         "green"
       ],
       "required": true
+    },
+    {
+      "name": "typecheck",
+      "command": "npx tsc --noEmit",
+      "phase": [
+        "green"
+      ],
+      "required": true
     }
   ],
   "board": {

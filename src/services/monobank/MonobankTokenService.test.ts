@@ -66,7 +66,6 @@
  * both compile today and satisfy the port once the member is declared.
  */
 
-import { spawnSync } from 'node:child_process';
 import { readFileSync } from 'node:fs';
 import { MonobankTokenService } from './MonobankTokenService';
 import type { SecretStorePort } from './MonobankTokenService';
@@ -325,33 +324,22 @@ describe('MonobankTokenService.clear', () => {
 
 /**
  * The remaining two criteria are about a compiler and a document — neither of which
- * survives to runtime as a value. They are read off the compiler's own exit code
- * and off the source text, from the project root, which is where jest is invoked
- * from.
+ * survives to runtime as a value. The document is read off its source text by
+ * AC-014 at the bottom of this file, from the project root, which is where jest is
+ * invoked from.
+ *
+ * The compiler is no longer asked from here. AC-013 — the repository type-checks
+ * with every awaited call site in place — is the `typecheck` check in
+ * .aif/project.json, which the foundry's green gate runs after every
+ * implementation. As a jest test it went red on every later ticket's red-first
+ * tests, which import modules not written yet, and verify-red stopped each such
+ * run as "the pre-existing suite is not green".
  *
  * The spec's rewrite folded the two `types.ts` signature criteria into AS-011 and
- * left them to the type-check below: a store whose async implementation did not
- * match its declared interface cannot compile. So there is no longer a test that
- * reads those two declarations as text, deliberately.
+ * left them to that type-check: a store whose async implementation did not match
+ * its declared interface cannot compile. So there is no longer a test that reads
+ * those two declarations as text, deliberately.
  */
-describe('the repository after the await propagation', () => {
-  it(
-    'AC-013 — type-checks with every awaited call site in place',
-    () => {
-      // The awaits this ticket adds are invisible to every other test here: what
-      // establishes that the call sites were actually updated is the compiler.
-      // Only the exit code is asserted — the compiler's own diagnostics are left
-      // out of the failure message deliberately, since a TS syntax diagnostic
-      // quoted into it would read as a broken test rather than a red one.
-      const typecheck = spawnSync('npx', ['tsc', '--noEmit'], {
-        encoding: 'utf8',
-      });
-
-      expect(typecheck.status).toBe(0);
-    },
-    600_000,
-  );
-});
 
 /**
  * OPES-67 — clear() rebuilds the encrypted store once the two keys are gone.
