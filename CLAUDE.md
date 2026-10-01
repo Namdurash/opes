@@ -6,7 +6,8 @@ Guidance for Claude Code when working in this repository. Rules scoped to a spec
 
 - Platform: React Native CLI (TypeScript)
 - Product: Offline-first personal finance manager (MVP)
-- Scope: Local-only app, no backend, no auth. Monobank is an optional sync source, not a dependency of core flows.
+- Scope: Offline-first — the on-device database is the source of truth and every core flow works without network or auth. Monobank is an optional sync source, not a dependency of core flows.
+- Backend: Opes has a backend (decided 2026-10-01; no backend code exists yet). It exists only for what a closed app cannot do — calling Monobank while the app is not running, notifications, and similar tasks. **It stores no user data.** Nothing of the user's lives anywhere but the device, so the backend is never a sync target, a backup or a source of truth.
 
 ## AI SDLC — every change goes through OpenSpec
 
